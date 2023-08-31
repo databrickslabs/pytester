@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "setuptools-whl"
+version = "0.0.1"
+description = "dummy"
+
+[tool.distutils.bdist_wheel]
+universal = true

@@ -1,0 +1,12 @@
+[tool.poetry]
+name = "poetry_whl"
+version = "0.0.1"
+description = "dummy project"
+authors = ["John Doe <john@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

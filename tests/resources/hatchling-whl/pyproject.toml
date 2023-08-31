@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hatchling-whl"
+dynamic = ["version"]
+description = 'dummy'
+requires-python = ">=3.7"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Jonh Doe", email = "john@example.com" },
+]
+dependencies = []
+
+[tool.hatch.version]
+path = "src/hatchling_whl/__about__.py"
+
