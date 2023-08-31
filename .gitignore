@@ -1,3 +1,6 @@
 .idea
 *.iml
 *.pyc
+.pytest_cache
+*.egg-info
+tests/**/build

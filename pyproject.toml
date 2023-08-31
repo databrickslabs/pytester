@@ -3,13 +3,13 @@ name = "databricks-labs-pytester"
 version = "0.0.1"
 description = "Python Testing for Databricks"
 authors = ["Serge Smertin <serge.smertin@databricks.com>"]
-readme = "README.md"
+packages = [{include = "databricks", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 databricks-sdk = "^0.7.0"
 pytest = "^7.4.0"
-
+build = "^0.10.0"
 
 [build-system]
 requires = ["poetry-core"]

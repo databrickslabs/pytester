@@ -10,6 +10,10 @@ License - https://github.com/databricks/databricks-sdk-py/blob/main/LICENSE
 
 This software contains code from the following open source projects, licensed under the MIT License (MIT).
 
-pytest -https://pytest.org
+pytest - https://pytest.org
 Copyright (c) 2004 Holger Krekel and others
 License - https://github.com/pytest-dev/pytest/blob/main/LICENSE
+
+A simple, correct Python build frontend - https://github.com/pypa/build
+Copyright © 2019 Filipe Laíns <filipe.lains@gmail.com>
+License - https://github.com/pypa/build/blob/main/LICENSE

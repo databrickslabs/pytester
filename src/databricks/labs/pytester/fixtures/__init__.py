@@ -3,6 +3,7 @@ from .compute import make_instance_pool, make_job, make_cluster, make_cluster_po
 from .iam import make_group, make_user
 from .notebooks import make_notebook, make_directory, make_repo
 from .secrets import make_secret_scope, make_secret_scope_acl
+from .wheel import workspace_library
 
 __all__ = [
     'ws', 'make_random',
@@ -10,4 +11,5 @@ __all__ = [
     'make_group', 'make_user',
     'make_notebook', 'make_directory', 'make_repo',
     'make_secret_scope', 'make_secret_scope_acl',
+    'workspace_library'
 ]
