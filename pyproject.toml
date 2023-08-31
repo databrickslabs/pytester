@@ -10,6 +10,8 @@ python = "^3.9"
 databricks-sdk = "^0.7.0"
 pytest = "^7.4.0"
 
+[tool.poetry.plugins.pytest11]
+databricks-labs-pytester = "databricks.labs.pytester.fixtures.plugin"
 
 [build-system]
 requires = ["poetry-core"]
