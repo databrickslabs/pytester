@@ -3,7 +3,8 @@ import os
 
 from databricks.sdk.service.workspace import AclPermission
 
-from databricks.labs.pytester.fixtures import * # noqa: F403
+from databricks.labs.pytester.fixtures import make_user
+
 from databricks.labs.pytester.environment import load_debug_env_if_runs_from_ide
 
 load_debug_env_if_runs_from_ide("ucws")  # noqa: F405
