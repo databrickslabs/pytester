@@ -4,3 +4,6 @@
 .pytest_cache
 *.egg-info
 tests/**/build
+.coverage
+coverage.xml
+pytester.iml

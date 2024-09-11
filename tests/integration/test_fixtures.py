@@ -3,7 +3,6 @@ import os
 
 from databricks.sdk.service.workspace import AclPermission
 
-from databricks.labs.pytester.fixtures import make_user
 
 from databricks.labs.pytester.environment import load_debug_env_if_runs_from_ide
 

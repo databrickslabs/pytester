@@ -37,6 +37,7 @@ def make_cluster_policy(ws: WorkspaceClient, make_random):
             policy_info = make_cluster_policy(name="my-policy")
             assert policy_info is not None
     """
+
     def create(*, name: str | None = None, **kwargs):
         if name is None:
             name = f"sdk-{make_random(4)}"
@@ -44,7 +45,7 @@ def make_cluster_policy(ws: WorkspaceClient, make_random):
             kwargs["definition"] = json.dumps(
                 {"spark_conf.spark.databricks.delta.preview.enabled": {"type": "fixed", "value": True}}
             )
-        return ws.cluster_policies.create(name, **kwargs)
+        return ws.cluster_policies.create(name, **kwargs)  # type: ignore
 
     def cleanup_policy(policy_info):
         ws.cluster_policies.delete(policy_info.policy_id)
@@ -82,13 +83,14 @@ def make_cluster(ws: WorkspaceClient, make_random):
             cluster_info = make_cluster(cluster_name="my-cluster", single_node=True)
             assert cluster_info is not None
     """
+
     def create(
-            *,
-            single_node: bool = False,
-            cluster_name: str | None = None,
-            spark_version: str | None = None,
-            autotermination_minutes=10,
-            **kwargs,
+        *,
+        single_node: bool = False,
+        cluster_name: str | None = None,
+        spark_version: str | None = None,
+        autotermination_minutes=10,
+        **kwargs,
     ):
         if cluster_name is None:
             cluster_name = f"sdk-{make_random(4)}"
@@ -144,6 +146,7 @@ def make_instance_pool(ws: WorkspaceClient, make_random):
             instance_pool_info = make_instance_pool(instance_pool_name="my-pool")
             assert instance_pool_info is not None
     """
+
     def create(*, instance_pool_name=None, node_type_id=None, **kwargs):
         if instance_pool_name is None:
             instance_pool_name = f"sdk-{make_random(4)}"
@@ -189,6 +192,7 @@ def make_job(ws: WorkspaceClient, make_random, make_notebook):
             job_info = make_job(name="my-job")
             assert job_info is not None
     """
+
     def create(**kwargs):
         if "name" not in kwargs:
             kwargs["name"] = f"sdk-{make_random(4)}"
