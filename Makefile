@@ -14,6 +14,7 @@ lint:
 	hatch run verify
 
 fmt:
+	hatch run python scripts/gen-readme.py
 	hatch run fmt
 
 test:
