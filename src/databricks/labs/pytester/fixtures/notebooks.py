@@ -37,6 +37,7 @@ def make_notebook(ws: WorkspaceClient, make_random):
             notebook_path = make_notebook()
             assert notebook_path.startswith("/Users/") and notebook_path.endswith(".py")
     """
+
     def create(*, path: str | None = None, content: typing.BinaryIO | None = None, **kwargs):
         if path is None:
             path = f"/Users/{ws.current_user.me().user_name}/sdk-{make_random(4)}.py"
@@ -81,6 +82,7 @@ def make_directory(ws: WorkspaceClient, make_random):
             directory_path = make_directory()
             assert directory_path.startswith("/Users/") and not directory_path.endswith(".py")
     """
+
     def create(*, path: str | None = None):
         if path is None:
             path = f"/Users/{ws.current_user.me().user_name}/sdk-{make_random(4)}"
@@ -123,6 +125,7 @@ def make_repo(ws: WorkspaceClient, make_random):
             repo_info = make_repo()
             assert repo_info is not None
     """
+
     def create(*, url=None, provider=None, path=None, **kwargs):
         if path is None:
             path = f"/Repos/{ws.current_user.me().user_name}/sdk-{make_random(4)}"

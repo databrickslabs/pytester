@@ -2,10 +2,9 @@ import logging
 import os
 import pathlib
 import sys
+import json
 
 _LOG = logging.getLogger(__name__)
-
-import json
 
 
 def load_debug_env_if_runs_from_ide(key) -> bool:
@@ -47,13 +46,13 @@ def load_debug_env_if_runs_from_ide(key) -> bool:
         if key not in conf:
             msg = f"{key} not found in ~/.databricks/debug-env.json"
             raise KeyError(msg)
-        for k, v in conf[key].items():
-            os.environ[k] = v
+        for env_key, value in conf[key].items():
+            os.environ[env_key] = value
     return True
 
 
 def _is_in_debug() -> bool:
-    return os.path.basename(sys.argv[0]) in [
+    return os.path.basename(sys.argv[0]) in {
         "_jb_pytest_runner.py",
         "testlauncher.py",
-    ]
+    }

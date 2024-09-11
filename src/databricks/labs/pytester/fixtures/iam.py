@@ -35,6 +35,7 @@ def make_user(ws: WorkspaceClient, make_random):
             user_info = make_user()
             assert user_info is not None
     """
+
     def create_user(**kwargs):
         return ws.users.create(user_name=f"sdk-{make_random(4)}@example.com".lower(), **kwargs)
 
@@ -78,8 +79,9 @@ def make_group(ws: WorkspaceClient, make_random):
             group_info = make_group(members=["user@example.com"], roles=["viewer"])
             assert group_info is not None
     """
+
     def create(
-            *, members: list[str] | None = None, roles: list[str] | None = None, display_name: str | None = None, **kwargs
+        *, members: list[str] | None = None, roles: list[str] | None = None, display_name: str | None = None, **kwargs
     ):
         kwargs["display_name"] = f"sdk-{make_random(4)}" if display_name is None else display_name
         if members is not None:

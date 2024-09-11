@@ -6,10 +6,18 @@ from .secrets import make_secret_scope, make_secret_scope_acl
 from .wheel import workspace_library
 
 __all__ = [
-    'ws', 'make_random',
-    'make_instance_pool', 'make_job', 'make_cluster', 'make_cluster_policy',
-    'make_group', 'make_user',
-    'make_notebook', 'make_directory', 'make_repo',
-    'make_secret_scope', 'make_secret_scope_acl',
-    'workspace_library'
+    'ws',
+    'make_random',
+    'make_instance_pool',
+    'make_job',
+    'make_cluster',
+    'make_cluster_policy',
+    'make_group',
+    'make_user',
+    'make_notebook',
+    'make_directory',
+    'make_repo',
+    'make_secret_scope',
+    'make_secret_scope_acl',
+    'workspace_library',
 ]

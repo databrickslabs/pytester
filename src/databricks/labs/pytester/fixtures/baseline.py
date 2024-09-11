@@ -4,7 +4,7 @@ import string
 
 import pytest
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.core import DatabricksError
+from databricks.sdk.errors import NotFound
 
 _LOG = logging.getLogger(__name__)
 
@@ -39,6 +39,7 @@ def make_random():
        random_string = make_random(k=8)
        assert len(random_string) == 8
     """
+
     def inner(k=16) -> str:
         """
         Generate a random string.
@@ -102,22 +103,19 @@ def factory(name, create, remove):
     cleanup = []
 
     def inner(**kwargs):
-        x = create(**kwargs)
-        _LOG.debug(f"added {name} fixture: {x}")
-        cleanup.append(x)
-        return x
+        some = create(**kwargs)
+        _LOG.debug(f"added {name} fixture: {some}")
+        cleanup.append(some)
+        return some
 
     yield inner
     _LOG.debug(f"clearing {len(cleanup)} {name} fixtures")
-    for x in cleanup:
+    for some in cleanup:
         try:
-            _LOG.debug(f"removing {name} fixture: {x}")
-            remove(x)
-        except DatabricksError as e:
-            if e.error_code in ("RESOURCE_DOES_NOT_EXIST",):
-                _LOG.debug(f"ignoring error while {name} {x} teardown: {e}")
-                continue
-            raise e
+            _LOG.debug(f"removing {name} fixture: {some}")
+            remove(some)
+        except NotFound as e:
+            _LOG.debug(f"ignoring error while {name} {some} teardown: {e}")
 
 
 @pytest.fixture(scope="session")

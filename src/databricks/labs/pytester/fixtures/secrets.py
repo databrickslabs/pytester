@@ -36,12 +36,13 @@ def make_secret_scope(ws: WorkspaceClient, make_random):
             secret_scope_name = make_secret_scope()
             assert secret_scope_name.startswith("sdk-")
     """
+
     def create(**kwargs):
         name = f"sdk-{make_random(4)}"
         ws.secrets.create_scope(name, **kwargs)
         return name
 
-    yield from factory("secret scope", create, lambda scope: ws.secrets.delete_scope(scope))
+    yield from factory("secret scope", create, ws.secrets.delete_scope)
 
 
 @pytest.fixture
@@ -77,6 +78,7 @@ def make_secret_scope_acl(ws: WorkspaceClient):
             acl_info = make_secret_scope_acl(scope=scope_name, principal=principal_name, permission=permission)
             assert acl_info == (scope_name, principal_name)
     """
+
     def create(*, scope: str, principal: str, permission: workspace.AclPermission):
         ws.secrets.put_acl(scope, principal, permission)
         return scope, principal

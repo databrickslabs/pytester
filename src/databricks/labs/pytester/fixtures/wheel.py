@@ -3,12 +3,13 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 import pytest
 from databricks.sdk.service.workspace import ImportFormat
 
-from pathlib import Path
-from typing import Optional
+
+# pylint: disable=consider-alternative-union-syntax
 
 
 def find_dir_with_leaf(folder: Path, leaf: str) -> Optional[Path]:
@@ -21,7 +22,7 @@ def find_dir_with_leaf(folder: Path, leaf: str) -> Optional[Path]:
 
 
 def find_project_root(folder: Path) -> Optional[Path]:
-    for leaf in ['pyproject.toml', 'setup.py']:
+    for leaf in ('pyproject.toml', 'setup.py'):
         root = find_dir_with_leaf(folder, leaf)
         if root is not None:
             return root
@@ -31,8 +32,7 @@ def find_project_root(folder: Path) -> Optional[Path]:
 def build_wheel_in(project_path: Path, out_path: Path) -> Path:
     try:
         subprocess.run(
-            [sys.executable, "-m", "build", "--wheel", "--outdir",
-             out_path.absolute(), project_path.absolute()],
+            [sys.executable, "-m", "build", "--wheel", "--outdir", out_path.absolute(), project_path.absolute()],
             capture_output=True,
             check=True,
         )
@@ -41,7 +41,7 @@ def build_wheel_in(project_path: Path, out_path: Path) -> Path:
             sys.stderr.write(e.stderr.decode())
         raise RuntimeError(e.output.decode().strip()) from None
 
-    found_wheels = list(out_path.glob(f"*.whl"))
+    found_wheels = list(out_path.glob("*.whl"))
     if not found_wheels:
         msg = f"cannot find *.whl in {out_path}"
         raise RuntimeError(msg)
@@ -58,7 +58,7 @@ def build_wheel_in(project_path: Path, out_path: Path) -> Path:
 def fresh_local_wheel_file(tmp_path) -> Path:
     project_root = find_project_root(Path(os.getcwd()))
     build_root = tmp_path / fresh_local_wheel_file.__name__
-    shutil.copytree(project_root, build_root)
+    shutil.copytree(project_root, build_root)  # type: ignore
 
     return build_wheel_in(build_root, tmp_path / 'dist')
 
