@@ -42,7 +42,7 @@ def make_user(ws: WorkspaceClient, make_random):
     def cleanup_user(user_info):
         ws.users.delete(user_info.id)
 
-    return factory("workspace user", create_user, cleanup_user)
+    yield from factory("workspace user", create_user, cleanup_user)
 
 
 def _scim_values(ids: list[str]) -> list[iam.ComplexValue]:
@@ -93,4 +93,4 @@ def make_group(ws: WorkspaceClient, make_random):
     def cleanup_group(group_info):
         ws.groups.delete(group_info.id)
 
-    return factory("workspace group", create, cleanup_group)
+    yield from factory("workspace group", create, cleanup_group)

@@ -7,7 +7,7 @@ sources = ["src"]
 include = ["src"]
 
 [project]
-name = "databricks-labs-pytested"
+name = "databricks-labs-pytester"
 dynamic = ["version"]
 description = 'Python Testing for Databricks'
 readme = "README.md"

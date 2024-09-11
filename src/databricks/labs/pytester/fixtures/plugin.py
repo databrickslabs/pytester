@@ -1,7 +1,28 @@
 import pytest
 
-# pylint: disable=wildcard-import,unused-wildcard-import
-from databricks.labs.pytester.fixtures import *  # noqa: F403, F401
+from databricks.labs.pytester.fixtures.baseline import ws, make_random
+from databricks.labs.pytester.fixtures.compute import make_instance_pool, make_job, make_cluster, make_cluster_policy
+from databricks.labs.pytester.fixtures.iam import make_group, make_user
+from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_directory, make_repo
+from databricks.labs.pytester.fixtures.secrets import make_secret_scope, make_secret_scope_acl
+from databricks.labs.pytester.fixtures.wheel import workspace_library
+
+__all__ = [
+    'ws',
+    'make_random',
+    'make_instance_pool',
+    'make_job',
+    'make_cluster',
+    'make_cluster_policy',
+    'make_group',
+    'make_user',
+    'make_notebook',
+    'make_directory',
+    'make_repo',
+    'make_secret_scope',
+    'make_secret_scope_acl',
+    'workspace_library',
+]
 
 
 def pytest_addoption(parser):

@@ -118,7 +118,7 @@ def factory(name, create, remove):
             _LOG.debug(f"ignoring error while {name} {some} teardown: {e}")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def ws() -> WorkspaceClient:
     """
     Create and provide a Databricks WorkspaceClient object.

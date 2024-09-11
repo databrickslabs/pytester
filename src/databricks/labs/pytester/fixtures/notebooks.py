@@ -49,7 +49,7 @@ def make_notebook(ws: WorkspaceClient, make_random):
     def cleanup(path):
         ws.workspace.delete(path)
 
-    return factory("notebook", create, cleanup)
+    yield from factory("notebook", create, cleanup)
 
 
 @pytest.fixture
@@ -92,7 +92,7 @@ def make_directory(ws: WorkspaceClient, make_random):
     def cleanup(path):
         ws.workspace.delete(path, recursive=True)
 
-    return factory("directory", create, cleanup)
+    yield from factory("directory", create, cleanup)
 
 
 @pytest.fixture
@@ -138,4 +138,4 @@ def make_repo(ws: WorkspaceClient, make_random):
     def cleanup(repo_info):
         ws.repos.delete(repo_info.id)
 
-    return factory("repo", create, cleanup)
+    yield from factory("repo", create, cleanup)
