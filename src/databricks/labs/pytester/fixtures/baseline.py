@@ -1,15 +1,29 @@
+import json
 import logging
+import os
+import pathlib
 import random
 import string
+import sys
+from collections.abc import Callable, MutableMapping
+from datetime import timedelta, datetime, timezone
+from functools import partial
 
 import pytest
+from pytest import fixture
+
+from databricks.labs.lsql.backends import StatementExecutionBackend
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors import NotFound
 
 _LOG = logging.getLogger(__name__)
 
 
-@pytest.fixture
+"""Preserve resources created during tests for at least this long."""
+TEST_RESOURCE_PURGE_TIMEOUT = timedelta(hours=1)
+
+
+@fixture
 def make_random():
     """
     Fixture to generate random strings.
@@ -56,6 +70,53 @@ def make_random():
         """
         charset = string.ascii_uppercase + string.ascii_lowercase + string.digits
         return "".join(random.choices(charset, k=int(k)))
+
+    return inner
+
+
+def _is_in_debug() -> bool:
+    return os.path.basename(sys.argv[0]) in {"_jb_pytest_runner.py", "testlauncher.py"}
+
+
+@fixture
+def debug_env_name():
+    # Alternatively, we could use @pytest.mark.xxx, but
+    # not sure how reusable it becomes then.
+    #
+    # we don't use scope=session, as monkeypatch.setenv
+    # doesn't work on a session level
+    return "UNKNOWN"
+
+
+@pytest.fixture
+def debug_env(monkeypatch, debug_env_name) -> MutableMapping[str, str]:
+    if not _is_in_debug():
+        return os.environ
+    # TODO: add support for `.env` files
+    conf_file = pathlib.Path.home() / ".databricks/debug-env.json"
+    if not conf_file.exists():
+        return os.environ
+    with conf_file.open("r") as f:
+        conf = json.load(f)
+        if debug_env_name not in conf:
+            sys.stderr.write(f"""{debug_env_name} not found in ~/.databricks/debug-env.json""")
+            msg = f"{debug_env_name} not found in ~/.databricks/debug-env.json"
+            raise KeyError(msg)
+        for env_key, value in conf[debug_env_name].items():
+            monkeypatch.setenv(env_key, value)
+    return os.environ
+
+
+@fixture
+def env_or_skip(debug_env) -> Callable[[str], str]:
+    skip = pytest.skip
+    if _is_in_debug():
+        skip = pytest.fail  # type: ignore[assignment]
+
+    def inner(var: str) -> str:
+        if var not in debug_env:
+            skip(f"Environment variable {var} is missing")
+        return debug_env[var]
 
     return inner
 
@@ -118,8 +179,13 @@ def factory(name, create, remove):
             _LOG.debug(f"ignoring error while {name} {some} teardown: {e}")
 
 
-@pytest.fixture
-def ws() -> WorkspaceClient:
+@fixture
+def product_info():
+    return None, None
+
+
+@fixture
+def ws(debug_env, product_info) -> WorkspaceClient:
     """
     Create and provide a Databricks WorkspaceClient object.
 
@@ -144,4 +210,40 @@ def ws() -> WorkspaceClient:
             clusters = ws.clusters.list_clusters()
             assert len(clusters) >= 0
     """
-    return WorkspaceClient()
+    product_name, product_version = product_info
+    return WorkspaceClient(host=debug_env["DATABRICKS_HOST"], product=product_name, product_version=product_version)
+
+
+@fixture
+def sql_backend(ws, env_or_skip) -> StatementExecutionBackend:
+    """Create and provide a SQL backend for executing statements."""
+    warehouse_id = env_or_skip("DATABRICKS_WAREHOUSE_ID")
+    return StatementExecutionBackend(ws, warehouse_id)
+
+
+@fixture
+def sql_exec(sql_backend):
+    """Execute SQL statement and don't return any results."""
+    return partial(sql_backend.execute)
+
+
+@fixture
+def sql_fetch_all(sql_backend):
+    """Fetch all rows from a SQL statement."""
+    return partial(sql_backend.fetch)
+
+
+def get_test_purge_time(timeout: timedelta = TEST_RESOURCE_PURGE_TIMEOUT) -> str:
+    """Purge time for test objects, representing the (UTC-based) hour from which objects may be purged."""
+    # Note: this code is duplicated in the workflow installer (WorkflowsDeployment) so that it can avoid the
+    # transitive pytest deployment from this module.
+    now = datetime.now(timezone.utc)
+    purge_deadline = now + timeout
+    # Round UP to the next hour boundary: that is when resources will be deleted.
+    purge_hour = purge_deadline + (datetime.min.replace(tzinfo=timezone.utc) - purge_deadline) % timedelta(hours=1)
+    return purge_hour.strftime("%Y%m%d%H")
+
+
+def get_purge_suffix() -> str:
+    """HEX-encoded purge time suffix for test objects."""
+    return f'ra{int(get_test_purge_time()):x}'
