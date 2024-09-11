@@ -32,26 +32,19 @@ def make_random():
     The generated strings are created using a character set consisting of uppercase letters,
     lowercase letters, and digits.
 
-    Returns:
-    --------
-    function:
-        A function to generate random strings.
-
-    Usage Example:
-    --------------
     To generate a random string with default length of 16 characters:
 
-    .. code-block:: python
-
-       random_string = make_random()
-       assert len(random_string) == 16
+    ```python
+    random_string = make_random()
+    assert len(random_string) == 16
+    ```
 
     To generate a random string with a specified length:
 
-    .. code-block:: python
-
-       random_string = make_random(k=8)
-       assert len(random_string) == 8
+    ```python
+    random_string = make_random(k=8)
+    assert len(random_string) == 8
+    ```
     """
 
     def inner(k=16) -> str:
