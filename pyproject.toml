@@ -46,7 +46,7 @@ classifiers = [
 
 dependencies = [
     "databricks-sdk~=0.30",
-    "databricks-labs-blueprint>=0.8,<0.9",
+    "databricks-labs-lsql~=0.10",
     "pytest~=8.3.3",
 ]
 
