@@ -34,6 +34,91 @@
 ## PyTest Fixtures
 
 <!-- FIXTURES -->
+### `debug_env_name` fixture
+Specify the name of the debug environment. By default, it is set to `.env`,
+which will try to find a [file named `.env`](https://www.dotenv.org/docs/security/env)
+in any of the parent directories of the current working directory and load
+the environment variables from it via the [`debug_env` fixture](#debug_env-fixture).
+
+Alternatively, if you are concerned of the
+[risk of `.env` files getting checked into version control](https://thehackernews.com/2024/08/attackers-exploit-public-env-files-to.html),
+we recommend using the `~/.databricks/debug-env.json` file to store different sets of environment variables.
+The file cannot be checked into version control by design, because it is stored in the user's home directory.
+
+This file is used for local debugging and integration tests in IDEs like PyCharm, VSCode, and IntelliJ IDEA
+while developing Databricks Platform Automation Stack, which includes Databricks SDKs for Python, Go, and Java,
+as well as Databricks Terraform Provider and Databricks CLI. This file enables multi-environment and multi-cloud
+testing with a single set of integration tests.
+
+The file is typically structured as follows:
+
+```shell
+$ cat ~/.databricks/debug-env.json
+{
+   "ws": {
+     "CLOUD_ENV": "azure",
+     "DATABRICKS_HOST": "....azuredatabricks.net",
+     "DATABRICKS_CLUSTER_ID": "0708-200540-...",
+     "DATABRICKS_WAREHOUSE_ID": "33aef...",
+        ...
+   },
+   "acc": {
+     "CLOUD_ENV": "aws",
+     "DATABRICKS_HOST": "accounts.cloud.databricks.net",
+     "DATABRICKS_CLIENT_ID": "....",
+     "DATABRICKS_CLIENT_SECRET": "....",
+     ...
+   }
+}
+```
+
+And you can load it in your `conftest.py` file as follows:
+
+```python
+@pytest.fixture
+def debug_env_name():
+    return "ws"
+```
+
+This will load the `ws` environment from the `~/.databricks/debug-env.json` file.
+
+If any of the environment variables are not found, [`env_or_skip` fixture](#env_or_skip-fixture)
+will gracefully skip the execution of tests.
+
+See also [`debug_env` fixture](#debug_env-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `debug_env` fixture
+Loads environment variables specified in [`debug_env_name` fixture](#debug_env_name-fixture) from a file
+for local debugging in IDEs, otherwise allowing the tests to run with the default environment variables
+specified in the CI/CD pipeline.
+
+See also [`env_or_skip` fixture](#env_or_skip-fixture), [`ws` fixture](#ws-fixture), [`debug_env_name` fixture](#debug_env_name-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `env_or_skip` fixture
+Fixture to get environment variables or skip tests.
+
+It is extremely useful to skip tests if the required environment variables are not set.
+
+In the following example, `test_something` would only run if the environment variable
+`SOME_EXTERNAL_SERVICE_TOKEN` is set:
+
+```python
+def test_something(env_or_skip):
+    token = env_or_skip("SOME_EXTERNAL_SERVICE_TOKEN")
+    assert token is not None
+```
+
+See also [`make_udf` fixture](#make_udf-fixture), [`sql_backend` fixture](#sql_backend-fixture), [`debug_env` fixture](#debug_env-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
 ### `ws` fixture
 Create and provide a Databricks WorkspaceClient object.
 
@@ -41,48 +126,18 @@ This fixture initializes a Databricks WorkspaceClient object, which can be used
 to interact with the Databricks workspace API. The created instance of WorkspaceClient
 is shared across all test functions within the test session.
 
-See https://databricks-sdk-py.readthedocs.io/en/latest/authentication.html
+See [detailed documentation](https://databricks-sdk-py.readthedocs.io/en/latest/authentication.html) for the list
+of environment variables that can be used to authenticate the WorkspaceClient.
 
-Returns:
---------
-databricks.sdk.WorkspaceClient:
-    An instance of WorkspaceClient for interacting with the Databricks Workspace APIs.
-
-Usage:
-------
 In your test functions, include this fixture as an argument to use the WorkspaceClient:
 
-.. code-block:: python
+```python
+def test_workspace_operations(ws):
+    clusters = ws.clusters.list_clusters()
+    assert len(clusters) >= 0
+```
 
-    def test_workspace_operations(ws):
-        clusters = ws.clusters.list_clusters()
-        assert len(clusters) >= 0
-
-This fixture is built on top of: [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture)
-
-
-[[back to top](#python-testing-for-databricks)]
-
-### `debug_env` fixture
-_No description yet._
-
-This fixture is built on top of: [`monkeypatch`](#monkeypatch-fixture), [`debug_env_name`](#debug_env_name-fixture)
-
-
-[[back to top](#python-testing-for-databricks)]
-
-### `debug_env_name` fixture
-_No description yet._
-
-This fixture is built on top of: 
-
-
-[[back to top](#python-testing-for-databricks)]
-
-### `env_or_skip` fixture
-_No description yet._
-
-This fixture is built on top of: [`debug_env`](#debug_env-fixture)
+See also [`make_catalog` fixture](#make_catalog-fixture), [`make_cluster` fixture](#make_cluster-fixture), [`make_cluster_policy` fixture](#make_cluster_policy-fixture), [`make_directory` fixture](#make_directory-fixture), [`make_group` fixture](#make_group-fixture), [`make_instance_pool` fixture](#make_instance_pool-fixture), [`make_job` fixture](#make_job-fixture), [`make_notebook` fixture](#make_notebook-fixture), [`make_repo` fixture](#make_repo-fixture), [`make_schema` fixture](#make_schema-fixture), [`make_secret_scope` fixture](#make_secret_scope-fixture), [`make_secret_scope_acl` fixture](#make_secret_scope_acl-fixture), [`make_table` fixture](#make_table-fixture), [`make_udf` fixture](#make_udf-fixture), [`make_user` fixture](#make_user-fixture), [`sql_backend` fixture](#sql_backend-fixture), [`workspace_library` fixture](#workspace_library-fixture), [`debug_env` fixture](#debug_env-fixture), [`product_info` fixture](#product_info-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -108,7 +163,7 @@ random_string = make_random(k=8)
 assert len(random_string) == 8
 ```
 
-This fixture is built on top of: 
+See also [`make_catalog` fixture](#make_catalog-fixture), [`make_cluster` fixture](#make_cluster-fixture), [`make_cluster_policy` fixture](#make_cluster_policy-fixture), [`make_directory` fixture](#make_directory-fixture), [`make_group` fixture](#make_group-fixture), [`make_instance_pool` fixture](#make_instance_pool-fixture), [`make_job` fixture](#make_job-fixture), [`make_notebook` fixture](#make_notebook-fixture), [`make_repo` fixture](#make_repo-fixture), [`make_schema` fixture](#make_schema-fixture), [`make_secret_scope` fixture](#make_secret_scope-fixture), [`make_table` fixture](#make_table-fixture), [`make_udf` fixture](#make_udf-fixture), [`make_user` fixture](#make_user-fixture), [`workspace_library` fixture](#workspace_library-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -141,7 +196,7 @@ To manage Databricks instance pools using the make_instance_pool fixture:
         instance_pool_info = make_instance_pool(instance_pool_name="my-pool")
         assert instance_pool_info is not None
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -176,7 +231,7 @@ To manage Databricks jobs using the make_job fixture:
         job_info = make_job(name="my-job")
         assert job_info is not None
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_notebook`](#make_notebook-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture), [`make_notebook` fixture](#make_notebook-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -209,7 +264,7 @@ To manage Databricks clusters using the make_cluster fixture:
         cluster_info = make_cluster(cluster_name="my-cluster", single_node=True)
         assert cluster_info is not None
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -242,7 +297,7 @@ To manage Databricks cluster policies using the make_cluster_policy fixture:
         policy_info = make_cluster_policy(name="my-policy")
         assert policy_info is not None
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -275,7 +330,7 @@ To manage Databricks workspace groups using the make_group fixture:
         group_info = make_group(members=["user@example.com"], roles=["viewer"])
         assert group_info is not None
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -308,7 +363,7 @@ To manage Databricks workspace users using the make_user fixture:
         user_info = make_user()
         assert user_info is not None
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -341,7 +396,7 @@ To manage Databricks notebooks using the make_notebook fixture:
         notebook_path = make_notebook()
         assert notebook_path.startswith("/Users/") and notebook_path.endswith(".py")
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`make_job` fixture](#make_job-fixture), [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -374,7 +429,7 @@ To manage Databricks directories using the make_directory fixture:
         directory_path = make_directory()
         assert directory_path.startswith("/Users/") and not directory_path.endswith(".py")
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -407,7 +462,7 @@ To manage Databricks repos using the make_repo fixture:
         repo_info = make_repo()
         assert repo_info is not None
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -441,7 +496,7 @@ To create a secret scope and use it within a test function:
         secret_scope_name = make_secret_scope()
         assert secret_scope_name.startswith("sdk-")
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -477,7 +532,7 @@ To manage secret scope ACLs using the make_secret_scope_acl fixture:
         acl_info = make_secret_scope_acl(scope=scope_name, principal=principal_name, permission=permission)
         assert acl_info == (scope_name, principal_name)
 
-This fixture is built on top of: [`ws`](#ws-fixture)
+See also [`ws` fixture](#ws-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -485,7 +540,7 @@ This fixture is built on top of: [`ws`](#ws-fixture)
 ### `make_udf` fixture
 _No description yet._
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`env_or_skip`](#env_or_skip-fixture), [`sql_backend`](#sql_backend-fixture), [`make_schema`](#make_schema-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`env_or_skip` fixture](#env_or_skip-fixture), [`sql_backend` fixture](#sql_backend-fixture), [`make_schema` fixture](#make_schema-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -493,7 +548,7 @@ This fixture is built on top of: [`ws`](#ws-fixture), [`env_or_skip`](#env_or_sk
 ### `make_catalog` fixture
 _No description yet._
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`sql_backend`](#sql_backend-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`sql_backend` fixture](#sql_backend-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -501,7 +556,7 @@ This fixture is built on top of: [`ws`](#ws-fixture), [`sql_backend`](#sql_backe
 ### `make_schema` fixture
 _No description yet._
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`sql_backend`](#sql_backend-fixture), [`make_random`](#make_random-fixture)
+See also [`make_table` fixture](#make_table-fixture), [`make_udf` fixture](#make_udf-fixture), [`ws` fixture](#ws-fixture), [`sql_backend` fixture](#sql_backend-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -509,7 +564,7 @@ This fixture is built on top of: [`ws`](#ws-fixture), [`sql_backend`](#sql_backe
 ### `make_table` fixture
 _No description yet._
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`sql_backend`](#sql_backend-fixture), [`make_schema`](#make_schema-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`sql_backend` fixture](#sql_backend-fixture), [`make_schema` fixture](#make_schema-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -517,7 +572,7 @@ This fixture is built on top of: [`ws`](#ws-fixture), [`sql_backend`](#sql_backe
 ### `product_info` fixture
 _No description yet._
 
-This fixture is built on top of: 
+See also [`ws` fixture](#ws-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -525,7 +580,9 @@ This fixture is built on top of:
 ### `sql_backend` fixture
 te and provide a SQL backend for executing statements.
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`env_or_skip`](#env_or_skip-fixture)
+Requires the environment variable `DATABRICKS_WAREHOUSE_ID` to be set.
+
+See also [`make_catalog` fixture](#make_catalog-fixture), [`make_schema` fixture](#make_schema-fixture), [`make_table` fixture](#make_table-fixture), [`make_udf` fixture](#make_udf-fixture), [`sql_exec` fixture](#sql_exec-fixture), [`sql_fetch_all` fixture](#sql_fetch_all-fixture), [`ws` fixture](#ws-fixture), [`env_or_skip` fixture](#env_or_skip-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -533,7 +590,7 @@ This fixture is built on top of: [`ws`](#ws-fixture), [`env_or_skip`](#env_or_sk
 ### `sql_exec` fixture
 ute SQL statement and don't return any results.
 
-This fixture is built on top of: [`sql_backend`](#sql_backend-fixture)
+See also [`sql_backend` fixture](#sql_backend-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -541,7 +598,7 @@ This fixture is built on top of: [`sql_backend`](#sql_backend-fixture)
 ### `sql_fetch_all` fixture
 h all rows from a SQL statement.
 
-This fixture is built on top of: [`sql_backend`](#sql_backend-fixture)
+See also [`sql_backend` fixture](#sql_backend-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -549,7 +606,7 @@ This fixture is built on top of: [`sql_backend`](#sql_backend-fixture)
 ### `workspace_library` fixture
 _No description yet._
 
-This fixture is built on top of: [`ws`](#ws-fixture), [`fresh_local_wheel_file`](#fresh_local_wheel_file-fixture), [`make_random`](#make_random-fixture)
+See also [`ws` fixture](#ws-fixture), [`make_random` fixture](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]

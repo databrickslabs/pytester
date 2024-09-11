@@ -1,3 +1,4 @@
+import collections
 import inspect
 import re
 from dataclasses import dataclass
@@ -19,11 +20,11 @@ def main():
 class Fixture:
     name: str
     description: str
-    upstreams: list[str]
+    see_also: list[str]
 
     @staticmethod
     def ref(name: str) -> str:
-        return f"[`{name}`](#{name}-fixture)"
+        return f"[`{name}` fixture](#{name}-fixture)"
 
     def usage(self) -> str:
         lines = "\n".join(_[4:] for _ in self.description.split("\n"))
@@ -35,7 +36,7 @@ class Fixture:
                 f"### `{self.name}` fixture",
                 self.usage() if self.description else "_No description yet._",
                 "",
-                f"This fixture is built on top of: {', '.join([self.ref(up) for up in self.upstreams])}",
+                f"See also {', '.join([self.ref(up) for up in self.see_also])}.",
                 "",
                 BACK_TO_TOP,
             ]
@@ -54,18 +55,27 @@ def overwrite_readme(part, docs):
 
 def discover_fixtures():
     fixtures = []
+    see_also = collections.defaultdict(set)
+    idx: dict[str, int] = {}
     for fixture in P.__all__:
         fn = getattr(P, fixture)
         upstreams = []
         sig = inspect.signature(fn)
         for param in sig.parameters.values():
+            if param.name in {'fresh_local_wheel_file', 'monkeypatch'}:
+                continue
             upstreams.append(param.name)
+            see_also[param.name].add(fixture)
         fx = Fixture(
             name=fixture,
             description=fn.__doc__,
-            upstreams=upstreams,
+            see_also=upstreams,
         )
+        idx[fixture] = len(fixtures)
         fixtures.append(fx)
+    for fixture, other in see_also.items():
+        fx = fixtures[idx[fixture]]
+        fx.see_also = sorted(other) + fx.see_also
     return fixtures
 
 
