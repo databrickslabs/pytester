@@ -23,14 +23,17 @@ class Fixture:
 
     @staticmethod
     def ref(name: str) -> str:
-        anchor = name.replace("_", "-")
-        return f"[`{name}`](#{anchor}-fixture)"
+        return f"[`{name}`](#{name}-fixture)"
+
+    def usage(self) -> str:
+        lines = "\n".join(_[4:] for _ in self.description.split("\n"))
+        return lines.strip()
 
     def doc(self) -> str:
         return "\n".join(
             [
                 f"### `{self.name}` fixture",
-                self.description if self.description else "_No description yet._",
+                self.usage() if self.description else "_No description yet._",
                 "",
                 f"This fixture is built on top of: {', '.join([self.ref(up) for up in self.upstreams])}",
                 "",
