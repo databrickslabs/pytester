@@ -87,4 +87,4 @@ def make_secret_scope_acl(ws: WorkspaceClient):
         scope, principal = acl_info
         ws.secrets.delete_acl(scope, principal)
 
-    return factory("secret scope acl", create, cleanup)
+    yield from factory("secret scope acl", create, cleanup)

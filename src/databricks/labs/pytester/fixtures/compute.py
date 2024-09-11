@@ -50,7 +50,7 @@ def make_cluster_policy(ws: WorkspaceClient, make_random):
     def cleanup_policy(policy_info):
         ws.cluster_policies.delete(policy_info.policy_id)
 
-    return factory("cluster policy", create, cleanup_policy)
+    yield from factory("cluster policy", create, cleanup_policy)
 
 
 @pytest.fixture
@@ -113,7 +113,7 @@ def make_cluster(ws: WorkspaceClient, make_random):
     def cleanup_cluster(cluster_info):
         ws.clusters.permanent_delete(cluster_info.cluster_id)
 
-    return factory("cluster", create, cleanup_cluster)
+    yield from factory("cluster", create, cleanup_cluster)
 
 
 @pytest.fixture
@@ -157,7 +157,7 @@ def make_instance_pool(ws: WorkspaceClient, make_random):
     def cleanup_instance_pool(instance_pool_info):
         ws.instance_pools.delete(instance_pool_info.instance_pool_id)
 
-    return factory("instance pool", create, cleanup_instance_pool)
+    yield from factory("instance pool", create, cleanup_instance_pool)
 
 
 @pytest.fixture
@@ -215,4 +215,4 @@ def make_job(ws: WorkspaceClient, make_random, make_notebook):
     def cleanup_job(job_info):
         ws.jobs.delete(job_info.job_id)
 
-    return factory("job", create, cleanup_job)
+    yield from factory("job", create, cleanup_job)
