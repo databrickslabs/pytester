@@ -24,7 +24,7 @@ class Fixture:
 
     @staticmethod
     def ref(name: str) -> str:
-        return f"[`{name}` fixture](#{name}-fixture)"
+        return f"[`{name}`](#{name}-fixture)"
 
     def usage(self) -> str:
         lines = "\n".join(_[4:] for _ in self.description.split("\n"))

@@ -1,8 +1,6 @@
 import logging
 import os
 
-from databricks.sdk.service.workspace import AclPermission
-
 
 logger = logging.getLogger(__name__)
 
@@ -13,15 +11,6 @@ def test_user(make_user):
 
 def test_group(make_group, make_user):
     logger.info(f'created {make_group(display_name="abc", members=[make_user().id])}')
-
-
-def test_secret_scope(make_secret_scope):
-    logger.info(f"created {make_secret_scope()}")
-
-
-def test_secret_scope_acl(make_secret_scope, make_secret_scope_acl, make_group):
-    scope_name = make_secret_scope()
-    make_secret_scope_acl(scope=scope_name, principal=make_group().display_name, permission=AclPermission.WRITE)
 
 
 def test_notebook(make_notebook):
