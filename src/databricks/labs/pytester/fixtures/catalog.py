@@ -139,16 +139,32 @@ def make_table(ws, sql_backend, make_schema, make_random) -> Generator[Callable[
 
 
 @fixture
-def make_schema(ws, sql_backend, make_random) -> Generator[Callable[..., SchemaInfo], None, None]:
+def make_schema(sql_backend, make_random, log_workspace_link) -> Generator[Callable[..., SchemaInfo], None, None]:
+    """
+    Create a schema and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.SchemaInfo`.
+
+    Keyword Arguments:
+    * `catalog_name` (str): The name of the catalog where the schema will be created. Default is `hive_metastore`.
+    * `name` (str): The name of the schema. Default is a random string.
+
+    Usage:
+    ```python
+    def test_catalog_fixture(make_catalog, make_schema, make_table):
+        from_catalog = make_catalog()
+        from_schema = make_schema(catalog_name=from_catalog.name)
+        from_table_1 = make_table(catalog_name=from_catalog.name, schema_name=from_schema.name)
+        logger.info(f"Created new schema: {from_table_1}")
+    ```
+    """
+
     def create(*, catalog_name: str = "hive_metastore", name: str | None = None) -> SchemaInfo:
         if name is None:
-            name = f"ucx_S{make_random(4)}".lower()
+            name = f"dummy_S{make_random(4)}".lower()
         full_name = f"{catalog_name}.{name}".lower()
         sql_backend.execute(f"CREATE SCHEMA {full_name} WITH DBPROPERTIES (RemoveAfter={get_test_purge_time()})")
         schema_info = SchemaInfo(catalog_name=catalog_name, name=name, full_name=full_name)
-        logger.info(
-            f"Schema {schema_info.full_name}: "
-            f"{ws.config.host}/explore/data/{schema_info.catalog_name}/{schema_info.name}"
+        log_workspace_link(
+            f'{schema_info.full_name} schema', f'explore/data/{schema_info.catalog_name}/{schema_info.name}'
         )
         return schema_info
 
@@ -165,8 +181,10 @@ def make_schema(ws, sql_backend, make_random) -> Generator[Callable[..., SchemaI
 
 
 @fixture
-def make_catalog(ws, sql_backend, make_random) -> Generator[Callable[..., CatalogInfo], None, None]:
-    """Create a catalog and return its info. Remove it after the test.
+def make_catalog(ws, sql_backend, make_random, log_workspace_link) -> Generator[Callable[..., CatalogInfo], None, None]:
+    """
+    Create a catalog and return its info. Remove it after the test.
+    Returns instance of `databricks.sdk.service.catalog.CatalogInfo`.
 
     Usage:
     ```python
@@ -181,9 +199,10 @@ def make_catalog(ws, sql_backend, make_random) -> Generator[Callable[..., Catalo
     def create() -> CatalogInfo:
         # Warning: As of 2024-09-04 there is no way to mark this catalog for protection against the watchdog.
         # Ref: https://github.com/databrickslabs/watchdog/blob/cdc97afdac1567e89d3b39d938f066fd6267b3ba/scan/objects/uc.go#L68
-        name = f"ucx_C{make_random(4)}".lower()
+        name = f"dummy_C{make_random(4)}".lower()
         sql_backend.execute(f"CREATE CATALOG {name}")
         catalog_info = ws.catalogs.get(name)
+        log_workspace_link(f'{name} catalog', f'explore/data/{name}')
         return catalog_info
 
     yield from factory(
