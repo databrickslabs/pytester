@@ -294,32 +294,20 @@ See also [`ws`](#ws-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_cluster` fixture
-Fixture to manage Databricks clusters.
+Create a Databricks cluster, waits for it to start, and clean it up after the test.
+Returns a function to create clusters. You can get `cluster_id` attribute from the returned object.
 
-This fixture provides a function to manage Databricks clusters using the provided workspace (ws).
-Clusters can be created with specified configurations, and they will be permanently deleted after the test is complete.
+Keyword Arguments:
+* `single_node` (bool, optional): Whether to create a single-node cluster. Defaults to False.
+* `cluster_name` (str, optional): The name of the cluster. If not provided, a random name will be generated.
+* `spark_version` (str, optional): The Spark version of the cluster. If not provided, the latest version will be used.
+* `autotermination_minutes` (int, optional): The number of minutes before the cluster is automatically terminated. Defaults to 10.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-
-Returns:
---------
-function:
-    A function to manage Databricks clusters.
-
-Usage Example:
---------------
-To manage Databricks clusters using the make_cluster fixture:
-
-.. code-block:: python
-
-    def test_cluster_management(make_cluster):
-        cluster_info = make_cluster(cluster_name="my-cluster", single_node=True)
-        assert cluster_info is not None
+Usage:
+```python
+def test_cluster(make_cluster):
+    logger.info(f"created {make_cluster(single_node=True)}")
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
