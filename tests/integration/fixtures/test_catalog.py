@@ -5,9 +5,11 @@ import pytest
 logger = logging.getLogger(__name__)
 
 
-def test_catalog_fixture(make_catalog):
-    logger.info(f"Created new catalog: {make_catalog()}")
-    logger.info(f"Created new catalog: {make_catalog()}")
+def test_catalog_fixture(make_catalog, make_schema, make_table):
+    from_catalog = make_catalog()
+    from_schema = make_schema(catalog_name=from_catalog.name)
+    from_table_1 = make_table(catalog_name=from_catalog.name, schema_name=from_schema.name)
+    logger.info(f"Created new schema: {from_table_1}")
 
 
 def test_schema_fixture(make_schema):

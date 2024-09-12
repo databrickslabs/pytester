@@ -166,6 +166,18 @@ def make_schema(ws, sql_backend, make_random) -> Generator[Callable[..., SchemaI
 
 @fixture
 def make_catalog(ws, sql_backend, make_random) -> Generator[Callable[..., CatalogInfo], None, None]:
+    """Create a catalog and return its info. Remove it after the test.
+
+    Usage:
+    ```python
+    def test_catalog_fixture(make_catalog, make_schema, make_table):
+        from_catalog = make_catalog()
+        from_schema = make_schema(catalog_name=from_catalog.name)
+        from_table_1 = make_table(catalog_name=from_catalog.name, schema_name=from_schema.name)
+        logger.info(f"Created new schema: {from_table_1}")
+    ```
+    """
+
     def create() -> CatalogInfo:
         # Warning: As of 2024-09-04 there is no way to mark this catalog for protection against the watchdog.
         # Ref: https://github.com/databrickslabs/watchdog/blob/cdc97afdac1567e89d3b39d938f066fd6267b3ba/scan/objects/uc.go#L68

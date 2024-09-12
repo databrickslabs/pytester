@@ -626,7 +626,16 @@ See also [`ws`](#ws-fixture), [`env_or_skip`](#env_or_skip-fixture), [`sql_backe
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_catalog` fixture
-_No description yet._
+te a catalog and return its info. Remove it after the test.
+
+Usage:
+```python
+def test_catalog_fixture(make_catalog, make_schema, make_table):
+    from_catalog = make_catalog()
+    from_schema = make_schema(catalog_name=from_catalog.name)
+    from_table_1 = make_table(catalog_name=from_catalog.name, schema_name=from_schema.name)
+    logger.info(f"Created new schema: {from_table_1}")
+```
 
 See also [`ws`](#ws-fixture), [`sql_backend`](#sql_backend-fixture), [`make_random`](#make_random-fixture).
 
