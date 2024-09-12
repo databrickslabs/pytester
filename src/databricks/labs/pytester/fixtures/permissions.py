@@ -203,7 +203,7 @@ def _path(ws, path):
 
 
 make_cluster_policy_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "cluster_policy",
         "cluster-policies",
         [
@@ -214,7 +214,7 @@ make_cluster_policy_permissions = pytest.fixture(
 )
 
 make_instance_pool_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "instance_pool",
         "instance-pools",
         [
@@ -225,7 +225,7 @@ make_instance_pool_permissions = pytest.fixture(
     )
 )
 make_cluster_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "cluster",
         "clusters",
         [
@@ -237,7 +237,7 @@ make_cluster_permissions = pytest.fixture(
     )
 )
 make_pipeline_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "pipeline",
         "pipelines",
         [
@@ -250,7 +250,7 @@ make_pipeline_permissions = pytest.fixture(
     )
 )
 make_job_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "job",
         "jobs",
         [
@@ -263,7 +263,7 @@ make_job_permissions = pytest.fixture(
     )
 )
 make_notebook_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "notebook",
         "notebooks",
         [
@@ -276,7 +276,7 @@ make_notebook_permissions = pytest.fixture(
     )
 )
 make_directory_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "directory",
         "directories",
         [
@@ -289,7 +289,7 @@ make_directory_permissions = pytest.fixture(
     )
 )
 make_workspace_file_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "workspace_file",
         "files",
         [
@@ -302,7 +302,7 @@ make_workspace_file_permissions = pytest.fixture(
     )
 )
 make_workspace_file_path_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "workspace_file_path",
         "files",
         [
@@ -315,7 +315,7 @@ make_workspace_file_path_permissions = pytest.fixture(
     )
 )
 make_repo_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "repo",
         "repos",
         [
@@ -328,7 +328,7 @@ make_repo_permissions = pytest.fixture(
     )
 )
 make_authorization_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "authorization",
         "authorization",
         [
@@ -338,7 +338,7 @@ make_authorization_permissions = pytest.fixture(
     )
 )
 make_warehouse_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "warehouse",
         "sql/warehouses",
         [
@@ -349,7 +349,7 @@ make_warehouse_permissions = pytest.fixture(
     )
 )
 make_lakeview_dashboard_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "lakeview_dashboard",
         "dashboards",
         # The `CAN_READ` permission is consistent with the documentation (see below),
@@ -404,7 +404,7 @@ make_query_permissions = pytest.fixture(
     )
 )
 make_experiment_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "experiment",
         "experiments",
         [
@@ -416,7 +416,7 @@ make_experiment_permissions = pytest.fixture(
     )
 )
 make_registered_model_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "registered_model",
         "registered-models",
         [
@@ -430,7 +430,7 @@ make_registered_model_permissions = pytest.fixture(
     )
 )
 make_serving_endpoint_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "serving_endpoint",
         "serving-endpoints",
         [
@@ -442,7 +442,7 @@ make_serving_endpoint_permissions = pytest.fixture(
     )
 )
 make_feature_table_permissions = pytest.fixture(
-    _make_redash_permissions_factory(
+    _make_permissions_factory(
         "feature_table",
         "feature-tables",
         [
