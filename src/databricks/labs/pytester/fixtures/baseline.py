@@ -153,8 +153,9 @@ def ws(debug_env, product_info) -> WorkspaceClient:
 def log_workspace_link(ws):
     """Returns a function to log a workspace link."""
 
-    def inner(name: str, path: str):
-        url = f'https://{ws.config.hostname}/#{path}'
+    def inner(name: str, path: str, *, anchor: bool = True):
+        a = '#' if anchor else ''
+        url = f'https://{ws.config.hostname}/{a}{path}'
         _LOG.info(f'Created {name}: {url}')
 
     return inner

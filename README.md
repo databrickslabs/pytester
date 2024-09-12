@@ -210,32 +210,19 @@ See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_instance_pool` fixture
-Fixture to manage Databricks instance pools.
+Create a Databricks instance pool and clean it up after the test. Returns a function to create instance pools.
+Use `instance_pool_id` attribute from the returned object to get an ID of the pool.
 
-This fixture provides a function to manage Databricks instance pools using the provided workspace (ws).
-Instance pools can be created with specified configurations, and they will be deleted after the test is complete.
+Keyword Arguments:
+* `instance_pool_name` (str, optional): The name of the instance pool. If not provided, a random name will be generated.
+* `node_type_id` (str, optional): The node type ID of the instance pool. If not provided, a node type with local disk and 16GB memory will be used.
+* other arguments are passed to `WorkspaceClient.instance_pools.create` method.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-
-Returns:
---------
-function:
-    A function to manage Databricks instance pools.
-
-Usage Example:
---------------
-To manage Databricks instance pools using the make_instance_pool fixture:
-
-.. code-block:: python
-
-    def test_instance_pool_management(make_instance_pool):
-        instance_pool_info = make_instance_pool(instance_pool_name="my-pool")
-        assert instance_pool_info is not None
+Usage:
+```python
+def test_instance_pool(make_instance_pool):
+    logger.info(f"created {make_instance_pool()}")
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 

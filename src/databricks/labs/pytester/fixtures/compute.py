@@ -36,14 +36,14 @@ def make_cluster_policy(ws, make_random, log_workspace_link) -> Generator[Create
                 }
             )
         cluster_policy = ws.cluster_policies.create(name=name, **kwargs)
-        log_workspace_link(name, f'setting/clusters/cluster-policies/view/{cluster_policy.policy_id}')
+        log_workspace_link(name, f'setting/clusters/cluster-policies/view/{cluster_policy.policy_id}', anchor=False)
         return cluster_policy
 
     yield from factory("cluster policy", create, lambda item: ws.cluster_policies.delete(item.policy_id))
 
 
 @fixture
-def make_cluster(ws, make_random) -> Generator[ClusterDetails, None, None]:
+def make_cluster(ws, make_random, log_workspace_link) -> Generator[ClusterDetails, None, None]:
     """
     Create a Databricks cluster, waits for it to start, and clean it up after the test.
     Returns a function to create clusters. You can get `cluster_id` attribute from the returned object.
@@ -89,58 +89,51 @@ def make_cluster(ws, make_random) -> Generator[ClusterDetails, None, None]:
             kwargs["custom_tags"] = {"RemoveAfter": get_test_purge_time()}
         else:
             kwargs["custom_tags"]["RemoveAfter"] = get_test_purge_time()
-        return ws.clusters.create(
+        wait = ws.clusters.create(
             cluster_name=cluster_name,
             spark_version=spark_version,
             autotermination_minutes=autotermination_minutes,
             **kwargs,
         )
+        log_workspace_link(cluster_name, f'compute/clusters/{wait.cluster_id}', anchor=False)
+        return wait
 
     yield from factory("cluster", create, lambda item: ws.clusters.permanent_delete(item.cluster_id))
 
 
 @fixture
-def make_instance_pool(ws: WorkspaceClient, make_random):
+def make_instance_pool(ws, make_random, log_workspace_link):
     """
-    Fixture to manage Databricks instance pools.
+    Create a Databricks instance pool and clean it up after the test. Returns a function to create instance pools.
+    Use `instance_pool_id` attribute from the returned object to get an ID of the pool.
 
-    This fixture provides a function to manage Databricks instance pools using the provided workspace (ws).
-    Instance pools can be created with specified configurations, and they will be deleted after the test is complete.
+    Keyword Arguments:
+    * `instance_pool_name` (str, optional): The name of the instance pool. If not provided, a random name will be generated.
+    * `node_type_id` (str, optional): The node type ID of the instance pool. If not provided, a node type with local disk and 16GB memory will be used.
+    * other arguments are passed to `WorkspaceClient.instance_pools.create` method.
 
-    Parameters:
-    -----------
-    ws : WorkspaceClient
-        A Databricks WorkspaceClient instance.
-    make_random : function
-        The make_random fixture to generate unique names.
-
-    Returns:
-    --------
-    function:
-        A function to manage Databricks instance pools.
-
-    Usage Example:
-    --------------
-    To manage Databricks instance pools using the make_instance_pool fixture:
-
-    .. code-block:: python
-
-        def test_instance_pool_management(make_instance_pool):
-            instance_pool_info = make_instance_pool(instance_pool_name="my-pool")
-            assert instance_pool_info is not None
+    Usage:
+    ```python
+    def test_instance_pool(make_instance_pool):
+        logger.info(f"created {make_instance_pool()}")
+    ```
     """
 
     def create(*, instance_pool_name=None, node_type_id=None, **kwargs):
         if instance_pool_name is None:
-            instance_pool_name = f"sdk-{make_random(4)}"
+            instance_pool_name = f"dummy-{make_random(4)}"
         if node_type_id is None:
-            node_type_id = ws.clusters.select_node_type(local_disk=True)
-        return ws.instance_pools.create(instance_pool_name, node_type_id, **kwargs)
+            node_type_id = ws.clusters.select_node_type(local_disk=True, min_memory_gb=16)
+        pool = ws.instance_pools.create(
+            instance_pool_name,
+            node_type_id,
+            custom_tags={"RemoveAfter": get_test_purge_time()},
+            **kwargs,
+        )
+        log_workspace_link(instance_pool_name, f'compute/instance-pools/{pool.instance_pool_id}', anchor=False)
+        return pool
 
-    def cleanup_instance_pool(instance_pool_info):
-        ws.instance_pools.delete(instance_pool_info.instance_pool_id)
-
-    yield from factory("instance pool", create, cleanup_instance_pool)
+    yield from factory("instance pool", create, lambda pool: ws.instance_pools.delete(pool.instance_pool_id))
 
 
 @fixture
