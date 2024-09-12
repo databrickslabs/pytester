@@ -38,7 +38,7 @@ from databricks.labs.pytester.fixtures.permissions import (  # noqa
 from databricks.labs.pytester.fixtures.secrets import make_secret_scope, make_secret_scope_acl
 from databricks.labs.pytester.fixtures.wheel import workspace_library
 from databricks.labs.pytester.fixtures.environment import debug_env, debug_env_name, env_or_skip
-from databricks.labs.pytester.fixtures.ml import make_experiment
+from databricks.labs.pytester.fixtures.ml import make_experiment, make_model
 
 __all__ = [
     'debug_env_name',
@@ -76,6 +76,7 @@ __all__ = [
     'sql_backend',
     'sql_exec',
     'sql_fetch_all',
+    'make_model',
     'make_experiment',
     'make_experiment_permissions',
     'make_warehouse_permissions',

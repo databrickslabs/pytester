@@ -9,3 +9,13 @@ def test_experiments(make_group, make_experiment, make_experiment_permissions):
         permission_level=PermissionLevel.CAN_MANAGE,
         group_name=group.display_name,
     )
+
+
+def test_models(make_group, make_model, make_registered_model_permissions):
+    group = make_group()
+    model = make_model()
+    make_registered_model_permissions(
+        object_id=model.id,
+        permission_level=PermissionLevel.CAN_MANAGE,
+        group_name=group.display_name,
+    )
