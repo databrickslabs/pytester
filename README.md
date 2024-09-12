@@ -238,34 +238,23 @@ See also [`ws`](#ws-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_job` fixture
-Fixture to manage Databricks jobs.
+Create a Databricks job and clean it up after the test. Returns a function to create jobs.
 
-This fixture provides a function to manage Databricks jobs using the provided workspace (ws).
-Jobs can be created with specified configurations, and they will be deleted after the test is complete.
+Keyword Arguments:
+* `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
+* `name` (str, optional): The name of the job. If not provided, a random name will be generated.
+* `spark_conf` (dict, optional): The Spark configuration of the job.
+* `libraries` (list, optional): The list of libraries to install on the job.
+* other arguments are passed to `WorkspaceClient.jobs.create` method.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-make_notebook : function
-    The make_notebook fixture to create a notebook path.
+If no task argument is provided, a single task with a notebook task will be created, along with a disposable notebook.
+Latest Spark version and a single worker clusters will be used to run this ephemeral job.
 
-Returns:
---------
-function:
-    A function to manage Databricks jobs.
-
-Usage Example:
---------------
-To manage Databricks jobs using the make_job fixture:
-
-.. code-block:: python
-
-    def test_job_management(make_job):
-        job_info = make_job(name="my-job")
-        assert job_info is not None
+Usage:
+```python
+def test_job(make_job):
+    logger.info(f"created {make_job()}")
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_notebook`](#make_notebook-fixture).
 

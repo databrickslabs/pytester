@@ -1,11 +1,11 @@
 import json
 from collections.abc import Generator
+from pathlib import Path
 
 from pytest import fixture
+from databricks.sdk.service.jobs import Job, NotebookTask, Task
 from databricks.sdk.service._internal import Wait
-from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails
-from databricks.sdk import WorkspaceClient
-from databricks.sdk.service import jobs, compute
+from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails, ClusterSpec
 
 from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix, get_test_purge_time
 
@@ -137,58 +137,62 @@ def make_instance_pool(ws, make_random, log_workspace_link):
 
 
 @fixture
-def make_job(ws: WorkspaceClient, make_random, make_notebook):
+def make_job(ws, make_random, make_notebook, log_workspace_link) -> Generator[Job, None, None]:
     """
-    Fixture to manage Databricks jobs.
+    Create a Databricks job and clean it up after the test. Returns a function to create jobs.
 
-    This fixture provides a function to manage Databricks jobs using the provided workspace (ws).
-    Jobs can be created with specified configurations, and they will be deleted after the test is complete.
+    Keyword Arguments:
+    * `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
+    * `name` (str, optional): The name of the job. If not provided, a random name will be generated.
+    * `spark_conf` (dict, optional): The Spark configuration of the job.
+    * `libraries` (list, optional): The list of libraries to install on the job.
+    * other arguments are passed to `WorkspaceClient.jobs.create` method.
 
-    Parameters:
-    -----------
-    ws : WorkspaceClient
-        A Databricks WorkspaceClient instance.
-    make_random : function
-        The make_random fixture to generate unique names.
-    make_notebook : function
-        The make_notebook fixture to create a notebook path.
+    If no task argument is provided, a single task with a notebook task will be created, along with a disposable notebook.
+    Latest Spark version and a single worker clusters will be used to run this ephemeral job.
 
-    Returns:
-    --------
-    function:
-        A function to manage Databricks jobs.
-
-    Usage Example:
-    --------------
-    To manage Databricks jobs using the make_job fixture:
-
-    .. code-block:: python
-
-        def test_job_management(make_job):
-            job_info = make_job(name="my-job")
-            assert job_info is not None
+    Usage:
+    ```python
+    def test_job(make_job):
+        logger.info(f"created {make_job()}")
+    ```
     """
 
-    def create(**kwargs):
+    def create(notebook_path: str | Path | None = None, **kwargs) -> Job:
         if "name" not in kwargs:
-            kwargs["name"] = f"sdk-{make_random(4)}"
+            kwargs["name"] = f"dummy-{make_random(4)}"
+        task_spark_conf = kwargs.pop("spark_conf", None)
+        libraries = kwargs.pop("libraries", None)
+        if isinstance(notebook_path, Path):
+            notebook_path = str(notebook_path)
+        if not notebook_path:
+            notebook_path = make_notebook()
+        assert notebook_path is not None
         if "tasks" not in kwargs:
             kwargs["tasks"] = [
-                jobs.Task(
+                Task(
                     task_key=make_random(4),
                     description=make_random(4),
-                    new_cluster=compute.ClusterSpec(
+                    new_cluster=ClusterSpec(
                         num_workers=1,
-                        node_type_id=ws.clusters.select_node_type(local_disk=True),
+                        node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
                         spark_version=ws.clusters.select_spark_version(latest=True),
+                        spark_conf=task_spark_conf,
                     ),
-                    notebook_task=jobs.NotebookTask(notebook_path=make_notebook()),
+                    notebook_task=NotebookTask(notebook_path=str(notebook_path)),
+                    libraries=libraries,
                     timeout_seconds=0,
                 )
             ]
-        return ws.jobs.create(**kwargs)
+        # add RemoveAfter tag for test job cleanup
+        date_to_remove = get_test_purge_time()
+        remove_after_tag = {"key": "RemoveAfter", "value": date_to_remove}
+        if 'tags' not in kwargs:
+            kwargs["tags"] = [remove_after_tag]
+        else:
+            kwargs["tags"].append(remove_after_tag)
+        job = ws.jobs.create(**kwargs)
+        log_workspace_link(kwargs["name"], f'job/{job.job_id}', anchor=False)
+        return job
 
-    def cleanup_job(job_info):
-        ws.jobs.delete(job_info.job_id)
-
-    yield from factory("job", create, cleanup_job)
+    yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))
