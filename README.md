@@ -18,6 +18,7 @@
     * [`make_cluster_policy` fixture](#make_cluster_policy-fixture)
     * [`make_cluster_policy_permissions` fixture](#make_cluster_policy_permissions-fixture)
     * [`make_pipeline` fixture](#make_pipeline-fixture)
+    * [`make_warehouse` fixture](#make_warehouse-fixture)
     * [`make_group` fixture](#make_group-fixture)
     * [`make_user` fixture](#make_user-fixture)
     * [`make_pipeline_permissions` fixture](#make_pipeline_permissions-fixture)
@@ -203,7 +204,7 @@ def test_workspace_operations(ws):
     assert len(clusters) >= 0
 ```
 
-See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`sql_backend`](#sql_backend-fixture), [`workspace_library`](#workspace_library-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
+See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`sql_backend`](#sql_backend-fixture), [`workspace_library`](#workspace_library-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -229,7 +230,7 @@ random_string = make_random(k=8)
 assert len(random_string) == 8
 ```
 
-See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`workspace_library`](#workspace_library-fixture).
+See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture), [`workspace_library`](#workspace_library-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -371,6 +372,28 @@ def test_pipeline(make_pipeline, make_pipeline_permissions, make_group):
 ```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_notebook`](#make_notebook-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `make_warehouse` fixture
+Create a Databricks warehouse and clean it up after the test. Returns a function to create warehouses.
+
+Keyword Arguments:
+* `warehouse_name` (str, optional): The name of the warehouse. If not provided, a random name will be generated.
+* `warehouse_type` (CreateWarehouseRequestWarehouseType, optional): The type of the warehouse. Defaults to `PRO`.
+* `cluster_size` (str, optional): The size of the cluster. Defaults to `2X-Small`.
+
+Usage:
+```python
+def test_warehouse_has_remove_after_tag(ws, make_warehouse):
+    new_warehouse = make_warehouse()
+    created_warehouse = ws.warehouses.get(new_warehouse.response.id)
+    warehouse_tags = created_warehouse.tags.as_dict()
+    assert warehouse_tags["custom_tags"][0]["key"] == "RemoveAfter"
+```
+
+See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]

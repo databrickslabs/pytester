@@ -1,8 +1,14 @@
 import json
 from collections.abc import Generator
 from pathlib import Path
-
 from pytest import fixture
+
+from databricks.sdk.service.sql import (
+    CreateWarehouseRequestWarehouseType,
+    EndpointTags,
+    EndpointTagPair,
+    GetWarehouseResponse,
+)
 
 from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.jobs import Job, NotebookTask, Task
@@ -242,3 +248,53 @@ def make_pipeline(ws, make_random, make_notebook) -> Generator[CreatePipelineRes
         return ws.pipelines.create(continuous=False, **kwargs)
 
     yield from factory("delta live table", create, lambda item: ws.pipelines.delete(item.pipeline_id))
+
+
+@fixture
+def make_warehouse(ws, make_random) -> Generator[Wait[GetWarehouseResponse], None, None]:
+    """
+    Create a Databricks warehouse and clean it up after the test. Returns a function to create warehouses.
+
+    Keyword Arguments:
+    * `warehouse_name` (str, optional): The name of the warehouse. If not provided, a random name will be generated.
+    * `warehouse_type` (CreateWarehouseRequestWarehouseType, optional): The type of the warehouse. Defaults to `PRO`.
+    * `cluster_size` (str, optional): The size of the cluster. Defaults to `2X-Small`.
+
+    Usage:
+    ```python
+    def test_warehouse_has_remove_after_tag(ws, make_warehouse):
+        new_warehouse = make_warehouse()
+        created_warehouse = ws.warehouses.get(new_warehouse.response.id)
+        warehouse_tags = created_warehouse.tags.as_dict()
+        assert warehouse_tags["custom_tags"][0]["key"] == "RemoveAfter"
+    ```
+    """
+
+    def create(
+        *,
+        warehouse_name: str | None = None,
+        warehouse_type: CreateWarehouseRequestWarehouseType | None = None,
+        cluster_size: str | None = None,
+        max_num_clusters: int = 1,
+        enable_serverless_compute: bool = False,
+        **kwargs,
+    ) -> Wait[GetWarehouseResponse]:
+        if warehouse_name is None:
+            warehouse_name = f"dummy-{make_random(4)}"
+        if warehouse_type is None:
+            warehouse_type = CreateWarehouseRequestWarehouseType.PRO
+        if cluster_size is None:
+            cluster_size = "2X-Small"
+
+        remove_after_tags = EndpointTags(custom_tags=[EndpointTagPair(key="RemoveAfter", value=get_test_purge_time())])
+        return ws.warehouses.create(
+            name=warehouse_name,
+            cluster_size=cluster_size,
+            warehouse_type=warehouse_type,
+            max_num_clusters=max_num_clusters,
+            enable_serverless_compute=enable_serverless_compute,
+            tags=remove_after_tags,
+            **kwargs,
+        )
+
+    yield from factory("warehouse", create, lambda item: ws.warehouses.delete(item.id))

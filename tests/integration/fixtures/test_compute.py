@@ -29,3 +29,10 @@ def test_pipeline(make_pipeline, make_pipeline_permissions, make_group):
         permission_level=PermissionLevel.CAN_MANAGE,
         group_name=group.display_name,
     )
+
+
+def test_warehouse_has_remove_after_tag(ws, make_warehouse):
+    new_warehouse = make_warehouse()
+    created_warehouse = ws.warehouses.get(new_warehouse.response.id)
+    warehouse_tags = created_warehouse.tags.as_dict()
+    assert warehouse_tags["custom_tags"][0]["key"] == "RemoveAfter"

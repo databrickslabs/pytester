@@ -15,6 +15,7 @@ from databricks.labs.pytester.fixtures.compute import (
     make_cluster,
     make_cluster_policy,
     make_pipeline,
+    make_warehouse,
 )
 from databricks.labs.pytester.fixtures.iam import make_group, make_user
 from databricks.labs.pytester.fixtures.catalog import make_udf, make_catalog, make_schema, make_table
@@ -61,6 +62,7 @@ __all__ = [
     'make_cluster_policy',
     'make_cluster_policy_permissions',
     'make_pipeline',
+    'make_warehouse',
     'make_group',
     'make_user',
     'make_pipeline_permissions',
