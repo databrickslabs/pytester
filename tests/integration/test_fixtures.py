@@ -5,10 +5,6 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def test_cluster_policy(make_cluster_policy):
-    logger.info(f"created {make_cluster_policy()}")
-
-
 def test_cluster(make_cluster):
     logger.info(f"created {make_cluster(single_node=True, instance_pool_id=os.environ['TEST_INSTANCE_POOL_ID'])}")
 

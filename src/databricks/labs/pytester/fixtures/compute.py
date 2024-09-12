@@ -1,59 +1,47 @@
 import json
+from collections.abc import Generator
 
-import pytest
+from pytest import fixture
+from databricks.sdk.service.compute import CreatePolicyResponse
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service import jobs, compute
 
-from databricks.labs.pytester.fixtures.baseline import factory
+from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix
 
 
-@pytest.fixture
-def make_cluster_policy(ws: WorkspaceClient, make_random):
+@fixture
+def make_cluster_policy(ws, make_random, log_workspace_link) -> Generator[CreatePolicyResponse, None, None]:
     """
-    Fixture to manage Databricks cluster policies.
+    Create a Databricks cluster policy and clean it up after the test. Returns a function to create cluster policies,
+    which returns `databricks.sdk.service.compute.CreatePolicyResponse` instance.
 
-    This fixture provides a function to manage Databricks cluster policies using the provided workspace (ws).
-    Cluster policies can be created with a specified name and definition, and they will be deleted after the test is complete.
+    Keyword Arguments:
+    * `name` (str, optional): The name of the cluster policy. If not provided, a random name will be generated.
 
-    Parameters:
-    -----------
-    ws : WorkspaceClient
-        A Databricks WorkspaceClient instance.
-    make_random : function
-        The make_random fixture to generate unique names.
-
-    Returns:
-    --------
-    function:
-        A function to manage Databricks cluster policies.
-
-    Usage Example:
-    --------------
-    To manage Databricks cluster policies using the make_cluster_policy fixture:
-
-    .. code-block:: python
-
-        def test_cluster_policy_management(make_cluster_policy):
-            policy_info = make_cluster_policy(name="my-policy")
-            assert policy_info is not None
+    Usage:
+    ```python
+    def test_cluster_policy(make_cluster_policy):
+        logger.info(f"created {make_cluster_policy()}")
+    ```
     """
 
-    def create(*, name: str | None = None, **kwargs):
+    def create(*, name: str | None = None, **kwargs) -> CreatePolicyResponse:
         if name is None:
-            name = f"sdk-{make_random(4)}"
+            name = f"dummy-{make_random(4)}-{get_purge_suffix()}"
         if "definition" not in kwargs:
             kwargs["definition"] = json.dumps(
-                {"spark_conf.spark.databricks.delta.preview.enabled": {"type": "fixed", "value": True}}
+                {
+                    "spark_conf.spark.databricks.delta.preview.enabled": {"type": "fixed", "value": "true"},
+                }
             )
-        return ws.cluster_policies.create(name, **kwargs)  # type: ignore
+        cluster_policy = ws.cluster_policies.create(name=name, **kwargs)
+        log_workspace_link(name, f'setting/clusters/cluster-policies/view/{cluster_policy.policy_id}')
+        return cluster_policy
 
-    def cleanup_policy(policy_info):
-        ws.cluster_policies.delete(policy_info.policy_id)
-
-    yield from factory("cluster policy", create, cleanup_policy)
+    yield from factory("cluster policy", create, lambda item: ws.cluster_policies.delete(item.policy_id))
 
 
-@pytest.fixture
+@fixture
 def make_cluster(ws: WorkspaceClient, make_random):
     """
     Fixture to manage Databricks clusters.
@@ -116,7 +104,7 @@ def make_cluster(ws: WorkspaceClient, make_random):
     yield from factory("cluster", create, cleanup_cluster)
 
 
-@pytest.fixture
+@fixture
 def make_instance_pool(ws: WorkspaceClient, make_random):
     """
     Fixture to manage Databricks instance pools.
@@ -160,7 +148,7 @@ def make_instance_pool(ws: WorkspaceClient, make_random):
     yield from factory("instance pool", create, cleanup_instance_pool)
 
 
-@pytest.fixture
+@fixture
 def make_job(ws: WorkspaceClient, make_random, make_notebook):
     """
     Fixture to manage Databricks jobs.

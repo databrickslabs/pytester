@@ -7,6 +7,7 @@ from databricks.labs.pytester.fixtures.baseline import (
     sql_exec,
     sql_fetch_all,
     product_info,
+    log_workspace_link,
 )
 from databricks.labs.pytester.fixtures.compute import make_instance_pool, make_job, make_cluster, make_cluster_policy
 from databricks.labs.pytester.fixtures.iam import make_group, make_user
@@ -42,6 +43,7 @@ __all__ = [
     'sql_exec',
     'sql_fetch_all',
     'workspace_library',
+    'log_workspace_link',
 ]
 
 

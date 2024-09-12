@@ -151,6 +151,8 @@ def ws(debug_env, product_info) -> WorkspaceClient:
 
 @fixture
 def log_workspace_link(ws):
+    """Returns a function to log a workspace link."""
+
     def inner(name: str, path: str):
         url = f'https://{ws.config.hostname}/#{path}'
         _LOG.info(f'Created {name}: {url}')

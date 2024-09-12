@@ -178,7 +178,7 @@ def test_workspace_operations(ws):
     assert len(clusters) >= 0
 ```
 
-See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_notebook`](#make_notebook-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`sql_backend`](#sql_backend-fixture), [`workspace_library`](#workspace_library-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
+See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_notebook`](#make_notebook-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`sql_backend`](#sql_backend-fixture), [`workspace_library`](#workspace_library-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -311,32 +311,17 @@ See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_cluster_policy` fixture
-Fixture to manage Databricks cluster policies.
+Create a Databricks cluster policy and clean it up after the test. Returns a function to create cluster policies,
+which returns [`CreatePolicyResponse`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/compute.html#databricks.sdk.service.compute.CreatePolicyResponse) instance.
 
-This fixture provides a function to manage Databricks cluster policies using the provided workspace (ws).
-Cluster policies can be created with a specified name and definition, and they will be deleted after the test is complete.
+Keyword Arguments:
+* `name` (str, optional): The name of the cluster policy. If not provided, a random name will be generated.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-
-Returns:
---------
-function:
-    A function to manage Databricks cluster policies.
-
-Usage Example:
---------------
-To manage Databricks cluster policies using the make_cluster_policy fixture:
-
-.. code-block:: python
-
-    def test_cluster_policy_management(make_cluster_policy):
-        policy_info = make_cluster_policy(name="my-policy")
-        assert policy_info is not None
+Usage:
+```python
+def test_cluster_policy(make_cluster_policy):
+    logger.info(f"created {make_cluster_policy()}")
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
@@ -576,6 +561,14 @@ See also [`sql_backend`](#sql_backend-fixture).
 _No description yet._
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `log_workspace_link` fixture
+rns a function to log a workspace link.
+
+See also [`ws`](#ws-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
