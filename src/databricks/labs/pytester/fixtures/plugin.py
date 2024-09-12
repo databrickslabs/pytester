@@ -9,7 +9,13 @@ from databricks.labs.pytester.fixtures.baseline import (
     product_info,
     log_workspace_link,
 )
-from databricks.labs.pytester.fixtures.compute import make_instance_pool, make_job, make_cluster, make_cluster_policy
+from databricks.labs.pytester.fixtures.compute import (
+    make_instance_pool,
+    make_job,
+    make_cluster,
+    make_cluster_policy,
+    make_pipeline,
+)
 from databricks.labs.pytester.fixtures.iam import make_group, make_user
 from databricks.labs.pytester.fixtures.catalog import make_udf, make_catalog, make_schema, make_table
 from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_directory, make_repo
@@ -54,6 +60,7 @@ __all__ = [
     'make_cluster_permissions',
     'make_cluster_policy',
     'make_cluster_policy_permissions',
+    'make_pipeline',
     'make_group',
     'make_user',
     'make_pipeline_permissions',

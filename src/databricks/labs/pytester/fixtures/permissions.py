@@ -1,4 +1,5 @@
 import pytest
+from databricks.sdk.errors import InvalidParameterValue
 from databricks.sdk.service import sql, iam
 from databricks.sdk.service.iam import PermissionLevel
 from databricks.sdk.service.sql import GetResponse
@@ -119,7 +120,10 @@ def _make_permissions_factory(name, resource_type, levels, id_retriever):
             return _PermissionsChange(object_id, initial, access_control_list)
 
         def remove(change: _PermissionsChange):
-            ws.permissions.set(resource_type, change.object_id, access_control_list=change.before)
+            try:
+                ws.permissions.set(resource_type, change.object_id, access_control_list=change.before)
+            except InvalidParameterValue:
+                pass
 
         yield from factory(f"{name} permissions", create, remove)
 

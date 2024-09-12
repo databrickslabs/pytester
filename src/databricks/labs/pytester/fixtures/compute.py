@@ -3,6 +3,8 @@ from collections.abc import Generator
 from pathlib import Path
 
 from pytest import fixture
+
+from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.jobs import Job, NotebookTask, Task
 from databricks.sdk.service._internal import Wait
 from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails, ClusterSpec
@@ -196,3 +198,47 @@ def make_job(ws, make_random, make_notebook, log_workspace_link) -> Generator[Jo
         return job
 
     yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))
+
+
+@fixture
+def make_pipeline(ws, make_random, make_notebook) -> Generator[CreatePipelineResponse, None, None]:
+    """
+    Create Delta Live Table Pipeline and clean it up after the test. Returns a function to create pipelines.
+    Results in a `databricks.sdk.service.pipelines.CreatePipelineResponse` instance.
+
+    Keyword Arguments:
+    * `name` (str, optional): The name of the pipeline. If not provided, a random name will be generated.
+    * `libraries` (list, optional): The list of libraries to install on the pipeline. If not provided, a random disposable notebook will be created.
+    * `clusters` (list, optional): The list of clusters to use for the pipeline. If not provided, a single node cluster will be created with 16GB memory and local disk.
+
+    Usage:
+    ```python
+    def test_pipeline(make_pipeline, make_pipeline_permissions, make_group):
+        group = make_group()
+        pipeline = make_pipeline()
+        make_pipeline_permissions(
+            object_id=pipeline.pipeline_id,
+            permission_level=PermissionLevel.CAN_MANAGE,
+            group_name=group.display_name,
+        )
+    ```
+    """
+
+    def create(**kwargs) -> CreatePipelineResponse:
+        if "name" not in kwargs:
+            kwargs["name"] = f"sdk-{make_random(4)}-{get_purge_suffix()}"
+        if "libraries" not in kwargs:
+            notebook_library = NotebookLibrary(path=make_notebook().as_posix())
+            kwargs["libraries"] = [PipelineLibrary(notebook=notebook_library)]
+        if "clusters" not in kwargs:
+            kwargs["clusters"] = [
+                PipelineCluster(
+                    node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
+                    label="default",
+                    num_workers=1,
+                    custom_tags={"cluster_type": "default", "RemoveAfter": get_test_purge_time()},
+                )
+            ]
+        return ws.pipelines.create(continuous=False, **kwargs)
+
+    yield from factory("delta live table", create, lambda item: ws.pipelines.delete(item.pipeline_id))

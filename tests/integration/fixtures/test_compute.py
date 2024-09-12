@@ -1,5 +1,7 @@
 import logging
 
+from databricks.sdk.service.iam import PermissionLevel
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,3 +19,13 @@ def test_instance_pool(make_instance_pool):
 
 def test_job(make_job):
     logger.info(f"created {make_job()}")
+
+
+def test_pipeline(make_pipeline, make_pipeline_permissions, make_group):
+    group = make_group()
+    pipeline = make_pipeline()
+    make_pipeline_permissions(
+        object_id=pipeline.pipeline_id,
+        permission_level=PermissionLevel.CAN_MANAGE,
+        group_name=group.display_name,
+    )
