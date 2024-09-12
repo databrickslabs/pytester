@@ -3,16 +3,107 @@ from collections.abc import Generator, Callable
 from pytest import fixture
 from databricks.labs.blueprint.commands import CommandExecutor
 from databricks.sdk.errors import NotFound
-from databricks.sdk.service.catalog import FunctionInfo, SchemaInfo, TableInfo, TableType, DataSourceFormat, CatalogInfo
+from databricks.sdk.service.catalog import (
+    FunctionInfo,
+    SchemaInfo,
+    TableInfo,
+    TableType,
+    DataSourceFormat,
+    CatalogInfo,
+    ColumnInfo,
+)
 from databricks.sdk.service.compute import Language
 from databricks.labs.pytester.fixtures.baseline import factory, get_test_purge_time
 
 logger = logging.getLogger(__name__)
 
 
+def escape_sql_identifier(path: str, *, maxsplit: int = 2) -> str:
+    """
+    Escapes the path components to make them SQL safe.
+
+    Args:
+        path (str): The dot-separated path of a catalog object.
+        maxsplit (int): The maximum number of splits to perform.
+
+    Returns:
+         str: The path with all parts escaped in backticks.
+    """
+    if not path:
+        return path
+    parts = path.split(".", maxsplit=maxsplit)
+    escaped = [f"`{part.strip('`').replace('`', '``')}`" for part in parts]
+    return ".".join(escaped)
+
+
 @fixture
 # pylint: disable-next=too-many-statements,too-complex
-def make_table(ws, sql_backend, make_schema, make_random) -> Generator[Callable[..., TableInfo], None, None]:
+def make_table(
+    ws,
+    sql_backend,
+    make_schema,
+    make_random,
+    log_workspace_link,
+) -> Generator[Callable[..., TableInfo], None, None]:
+    """
+    Create a table and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.TableInfo`.
+
+    Keyword Arguments:
+    * `catalog_name` (str): The name of the catalog where the table will be created. Default is `hive_metastore`.
+    * `schema_name` (str): The name of the schema where the table will be created. Default is a random string.
+    * `name` (str): The name of the table. Default is a random string.
+    * `ctas` (str): The CTAS statement to create the table. Default is `None`.
+    * `non_delta` (bool): If `True`, the table will be created as a non-delta table. Default is `False`.
+    * `external` (bool): If `True`, the table will be created as an external table. Default is `False`.
+    * `external_csv` (str): The location of the external CSV table. Default is `None`.
+    * `external_delta` (str): The location of the external Delta table. Default is `None`.
+    * `view` (bool): If `True`, the table will be created as a view. Default is `False`.
+    * `tbl_properties` (dict): The table properties. Default is `None`.
+    * `hiveserde_ddl` (str): The DDL statement to create the table. Default is `None`.
+    * `storage_override` (str): The storage location override. Default is `None`.
+    * `columns` (list): The list of columns. Default is `None`.
+
+    Usage:
+    ```python
+    def test_catalog_fixture(make_catalog, make_schema, make_table):
+        from_catalog = make_catalog()
+        from_schema = make_schema(catalog_name=from_catalog.name)
+        from_table_1 = make_table(catalog_name=from_catalog.name, schema_name=from_schema.name)
+        logger.info(f"Created new schema: {from_table_1}")
+    ```
+    """
+
+    def generate_sql_schema(columns: list[ColumnInfo]) -> str:
+        """Generate a SQL schema from columns."""
+        schema = "("
+        for index, column in enumerate(columns):
+            schema += escape_sql_identifier(column.name or str(index), maxsplit=0)
+            if column.type_name is None:
+                type_name = "STRING"
+            else:
+                type_name = column.type_name.value
+            schema += f" {type_name}, "
+        schema = schema[:-2] + ")"  # Remove the last ', '
+        return schema
+
+    def generate_sql_column_casting(existing_columns: list[ColumnInfo], new_columns: list[ColumnInfo]) -> str:
+        """Generate the SQL to cast columns"""
+        if any(column.name is None for column in existing_columns):
+            raise ValueError(f"Columns should have a name: {existing_columns}")
+        if len(new_columns) > len(existing_columns):
+            raise ValueError(f"Too many columns: {new_columns}")
+        select_expressions = []
+        for index, (existing_column, new_column) in enumerate(zip(existing_columns, new_columns)):
+            column_name_new = escape_sql_identifier(new_column.name or str(index), maxsplit=0)
+            if new_column.type_name is None:
+                type_name = "STRING"
+            else:
+                type_name = new_column.type_name.value
+            select_expression = f"CAST({existing_column.name} AS {type_name}) AS {column_name_new}"
+            select_expressions.append(select_expression)
+        select = ", ".join(select_expressions)
+        return select
+
     def create(  # pylint: disable=too-many-locals,too-many-arguments,too-many-statements
         *,
         catalog_name="hive_metastore",
@@ -27,6 +118,7 @@ def make_table(ws, sql_backend, make_schema, make_random) -> Generator[Callable[
         tbl_properties: dict[str, str] | None = None,
         hiveserde_ddl: str | None = None,
         storage_override: str | None = None,
+        columns: list[ColumnInfo] | None = None,
     ) -> TableInfo:
         if schema_name is None:
             schema = make_schema(catalog_name=catalog_name)
@@ -40,6 +132,10 @@ def make_table(ws, sql_backend, make_schema, make_random) -> Generator[Callable[
         view_text = None
         full_name = f"{catalog_name}.{schema_name}.{name}".lower()
         ddl = f'CREATE {"VIEW" if view else "TABLE"} {full_name}'
+        if columns is None:
+            schema = "(id INT, value STRING)"
+        else:
+            schema = generate_sql_schema(columns)
         if view:
             table_type = TableType.VIEW
             view_text = ctas
@@ -51,21 +147,36 @@ def make_table(ws, sql_backend, make_schema, make_random) -> Generator[Callable[
             data_source_format = DataSourceFormat.JSON
             # DBFS locations are not purged; no suffix necessary.
             storage_location = f"dbfs:/tmp/ucx_test_{make_random(4)}"
+            if columns is None:
+                select = "*"
+            else:
+                # These are the columns from the JSON dataset below
+                dataset_columns = [
+                    ColumnInfo(name="calories_burnt"),
+                    ColumnInfo(name="device_id"),
+                    ColumnInfo(name="id"),
+                    ColumnInfo(name="miles_walked"),
+                    ColumnInfo(name="num_steps"),
+                    ColumnInfo(name="timestamp"),
+                    ColumnInfo(name="user_id"),
+                    ColumnInfo(name="value"),
+                ]
+                select = generate_sql_column_casting(dataset_columns, columns)
             # Modified, otherwise it will identify the table as a DB Dataset
             ddl = (
-                f"{ddl} USING json location '{storage_location}' as SELECT * FROM "
+                f"{ddl} USING json location '{storage_location}' as SELECT {select} FROM "
                 f"JSON.`dbfs:/databricks-datasets/iot-stream/data-device`"
             )
         elif external_csv is not None:
             table_type = TableType.EXTERNAL
             data_source_format = DataSourceFormat.CSV
             storage_location = external_csv
-            ddl = f"{ddl} USING CSV OPTIONS (header=true) LOCATION '{storage_location}'"
+            ddl = f"{ddl} {schema} USING CSV OPTIONS (header=true) LOCATION '{storage_location}'"
         elif external_delta is not None:
             table_type = TableType.EXTERNAL
             data_source_format = DataSourceFormat.DELTA
             storage_location = external_delta
-            ddl = f"{ddl} (id string) LOCATION '{storage_location}'"
+            ddl = f"{ddl} {schema} LOCATION '{storage_location}'"
         elif external:
             # external table
             table_type = TableType.EXTERNAL
@@ -78,7 +189,7 @@ def make_table(ws, sql_backend, make_schema, make_random) -> Generator[Callable[
             table_type = TableType.MANAGED
             data_source_format = DataSourceFormat.DELTA
             storage_location = f"dbfs:/user/hive/warehouse/{schema_name}/{name}"
-            ddl = f"{ddl} (id INT, value STRING)"
+            ddl = f"{ddl} {schema}"
         if tbl_properties:
             tbl_properties.update({"RemoveAfter": get_test_purge_time()})
         else:
@@ -118,10 +229,8 @@ def make_table(ws, sql_backend, make_schema, make_random) -> Generator[Callable[
             view_definition=view_text,
             data_source_format=data_source_format,
         )
-        logger.info(
-            f"Table {table_info.full_name}: "
-            f"{ws.config.host}/explore/data/{table_info.catalog_name}/{table_info.schema_name}/{table_info.name}"
-        )
+        path = f'explore/data/{table_info.catalog_name}/{table_info.schema_name}/{table_info.name}'
+        log_workspace_link(f'{table_info.full_name} schema', path)
         return table_info
 
     def remove(table_info: TableInfo):
@@ -163,9 +272,8 @@ def make_schema(sql_backend, make_random, log_workspace_link) -> Generator[Calla
         full_name = f"{catalog_name}.{name}".lower()
         sql_backend.execute(f"CREATE SCHEMA {full_name} WITH DBPROPERTIES (RemoveAfter={get_test_purge_time()})")
         schema_info = SchemaInfo(catalog_name=catalog_name, name=name, full_name=full_name)
-        log_workspace_link(
-            f'{schema_info.full_name} schema', f'explore/data/{schema_info.catalog_name}/{schema_info.name}'
-        )
+        path = f'explore/data/{schema_info.catalog_name}/{schema_info.name}'
+        log_workspace_link(f'{schema_info.full_name} schema', path)
         return schema_info
 
     def remove(schema_info: SchemaInfo):

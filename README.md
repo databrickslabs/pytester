@@ -665,7 +665,31 @@ See also [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_table` fixture
-_No description yet._
+Create a table and return its info. Remove it after the test. Returns instance of [`TableInfo`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/catalog.html#databricks.sdk.service.catalog.TableInfo).
+
+Keyword Arguments:
+* `catalog_name` (str): The name of the catalog where the table will be created. Default is `hive_metastore`.
+* `schema_name` (str): The name of the schema where the table will be created. Default is a random string.
+* `name` (str): The name of the table. Default is a random string.
+* `ctas` (str): The CTAS statement to create the table. Default is `None`.
+* `non_delta` (bool): If `True`, the table will be created as a non-delta table. Default is `False`.
+* `external` (bool): If `True`, the table will be created as an external table. Default is `False`.
+* `external_csv` (str): The location of the external CSV table. Default is `None`.
+* `external_delta` (str): The location of the external Delta table. Default is `None`.
+* `view` (bool): If `True`, the table will be created as a view. Default is `False`.
+* `tbl_properties` (dict): The table properties. Default is `None`.
+* `hiveserde_ddl` (str): The DDL statement to create the table. Default is `None`.
+* `storage_override` (str): The storage location override. Default is `None`.
+* `columns` (list): The list of columns. Default is `None`.
+
+Usage:
+```python
+def test_catalog_fixture(make_catalog, make_schema, make_table):
+    from_catalog = make_catalog()
+    from_schema = make_schema(catalog_name=from_catalog.name)
+    from_table_1 = make_table(catalog_name=from_catalog.name, schema_name=from_schema.name)
+    logger.info(f"Created new schema: {from_table_1}")
+```
 
 See also [`ws`](#ws-fixture), [`sql_backend`](#sql_backend-fixture), [`make_schema`](#make_schema-fixture), [`make_random`](#make_random-fixture).
 
