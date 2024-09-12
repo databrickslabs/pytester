@@ -618,7 +618,21 @@ See also [`ws`](#ws-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_udf` fixture
-_No description yet._
+Create a UDF and return its info. Remove it after the test. Returns instance of [`FunctionInfo`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/catalog.html#databricks.sdk.service.catalog.FunctionInfo).
+
+Keyword Arguments:
+* `catalog_name` (str): The name of the catalog where the UDF will be created. Default is `hive_metastore`.
+* `schema_name` (str): The name of the schema where the UDF will be created. Default is a random string.
+* `name` (str): The name of the UDF. Default is a random string.
+* `hive_udf` (bool): If `True`, the UDF will be created as a Hive UDF. Default is `False`.
+
+Usage:
+```python
+def test_make_some_udfs(make_schema, make_udf):
+    schema_a = make_schema(catalog_name="hive_metastore")
+    make_udf(schema_name=schema_a.name)
+    make_udf(schema_name=schema_a.name, hive_udf=True)
+```
 
 See also [`ws`](#ws-fixture), [`env_or_skip`](#env_or_skip-fixture), [`sql_backend`](#sql_backend-fixture), [`make_schema`](#make_schema-fixture), [`make_random`](#make_random-fixture).
 

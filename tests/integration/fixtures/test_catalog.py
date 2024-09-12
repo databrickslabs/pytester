@@ -41,3 +41,9 @@ def test_table_fixture(make_table):
 @pytest.mark.skip(reason="fix drop view")
 def test_create_view(make_table):
     logger.info(f'Created new view in new schema: {make_table(view=True, ctas="SELECT 2+2 AS four")}')
+
+
+def test_make_some_udfs(make_schema, make_udf):
+    schema_a = make_schema(catalog_name="hive_metastore")
+    make_udf(schema_name=schema_a.name)
+    make_udf(schema_name=schema_a.name, hive_udf=True)
