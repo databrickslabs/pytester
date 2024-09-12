@@ -19,12 +19,15 @@ maintainers = [
 ]
 authors = [
     { name = "Serge Smertin", email = "serge.smertin@databricks.com" },
-    { name = "Liran Bareket", email = "liran.bareket@databricks.com" },
+    { name = "Vuong Nguyen", email = "vuong.nguyen@databricks.com" },
     { name = "Marcin Wojtyczka", email = "marcin.wojtyczka@databricks.com" },
     { name = "Ziyuan Qin", email = "ziyuan.qin@databricks.com" },
     { name = "William Conti", email = "william.conti@databricks.com" },
-    { name = "Hari Selvarajan", email = "hari.selvarajan@databricks.com" },
-    { name = "Vuong Nguyen", email = "vuong.nguyen@databricks.com" },
+    { name = "Lars George", email = "lars.george@databricks.com" },
+    { name = "Cor Zuurmond", email = "cor.zuurmond@databricks.com" },
+    { name = "Andrew Snare", email = "andrew.snare@databricks.com" },
+    { name = "Liran Bareket", email = "liran.bareket@databricks.com" },
+    { name = "Pritish Pai", email = "pritish.pai@databricks.com" },
 ]
 classifiers = [
     "Development Status :: 4 - Beta",

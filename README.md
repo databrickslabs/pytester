@@ -2,8 +2,9 @@
 
 <!-- TOC -->
 * [Python Testing for Databricks](#python-testing-for-databricks)
+  * [Ecosystem](#ecosystem)
   * [PyTest Fixtures](#pytest-fixtures)
-  * [Logging](#logging)
+    * [Logging](#logging)
     * [`debug_env_name` fixture](#debug_env_name-fixture)
     * [`debug_env` fixture](#debug_env-fixture)
     * [`env_or_skip` fixture](#env_or_skip-fixture)
@@ -60,13 +61,32 @@
 * [Project Support](#project-support)
 <!-- TOC -->
 
-## PyTest Fixtures
+## Ecosystem
 
-Pytest fixtures are a powerful way to manage test setup and teardown in Python.
+Built on top of [Databricks SDK for Python](https://github.com/databricks/databricks-sdk-py), this library is part of the Databricks Labs Python ecosystem, which includes the following projects:
+* [PyLint Plugin for Databricks](https://github.com/databrickslabs/pylint-plugin) for static code analysis and early bug detection.
+* [Blueprint](https://github.com/databrickslabs/blueprint) for 
+  [Python-native pathlib.Path-like interfaces](https://github.com/databrickslabs/blueprint#python-native-pathlibpath-like-interfaces),
+  [Managing Python App installations within Databricks Workspaces](https://github.com/databrickslabs/blueprint#application-and-installation-state),
+  [Application Migrations](https://github.com/databrickslabs/blueprint#application-state-migrations), and
+  [Building Wheels](https://github.com/databrickslabs/blueprint#building-wheels).
+* [LSQL](https://github.com/databrickslabs/lsql) for lightweight SQL handling and dashboards-as-code.
+* [UCX](https://github.com/databrickslabs/ucx) for automated migrations into Unity Catalog and LSP plugin for static code analysis for UC compatibility.
+
+See [this video](https://www.youtube.com/watch?v=CNypO79IATc) for a quick overview of the Databricks Labs Python ecosystem.
 
 [[back to top](#python-testing-for-databricks)]
 
-## Logging
+## PyTest Fixtures
+
+[PyTest Fixtures](https://docs.pytest.org/en/latest/explanation/fixtures.html) are a powerful way to manage test setup and teardown in Python. This library provides 
+a set of fixtures to help you write integration tests for Databricks. These fixtures were incubated
+within the [Unity Catalog Automated Migrations project](https://github.com/databrickslabs/ucx/blame/df7f1d7647251fb8f0f23c56a548b99092484a7c/src/databricks/labs/ucx/mixins/fixtures.py) 
+for more than a year and are now available for other projects to simplify integration testing with Databricks.
+
+[[back to top](#python-testing-for-databricks)]
+
+### Logging
 
 This library is built on years of debugging integration tests for Databricks and its ecosystem. 
 
