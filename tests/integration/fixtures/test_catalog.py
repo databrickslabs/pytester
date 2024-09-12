@@ -47,3 +47,12 @@ def test_make_some_udfs(make_schema, make_udf):
     schema_a = make_schema(catalog_name="hive_metastore")
     make_udf(schema_name=schema_a.name)
     make_udf(schema_name=schema_a.name, hive_udf=True)
+
+
+def test_storage_credential(env_or_skip, make_storage_credential, make_random):
+    random = make_random(6).lower()
+    credential_name = f"dummy-{random}"
+    make_storage_credential(
+        credential_name=credential_name,
+        aws_iam_role_arn=env_or_skip("TEST_UBER_ROLE_ID"),
+    )

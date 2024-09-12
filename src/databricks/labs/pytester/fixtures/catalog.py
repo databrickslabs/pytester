@@ -11,6 +11,9 @@ from databricks.sdk.service.catalog import (
     DataSourceFormat,
     CatalogInfo,
     ColumnInfo,
+    StorageCredentialInfo,
+    AwsIamRoleRequest,
+    AzureServicePrincipal,
 )
 from databricks.sdk.service.compute import Language
 from databricks.labs.pytester.fixtures.baseline import factory, get_test_purge_time
@@ -397,3 +400,54 @@ def make_udf(
                 raise e
 
     yield from factory("table", create, remove)
+
+
+@fixture
+def make_storage_credential(ws) -> Generator[Callable[..., StorageCredentialInfo], None, None]:
+    """
+    Create a storage credential and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.StorageCredentialInfo`.
+
+    Keyword Arguments:
+    * `credential_name` (str): The name of the storage credential. Default is a random string.
+    * `application_id` (str): The application ID for the Azure service principal. Default is an empty string.
+    * `client_secret` (str): The client secret for the Azure service principal. Default is an empty string.
+    * `directory_id` (str): The directory ID for the Azure service principal. Default is an empty string.
+    * `aws_iam_role_arn` (str): The ARN of the AWS IAM role. Default is an empty string.
+    * `read_only` (bool): If `True`, the storage credential will be read-only. Default is `False`.
+
+    Usage:
+    ```python
+    def test_storage_credential(env_or_skip, make_storage_credential, make_random):
+        random = make_random(6).lower()
+        credential_name = f"dummy-{random}"
+        make_storage_credential(
+            credential_name=credential_name,
+            aws_iam_role_arn=env_or_skip("TEST_UBER_ROLE_ID"),
+        )
+    ```
+    """
+
+    def create(
+        *,
+        credential_name: str,
+        application_id: str = "",
+        client_secret: str = "",
+        directory_id: str = "",
+        aws_iam_role_arn: str = "",
+        read_only=False,
+    ) -> StorageCredentialInfo:
+        if aws_iam_role_arn != "":
+            storage_credential = ws.storage_credentials.create(
+                credential_name, aws_iam_role=AwsIamRoleRequest(role_arn=aws_iam_role_arn), read_only=read_only
+            )
+        else:
+            azure_service_principal = AzureServicePrincipal(directory_id, application_id, client_secret)
+            storage_credential = ws.storage_credentials.create(
+                credential_name, azure_service_principal=azure_service_principal, read_only=read_only
+            )
+        return storage_credential
+
+    def remove(storage_credential: StorageCredentialInfo):
+        ws.storage_credentials.delete(storage_credential.name, force=True)
+
+    yield from factory("storage_credential", create, remove)

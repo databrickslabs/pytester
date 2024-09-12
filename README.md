@@ -37,6 +37,7 @@
     * [`make_catalog` fixture](#make_catalog-fixture)
     * [`make_schema` fixture](#make_schema-fixture)
     * [`make_table` fixture](#make_table-fixture)
+    * [`make_storage_credential` fixture](#make_storage_credential-fixture)
     * [`product_info` fixture](#product_info-fixture)
     * [`sql_backend` fixture](#sql_backend-fixture)
     * [`sql_exec` fixture](#sql_exec-fixture)
@@ -205,7 +206,7 @@ def test_workspace_operations(ws):
     assert len(clusters) >= 0
 ```
 
-See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query`](#make_query-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`sql_backend`](#sql_backend-fixture), [`workspace_library`](#workspace_library-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
+See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query`](#make_query-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_storage_credential`](#make_storage_credential-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`sql_backend`](#sql_backend-fixture), [`workspace_library`](#workspace_library-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -707,6 +708,33 @@ def test_catalog_fixture(make_catalog, make_schema, make_table):
 ```
 
 See also [`make_query`](#make_query-fixture), [`ws`](#ws-fixture), [`sql_backend`](#sql_backend-fixture), [`make_schema`](#make_schema-fixture), [`make_random`](#make_random-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `make_storage_credential` fixture
+Create a storage credential and return its info. Remove it after the test. Returns instance of [`StorageCredentialInfo`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/catalog.html#databricks.sdk.service.catalog.StorageCredentialInfo).
+
+Keyword Arguments:
+* `credential_name` (str): The name of the storage credential. Default is a random string.
+* `application_id` (str): The application ID for the Azure service principal. Default is an empty string.
+* `client_secret` (str): The client secret for the Azure service principal. Default is an empty string.
+* `directory_id` (str): The directory ID for the Azure service principal. Default is an empty string.
+* `aws_iam_role_arn` (str): The ARN of the AWS IAM role. Default is an empty string.
+* `read_only` (bool): If `True`, the storage credential will be read-only. Default is `False`.
+
+Usage:
+```python
+def test_storage_credential(env_or_skip, make_storage_credential, make_random):
+    random = make_random(6).lower()
+    credential_name = f"dummy-{random}"
+    make_storage_credential(
+        credential_name=credential_name,
+        aws_iam_role_arn=env_or_skip("TEST_UBER_ROLE_ID"),
+    )
+```
+
+See also [`ws`](#ws-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]

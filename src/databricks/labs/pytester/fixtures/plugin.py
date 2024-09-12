@@ -18,7 +18,13 @@ from databricks.labs.pytester.fixtures.compute import (
     make_warehouse,
 )
 from databricks.labs.pytester.fixtures.iam import make_group, make_user
-from databricks.labs.pytester.fixtures.catalog import make_udf, make_catalog, make_schema, make_table
+from databricks.labs.pytester.fixtures.catalog import (
+    make_udf,
+    make_catalog,
+    make_schema,
+    make_table,
+    make_storage_credential,
+)
 from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_directory, make_repo
 from databricks.labs.pytester.fixtures.permissions import (  # noqa
     make_cluster_policy_permissions,
@@ -82,6 +88,7 @@ __all__ = [
     'make_catalog',
     'make_schema',
     'make_table',
+    'make_storage_credential',
     'product_info',
     'sql_backend',
     'sql_exec',
