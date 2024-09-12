@@ -8,8 +8,7 @@ from pytest import fixture
 
 from databricks.labs.lsql.backends import StatementExecutionBackend
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.errors import NotFound
-
+from databricks.sdk.errors import DatabricksError
 
 _LOG = logging.getLogger(__name__)
 
@@ -116,7 +115,7 @@ def factory(name, create, remove):
         try:
             _LOG.debug(f"removing {name} fixture: {some}")
             remove(some)
-        except NotFound as e:
+        except DatabricksError as e:
             _LOG.debug(f"ignoring error while {name} {some} teardown: {e}")
 
 

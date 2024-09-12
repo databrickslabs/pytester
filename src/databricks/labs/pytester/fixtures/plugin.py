@@ -51,7 +51,7 @@ from databricks.labs.pytester.fixtures.permissions import (  # noqa
 from databricks.labs.pytester.fixtures.secrets import make_secret_scope, make_secret_scope_acl
 from databricks.labs.pytester.fixtures.wheel import workspace_library
 from databricks.labs.pytester.fixtures.environment import debug_env, debug_env_name, env_or_skip
-from databricks.labs.pytester.fixtures.ml import make_experiment, make_model
+from databricks.labs.pytester.fixtures.ml import make_experiment, make_model, make_serving_endpoint
 from databricks.labs.pytester.fixtures.redash import make_query
 
 __all__ = [
@@ -105,6 +105,7 @@ __all__ = [
     'make_query',
     'make_query_permissions',
     'make_registered_model_permissions',
+    'make_serving_endpoint',
     'make_serving_endpoint_permissions',
     'make_feature_table_permissions',
 ]

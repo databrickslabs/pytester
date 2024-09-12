@@ -1,6 +1,14 @@
-from collections.abc import Generator
+from collections.abc import Generator, Callable
 
 from pytest import fixture
+from databricks.sdk.service._internal import Wait
+from databricks.sdk.service.serving import (
+    ServingEndpointDetailed,
+    EndpointCoreConfigInput,
+    ServedModelInput,
+    ServedModelInputWorkloadSize,
+    EndpointTag,
+)
 from databricks.sdk.service.ml import CreateExperimentResponse, ModelTag, GetModelResponse
 
 from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix, get_test_purge_time
@@ -8,7 +16,10 @@ from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix
 
 @fixture
 def make_experiment(
-    ws, make_random, make_directory, log_workspace_link
+    ws,
+    make_random,
+    make_directory,
+    log_workspace_link,
 ) -> Generator[CreateExperimentResponse, None, None]:
     """
     Returns a function to create Databricks Experiments and clean them up after the test.
@@ -51,7 +62,7 @@ def make_experiment(
 
 
 @fixture
-def make_model(ws, make_random) -> Generator[GetModelResponse, None, None]:
+def make_model(ws, make_random) -> Generator[Callable[..., GetModelResponse], None, None]:
     """
     Returns a function to create Databricks Models and clean them up after the test.
     The function returns a `databricks.sdk.service.ml.GetModelResponse` object.
@@ -87,3 +98,49 @@ def make_model(ws, make_random) -> Generator[GetModelResponse, None, None]:
         return model.registered_model_databricks
 
     yield from factory("model", create, lambda item: ws.model_registry.delete_model(item.id))
+
+
+@fixture
+def make_serving_endpoint(ws, make_random, make_model):
+    """
+    Returns a function to create Databricks Serving Endpoints and clean them up after the test.
+    The function returns a `databricks.sdk.service.serving.ServingEndpointDetailed` object.
+
+    Under the covers, this fixture also creates a model to serve on a small workload size.
+
+    Usage:
+    ```python
+    def test_endpoints(make_group, make_serving_endpoint, make_serving_endpoint_permissions):
+        group = make_group()
+        endpoint = make_serving_endpoint()
+        make_serving_endpoint_permissions(
+            object_id=endpoint.response.id,
+            permission_level=PermissionLevel.CAN_QUERY,
+            group_name=group.display_name,
+        )
+    ```
+    """
+
+    def create() -> Wait[ServingEndpointDetailed]:
+        endpoint_name = make_random(4)
+        model = make_model()
+        endpoint = ws.serving_endpoints.create(
+            endpoint_name,
+            EndpointCoreConfigInput(
+                served_models=[
+                    ServedModelInput(
+                        model_name=model.name,
+                        model_version="1",
+                        scale_to_zero_enabled=True,
+                        workload_size=ServedModelInputWorkloadSize.SMALL,
+                    )
+                ]
+            ),
+            tags=[EndpointTag(key="RemoveAfter", value=get_test_purge_time())],
+        )
+        return endpoint
+
+    def remove(endpoint_name: str):
+        ws.serving_endpoints.delete(endpoint_name)
+
+    yield from factory("Serving endpoint", create, remove)
