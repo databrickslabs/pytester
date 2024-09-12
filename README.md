@@ -391,32 +391,22 @@ See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_notebook` fixture
-Fixture to manage Databricks notebooks.
+Returns a function to create Databricks Notebooks and clean them up after the test.
+The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
 
-This fixture provides a function to manage Databricks notebooks using the provided workspace (ws).
-Notebooks can be created with a specified path and content, and they will be deleted after the test is complete.
+Keyword arguments:
+* `path` (str, optional): The path of the notebook. Defaults to `dummy-*` notebook in current user's home folder.
+* `content` (typing.BinaryIO, optional): The content of the notebook. Defaults to `print(1)`.
+* `language` ([`Language`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.Language), optional): The language of the notebook. Defaults to `Language.PYTHON`.
+* `format` ([`ImportFormat`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.ImportFormat), optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
+* `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-
-Returns:
---------
-function:
-    A function to manage Databricks notebooks.
-
-Usage Example:
---------------
-To manage Databricks notebooks using the make_notebook fixture:
-
-.. code-block:: python
-
-    def test_notebook_management(make_notebook):
-        notebook_path = make_notebook()
-        assert notebook_path.startswith("/Users/") and notebook_path.endswith(".py")
+This example creates a notebook and verifies that `print(1)` is in the content:
+```python
+def test_creates_some_notebook(make_notebook):
+    notebook = make_notebook()
+    assert "print(1)" in notebook.read_text()
+```
 
 See also [`make_job`](#make_job-fixture), [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
@@ -424,32 +414,21 @@ See also [`make_job`](#make_job-fixture), [`ws`](#ws-fixture), [`make_random`](#
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_directory` fixture
-Fixture to manage Databricks directories.
+Returns a function to create Databricks Workspace Folders and clean them up after the test.
+The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
 
-This fixture provides a function to manage Databricks directories using the provided workspace (ws).
-Directories can be created with a specified path, and they will be deleted after the test is complete.
+Keyword arguments:
+* `path` (str, optional): The path of the notebook. Defaults to `dummy-*` folder in current user's home folder.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-
-Returns:
---------
-function:
-    A function to manage Databricks directories.
-
-Usage Example:
---------------
-To manage Databricks directories using the make_directory fixture:
-
-.. code-block:: python
-
-    def test_directory_management(make_directory):
-        directory_path = make_directory()
-        assert directory_path.startswith("/Users/") and not directory_path.endswith(".py")
+This example creates a folder and verifies that it contains a notebook:
+```python
+def test_creates_some_folder_with_a_notebook(make_directory, make_notebook):
+    folder = make_directory()
+    notebook = make_notebook(path=folder / 'foo.py')
+    files = [_.name for _ in folder.iterdir()]
+    assert ['foo.py'] == files
+    assert notebook.parent == folder
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
@@ -457,32 +436,19 @@ See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_repo` fixture
-Fixture to manage Databricks repos.
+Returns a function to create Databricks Repos and clean them up after the test.
+The function returns a [`RepoInfo`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.RepoInfo) object.
 
-This fixture provides a function to manage Databricks repos using the provided workspace (ws).
-Repos can be created with a specified URL, provider, and path, and they will be deleted after the test is complete.
+Keyword arguments:
+* `url` (str, optional): The URL of the repository.
+* `provider` (str, optional): The provider of the repository.
+* `path` (str, optional): The path of the repository. Defaults to `/Repos/{current_user}/sdk-{random}-{purge_suffix}`.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-
-Returns:
---------
-function:
-    A function to manage Databricks repos.
-
-Usage Example:
---------------
-To manage Databricks repos using the make_repo fixture:
-
-.. code-block:: python
-
-    def test_repo_management(make_repo):
-        repo_info = make_repo()
-        assert repo_info is not None
+Usage:
+```python
+def test_repo(make_repo):
+    logger.info(f"created {make_repo()}")
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
