@@ -150,6 +150,15 @@ def ws(debug_env, product_info) -> WorkspaceClient:
 
 
 @fixture
+def log_workspace_link(ws):
+    def inner(name: str, path: str):
+        url = f'https://{ws.config.hostname}/#{path}'
+        _LOG.info(f'Created {name}: {url}')
+
+    return inner
+
+
+@fixture
 def sql_backend(ws, env_or_skip) -> StatementExecutionBackend:
     """Create and provide a SQL backend for executing statements.
 

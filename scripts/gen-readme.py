@@ -16,6 +16,12 @@ def main():
     overwrite_readme('FIXTURES', "\n".join(out))
 
 
+DATACLASS_RE = re.compile(r"`databricks.sdk.service.(\w+).(\w+)`", re.DOTALL)
+DATACLASS_DOC = (
+    r'[`\2`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/\1.html#databricks.sdk.service.\1.\2)'
+)
+
+
 @dataclass
 class Fixture:
     name: str
@@ -28,6 +34,8 @@ class Fixture:
 
     def usage(self) -> str:
         lines = "\n".join(_[4:] for _ in self.description.split("\n"))
+        # replace all occurrences of `databricks.sdk.service.*.*` with a link
+        lines = DATACLASS_RE.sub(DATACLASS_DOC, lines)
         return lines.strip()
 
     def doc(self) -> str:
@@ -62,7 +70,7 @@ def discover_fixtures():
         upstreams = []
         sig = inspect.signature(fn)
         for param in sig.parameters.values():
-            if param.name in {'fresh_local_wheel_file', 'monkeypatch'}:
+            if param.name in {'fresh_local_wheel_file', 'monkeypatch', 'log_workspace_link'}:
                 continue
             upstreams.append(param.name)
             see_also[param.name].add(fixture)

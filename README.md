@@ -33,6 +33,47 @@
 
 ## PyTest Fixtures
 
+Pytest fixtures are a powerful way to manage test setup and teardown in Python.
+
+[[back to top](#python-testing-for-databricks)]
+
+## Logging
+
+This library is built on years of debugging integration tests for Databricks and its ecosystem. 
+
+That's why it comes with a built-in logger that traces creation and deletion of dummy entities through links in 
+the Databricks Workspace UI. If you run the following code:
+
+```python
+def test_new_user(make_user, ws):
+    new_user = make_user()
+    home_dir = ws.workspace.get_status(f"/Users/{new_user.user_name}")
+    assert home_dir.object_type == ObjectType.DIRECTORY
+```
+
+You will see the following output, where the first line is clickable and will take you to the user's profile in the Databricks Workspace UI:
+
+```text
+12:30:53  INFO [d.l.p.fixtures.baseline] Created dummy-xwuq-...@example.com: https://.....azuredatabricks.net/#settings/workspace/identity-and-access/users/735...
+12:30:53 DEBUG [d.l.p.fixtures.baseline] added workspace user fixture: User(active=True, display_name='dummy-xwuq-...@example.com', ...)
+12:30:58 DEBUG [d.l.p.fixtures.baseline] clearing 1 workspace user fixtures
+12:30:58 DEBUG [d.l.p.fixtures.baseline] removing workspace user fixture: User(active=True, display_name='dummy-xwuq-...@example.com', ...)
+```
+
+You may need to add the following to your `conftest.py` file to enable this:
+
+```python
+import logging
+
+from databricks.labs.blueprint.logger import install_logger
+
+install_logger()
+
+logging.getLogger('databricks.labs.pytester').setLevel(logging.DEBUG)
+```
+
+[[back to top](#python-testing-for-databricks)]
+
 <!-- FIXTURES -->
 ### `debug_env_name` fixture
 Specify the name of the debug environment. By default, it is set to `.env`,
@@ -303,32 +344,28 @@ See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_group` fixture
-Fixture to manage Databricks workspace groups.
+This fixture provides a function to manage Databricks workspace groups. Groups can be created with
+specified members and roles, and they will be deleted after the test is complete. Deals with eventual
+consistency issues by retrying the creation process for 30 seconds and allowing up to two minutes
+for group to be provisioned. Returns an instance of [`Group`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/iam.html#databricks.sdk.service.iam.Group).
 
-This fixture provides a function to manage Databricks workspace groups using the provided workspace (ws).
-Groups can be created with specified members and roles, and they will be deleted after the test is complete.
+Keyword arguments:
+* `members` (list of strings): A list of user IDs to add to the group.
+* `roles` (list of strings): A list of roles to assign to the group.
+* `display_name` (str): The display name of the group.
+* `wait_for_provisioning` (bool): If `True`, the function will wait for the group to be provisioned.
+* `entitlements` (list of strings): A list of entitlements to assign to the group.
 
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
+The following example creates a group with a single member and independently verifies that the group was created:
 
-Returns:
---------
-function:
-    A function to manage Databricks workspace groups.
-
-Usage Example:
---------------
-To manage Databricks workspace groups using the make_group fixture:
-
-.. code-block:: python
-
-    def test_group_management(make_group):
-        group_info = make_group(members=["user@example.com"], roles=["viewer"])
-        assert group_info is not None
+```python
+def test_new_group(make_group, make_user, ws):
+    user = make_user()
+    group = make_group(members=[user.id])
+    loaded = ws.groups.get(group.id)
+    assert group.display_name == loaded.display_name
+    assert group.members == loaded.members
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
@@ -336,32 +373,17 @@ See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_user` fixture
-Fixture to manage Databricks workspace users.
+This fixture returns a function that creates a Databricks workspace user
+and removes it after the test is complete. In case of random naming conflicts,
+the fixture will retry the creation process for 30 seconds. Returns an instance
+of [`User`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/iam.html#databricks.sdk.service.iam.User). Usage:
 
-This fixture provides a function to manage Databricks workspace users using the provided workspace (ws).
-Users can be created with a generated user name, and they will be deleted after the test is complete.
-
-Parameters:
------------
-ws : WorkspaceClient
-    A Databricks WorkspaceClient instance.
-make_random : function
-    The make_random fixture to generate unique names.
-
-Returns:
---------
-function:
-    A function to manage Databricks workspace users.
-
-Usage Example:
---------------
-To manage Databricks workspace users using the make_user fixture:
-
-.. code-block:: python
-
-    def test_user_management(make_user):
-        user_info = make_user()
-        assert user_info is not None
+```python
+def test_new_user(make_user, ws):
+    new_user = make_user()
+    home_dir = ws.workspace.get_status(f"/Users/{new_user.user_name}")
+    assert home_dir.object_type == ObjectType.DIRECTORY
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
