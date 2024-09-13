@@ -10,13 +10,13 @@ from databricks.sdk.service.iam import User, Group
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service import iam
 
-from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix
+from databricks.labs.pytester.fixtures.baseline import factory
 
 logger = logging.getLogger(__name__)
 
 
 @fixture
-def make_user(ws, make_random, log_workspace_link):
+def make_user(ws, make_random, log_workspace_link, watchdog_purge_suffix):
     """
     This fixture returns a function that creates a Databricks workspace user
     and removes it after the test is complete. In case of random naming conflicts,
@@ -33,7 +33,7 @@ def make_user(ws, make_random, log_workspace_link):
 
     @retried(on=[ResourceConflict], timeout=timedelta(seconds=30))
     def create(**kwargs) -> User:
-        user_name = f"dummy-{make_random(4)}-{get_purge_suffix()}@example.com".lower()
+        user_name = f"dummy-{make_random(4)}-{watchdog_purge_suffix}@example.com".lower()
         user = ws.users.create(user_name=user_name, **kwargs)
         log_workspace_link(user.user_name, f'settings/workspace/identity-and-access/users/{user.id}')
         return user
@@ -42,7 +42,7 @@ def make_user(ws, make_random, log_workspace_link):
 
 
 @fixture
-def make_group(ws: WorkspaceClient, make_random):
+def make_group(ws: WorkspaceClient, make_random, watchdog_purge_suffix):
     """
     This fixture provides a function to manage Databricks workspace groups. Groups can be created with
     specified members and roles, and they will be deleted after the test is complete. Deals with eventual
@@ -67,14 +67,14 @@ def make_group(ws: WorkspaceClient, make_random):
         assert group.members == loaded.members
     ```
     """
-    yield from _make_group("workspace group", ws.config, ws.groups, make_random)
+    yield from _make_group("workspace group", ws.config, ws.groups, make_random, watchdog_purge_suffix)
 
 
 def _scim_values(ids: list[str]) -> list[iam.ComplexValue]:
     return [iam.ComplexValue(value=x) for x in ids]
 
 
-def _make_group(name: str, cfg: Config, interface, make_random) -> Generator[Group, None, None]:
+def _make_group(name: str, cfg: Config, interface, make_random, watchdog_purge_suffix) -> Generator[Group, None, None]:
     @retried(on=[ResourceConflict], timeout=timedelta(seconds=30))
     def create(
         *,
@@ -85,7 +85,9 @@ def _make_group(name: str, cfg: Config, interface, make_random) -> Generator[Gro
         wait_for_provisioning: bool = False,
         **kwargs,
     ):
-        kwargs["display_name"] = f"sdk-{make_random(4)}-{get_purge_suffix()}" if display_name is None else display_name
+        kwargs["display_name"] = (
+            f"sdk-{make_random(4)}-{watchdog_purge_suffix}" if display_name is None else display_name
+        )
         if members is not None:
             kwargs["members"] = _scim_values(members)
         if roles is not None:

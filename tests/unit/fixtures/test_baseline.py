@@ -5,7 +5,8 @@ from databricks.labs.pytester.fixtures.unwrap import call_fixture
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.sql import StatementResponse, StatementState, StatementStatus
 
-from databricks.labs.pytester.fixtures.baseline import ws, log_workspace_link, sql_backend
+from databricks.labs.pytester.fixtures.baseline import ws, log_workspace_link
+from databricks.labs.pytester.fixtures.sql import sql_backend
 
 
 def test_ws() -> None:

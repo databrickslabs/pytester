@@ -15,11 +15,16 @@ from databricks.sdk.service.jobs import Job, NotebookTask, Task
 from databricks.sdk.service._internal import Wait
 from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails, ClusterSpec, CreateInstancePoolResponse
 
-from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix, get_test_purge_time
+from databricks.labs.pytester.fixtures.baseline import factory
 
 
 @fixture
-def make_cluster_policy(ws, make_random, log_workspace_link) -> Generator[CreatePolicyResponse, None, None]:
+def make_cluster_policy(
+    ws,
+    make_random,
+    log_workspace_link,
+    watchdog_purge_suffix,
+) -> Generator[CreatePolicyResponse, None, None]:
     """
     Create a Databricks cluster policy and clean it up after the test. Returns a function to create cluster policies,
     which returns `databricks.sdk.service.compute.CreatePolicyResponse` instance.
@@ -36,7 +41,7 @@ def make_cluster_policy(ws, make_random, log_workspace_link) -> Generator[Create
 
     def create(*, name: str | None = None, **kwargs) -> CreatePolicyResponse:
         if name is None:
-            name = f"dummy-{make_random(4)}-{get_purge_suffix()}"
+            name = f"dummy-{make_random(4)}-{watchdog_purge_suffix}"
         if "definition" not in kwargs:
             kwargs["definition"] = json.dumps(
                 {
@@ -51,7 +56,7 @@ def make_cluster_policy(ws, make_random, log_workspace_link) -> Generator[Create
 
 
 @fixture
-def make_cluster(ws, make_random, log_workspace_link) -> Generator[ClusterDetails, None, None]:
+def make_cluster(ws, make_random, log_workspace_link, watchdog_remove_after) -> Generator[ClusterDetails, None, None]:
     """
     Create a Databricks cluster, waits for it to start, and clean it up after the test.
     Returns a function to create clusters. You can get `cluster_id` attribute from the returned object.
@@ -94,9 +99,9 @@ def make_cluster(ws, make_random, log_workspace_link) -> Generator[ClusterDetail
         if "instance_pool_id" not in kwargs:
             kwargs["node_type_id"] = ws.clusters.select_node_type(local_disk=True, min_memory_gb=16)
         if "custom_tags" not in kwargs:
-            kwargs["custom_tags"] = {"RemoveAfter": get_test_purge_time()}
+            kwargs["custom_tags"] = {"RemoveAfter": watchdog_remove_after}
         else:
-            kwargs["custom_tags"]["RemoveAfter"] = get_test_purge_time()
+            kwargs["custom_tags"]["RemoveAfter"] = watchdog_remove_after
         wait = ws.clusters.create(
             cluster_name=cluster_name,
             spark_version=spark_version,
@@ -110,7 +115,12 @@ def make_cluster(ws, make_random, log_workspace_link) -> Generator[ClusterDetail
 
 
 @fixture
-def make_instance_pool(ws, make_random, log_workspace_link) -> Generator[CreateInstancePoolResponse, None, None]:
+def make_instance_pool(
+    ws,
+    make_random,
+    log_workspace_link,
+    watchdog_remove_after,
+) -> Generator[CreateInstancePoolResponse, None, None]:
     """
     Create a Databricks instance pool and clean it up after the test. Returns a function to create instance pools.
     Use `instance_pool_id` attribute from the returned object to get an ID of the pool.
@@ -135,7 +145,7 @@ def make_instance_pool(ws, make_random, log_workspace_link) -> Generator[CreateI
         pool = ws.instance_pools.create(
             instance_pool_name,
             node_type_id,
-            custom_tags={"RemoveAfter": get_test_purge_time()},
+            custom_tags={"RemoveAfter": watchdog_remove_after},
             **kwargs,
         )
         log_workspace_link(instance_pool_name, f'compute/instance-pools/{pool.instance_pool_id}', anchor=False)
@@ -145,7 +155,7 @@ def make_instance_pool(ws, make_random, log_workspace_link) -> Generator[CreateI
 
 
 @fixture
-def make_job(ws, make_random, make_notebook, log_workspace_link) -> Generator[Job, None, None]:
+def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove_after) -> Generator[Job, None, None]:
     """
     Create a Databricks job and clean it up after the test. Returns a function to create jobs.
 
@@ -193,7 +203,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link) -> Generator[Jo
                 )
             ]
         # add RemoveAfter tag for test job cleanup
-        date_to_remove = get_test_purge_time()
+        date_to_remove = watchdog_remove_after
         remove_after_tag = {"key": "RemoveAfter", "value": date_to_remove}
         if 'tags' not in kwargs:
             kwargs["tags"] = [remove_after_tag]
@@ -207,7 +217,13 @@ def make_job(ws, make_random, make_notebook, log_workspace_link) -> Generator[Jo
 
 
 @fixture
-def make_pipeline(ws, make_random, make_notebook) -> Generator[CreatePipelineResponse, None, None]:
+def make_pipeline(
+    ws,
+    make_random,
+    make_notebook,
+    watchdog_remove_after,
+    watchdog_purge_suffix,
+) -> Generator[CreatePipelineResponse, None, None]:
     """
     Create Delta Live Table Pipeline and clean it up after the test. Returns a function to create pipelines.
     Results in a `databricks.sdk.service.pipelines.CreatePipelineResponse` instance.
@@ -232,7 +248,7 @@ def make_pipeline(ws, make_random, make_notebook) -> Generator[CreatePipelineRes
 
     def create(**kwargs) -> CreatePipelineResponse:
         if "name" not in kwargs:
-            kwargs["name"] = f"sdk-{make_random(4)}-{get_purge_suffix()}"
+            kwargs["name"] = f"sdk-{make_random(4)}-{watchdog_purge_suffix}"
         if "libraries" not in kwargs:
             notebook_library = NotebookLibrary(path=make_notebook().as_posix())
             kwargs["libraries"] = [PipelineLibrary(notebook=notebook_library)]
@@ -242,7 +258,7 @@ def make_pipeline(ws, make_random, make_notebook) -> Generator[CreatePipelineRes
                     node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
                     label="default",
                     num_workers=1,
-                    custom_tags={"cluster_type": "default", "RemoveAfter": get_test_purge_time()},
+                    custom_tags={"cluster_type": "default", "RemoveAfter": watchdog_remove_after},
                 )
             ]
         return ws.pipelines.create(continuous=False, **kwargs)
@@ -251,7 +267,7 @@ def make_pipeline(ws, make_random, make_notebook) -> Generator[CreatePipelineRes
 
 
 @fixture
-def make_warehouse(ws, make_random) -> Generator[Wait[GetWarehouseResponse], None, None]:
+def make_warehouse(ws, make_random, watchdog_remove_after) -> Generator[Wait[GetWarehouseResponse], None, None]:
     """
     Create a Databricks warehouse and clean it up after the test. Returns a function to create warehouses.
 
@@ -286,7 +302,7 @@ def make_warehouse(ws, make_random) -> Generator[Wait[GetWarehouseResponse], Non
         if cluster_size is None:
             cluster_size = "2X-Small"
 
-        remove_after_tags = EndpointTags(custom_tags=[EndpointTagPair(key="RemoveAfter", value=get_test_purge_time())])
+        remove_after_tags = EndpointTags(custom_tags=[EndpointTagPair(key="RemoveAfter", value=watchdog_remove_after)])
         return ws.warehouses.create(
             name=warehouse_name,
             cluster_size=cluster_size,

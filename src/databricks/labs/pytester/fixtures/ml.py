@@ -11,7 +11,7 @@ from databricks.sdk.service.serving import (
 )
 from databricks.sdk.service.ml import CreateExperimentResponse, ModelTag, GetModelResponse
 
-from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix, get_test_purge_time
+from databricks.labs.pytester.fixtures.baseline import factory
 
 
 @fixture
@@ -20,6 +20,7 @@ def make_experiment(
     make_random,
     make_directory,
     log_workspace_link,
+    watchdog_purge_suffix,
 ) -> Generator[CreateExperimentResponse, None, None]:
     """
     Returns a function to create Databricks Experiments and clean them up after the test.
@@ -53,7 +54,7 @@ def make_experiment(
         folder = make_directory(path=path)
         if experiment_name is None:
             # The purge suffix is needed here as well, just in case the path was supplied.
-            experiment_name = f"dummy-{make_random(4)}-{get_purge_suffix()}"
+            experiment_name = f"dummy-{make_random(4)}-{watchdog_purge_suffix}"
         experiment = ws.experiments.create_experiment(name=f"{folder}/{experiment_name}", **kwargs)
         log_workspace_link(f'{experiment_name} experiment', f'ml/experiments/{experiment.experiment_id}', anchor=False)
         return experiment
@@ -62,7 +63,7 @@ def make_experiment(
 
 
 @fixture
-def make_model(ws, make_random) -> Generator[Callable[..., GetModelResponse], None, None]:
+def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[..., GetModelResponse], None, None]:
     """
     Returns a function to create Databricks Models and clean them up after the test.
     The function returns a `databricks.sdk.service.ml.GetModelResponse` object.
@@ -88,7 +89,7 @@ def make_model(ws, make_random) -> Generator[Callable[..., GetModelResponse], No
     def create(*, model_name: str | None = None, **kwargs) -> GetModelResponse:
         if model_name is None:
             model_name = f"dummy-{make_random(4)}"
-        remove_after_tag = ModelTag(key="RemoveAfter", value=get_test_purge_time())
+        remove_after_tag = ModelTag(key="RemoveAfter", value=watchdog_remove_after)
         if 'tags' not in kwargs:
             kwargs["tags"] = [remove_after_tag]
         else:
@@ -101,7 +102,7 @@ def make_model(ws, make_random) -> Generator[Callable[..., GetModelResponse], No
 
 
 @fixture
-def make_serving_endpoint(ws, make_random, make_model):
+def make_serving_endpoint(ws, make_random, make_model, watchdog_remove_after):
     """
     Returns a function to create Databricks Serving Endpoints and clean them up after the test.
     The function returns a `databricks.sdk.service.serving.ServingEndpointDetailed` object.
@@ -136,7 +137,7 @@ def make_serving_endpoint(ws, make_random, make_model):
                     )
                 ]
             ),
-            tags=[EndpointTag(key="RemoveAfter", value=get_test_purge_time())],
+            tags=[EndpointTag(key="RemoveAfter", value=watchdog_remove_after)],
         )
         return endpoint
 

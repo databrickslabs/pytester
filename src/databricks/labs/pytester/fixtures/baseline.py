@@ -1,20 +1,13 @@
 import logging
 import random
 import string
-from datetime import timedelta, datetime, timezone
-from functools import partial
 
 from pytest import fixture
 
-from databricks.labs.lsql.backends import StatementExecutionBackend
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors import DatabricksError
 
 _LOG = logging.getLogger(__name__)
-
-
-"""Preserve resources created during tests for at least this long."""
-TEST_RESOURCE_PURGE_TIMEOUT = timedelta(hours=1)
 
 
 @fixture
@@ -175,41 +168,3 @@ def log_workspace_link(ws):
         _LOG.info(f'Created {name}: {url}')
 
     return inner
-
-
-@fixture
-def sql_backend(ws, env_or_skip) -> StatementExecutionBackend:
-    """Create and provide a SQL backend for executing statements.
-
-    Requires the environment variable `DATABRICKS_WAREHOUSE_ID` to be set.
-    """
-    warehouse_id = env_or_skip("DATABRICKS_WAREHOUSE_ID")
-    return StatementExecutionBackend(ws, warehouse_id)
-
-
-@fixture
-def sql_exec(sql_backend):
-    """Execute SQL statement and don't return any results."""
-    return partial(sql_backend.execute)
-
-
-@fixture
-def sql_fetch_all(sql_backend):
-    """Fetch all rows from a SQL statement."""
-    return partial(sql_backend.fetch)
-
-
-def get_test_purge_time(timeout: timedelta = TEST_RESOURCE_PURGE_TIMEOUT) -> str:
-    """Purge time for test objects, representing the (UTC-based) hour from which objects may be purged."""
-    # Note: this code is duplicated in the workflow installer (WorkflowsDeployment) so that it can avoid the
-    # transitive pytest deployment from this module.
-    now = datetime.now(timezone.utc)
-    purge_deadline = now + timeout
-    # Round UP to the next hour boundary: that is when resources will be deleted.
-    purge_hour = purge_deadline + (datetime.min.replace(tzinfo=timezone.utc) - purge_deadline) % timedelta(hours=1)
-    return purge_hour.strftime("%Y%m%d%H")
-
-
-def get_purge_suffix() -> str:
-    """HEX-encoded purge time suffix for test objects."""
-    return f'ra{int(get_test_purge_time()):x}'

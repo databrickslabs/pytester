@@ -27,6 +27,8 @@ class CallContext:
             'sql_backend': MockBackend(),
             'make_random': self.make_random,
             'env_or_skip': self.env_or_skip,
+            'watchdog_remove_after': '2024091313',
+            'watchdog_purge_suffix': 'XXXXX',
         }
 
     def __getitem__(self, name: str):
@@ -96,7 +98,7 @@ def call_stateful(some: Callable[..., T], **kwargs) -> tuple[CallContext, T]:
     _bfs_call_context(some)
     result = ctx[some.__name__](**kwargs)
 
-    for generator in drains:
+    for generator in reversed(drains):
         try:  # drain the generator and call cleanup
             next(generator)
         except StopIteration:

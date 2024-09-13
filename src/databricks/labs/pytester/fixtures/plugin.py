@@ -3,12 +3,10 @@ import pytest
 from databricks.labs.pytester.fixtures.baseline import (
     ws,
     make_random,
-    sql_backend,
-    sql_exec,
-    sql_fetch_all,
     product_info,
     log_workspace_link,
 )
+from databricks.labs.pytester.fixtures.sql import sql_backend, sql_exec, sql_fetch_all
 from databricks.labs.pytester.fixtures.compute import (
     make_instance_pool,
     make_job,
@@ -49,16 +47,19 @@ from databricks.labs.pytester.fixtures.permissions import (  # noqa
     make_feature_table_permissions,
 )
 from databricks.labs.pytester.fixtures.secrets import make_secret_scope, make_secret_scope_acl
-from databricks.labs.pytester.fixtures.wheel import workspace_library
-from databricks.labs.pytester.fixtures.environment import debug_env, debug_env_name, env_or_skip
+from databricks.labs.pytester.fixtures.environment import debug_env, debug_env_name, env_or_skip, is_in_debug
 from databricks.labs.pytester.fixtures.ml import make_experiment, make_model, make_serving_endpoint
 from databricks.labs.pytester.fixtures.redash import make_query
+from databricks.labs.pytester.fixtures.watchdog import watchdog_remove_after, watchdog_purge_suffix
 
 __all__ = [
     'debug_env_name',
     'debug_env',
     'env_or_skip',
     'ws',
+    'sql_backend',
+    'sql_exec',
+    'sql_fetch_all',
     'make_random',
     'make_instance_pool',
     'make_instance_pool_permissions',
@@ -90,15 +91,11 @@ __all__ = [
     'make_table',
     'make_storage_credential',
     'product_info',
-    'sql_backend',
-    'sql_exec',
-    'sql_fetch_all',
     'make_model',
     'make_experiment',
     'make_experiment_permissions',
     'make_warehouse_permissions',
     'make_lakeview_dashboard_permissions',
-    'workspace_library',
     'log_workspace_link',
     'make_dashboard_permissions',
     'make_alert_permissions',
@@ -108,6 +105,9 @@ __all__ = [
     'make_serving_endpoint',
     'make_serving_endpoint_permissions',
     'make_feature_table_permissions',
+    'watchdog_remove_after',
+    'watchdog_purge_suffix',
+    'is_in_debug',
 ]
 
 

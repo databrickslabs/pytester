@@ -371,7 +371,7 @@ make_lakeview_dashboard_permissions = pytest.fixture(
 make_dashboard_permissions = pytest.fixture(
     _make_redash_permissions_factory(
         "dashboard",
-        "sql/dashboards",
+        "dashboards",
         [
             PermissionLevel.CAN_EDIT,
             PermissionLevel.CAN_RUN,
@@ -384,7 +384,7 @@ make_dashboard_permissions = pytest.fixture(
 make_alert_permissions = pytest.fixture(
     _make_redash_permissions_factory(
         "alert",
-        "sql/alerts",
+        "alerts",
         [
             PermissionLevel.CAN_EDIT,
             PermissionLevel.CAN_RUN,
@@ -397,7 +397,7 @@ make_alert_permissions = pytest.fixture(
 make_query_permissions = pytest.fixture(
     _make_redash_permissions_factory(
         "query",
-        "sql/queries",
+        "queries",
         [
             PermissionLevel.CAN_EDIT,
             PermissionLevel.CAN_RUN,

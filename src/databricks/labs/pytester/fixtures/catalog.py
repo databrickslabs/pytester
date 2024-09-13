@@ -2,7 +2,7 @@ import logging
 from collections.abc import Generator, Callable
 from pytest import fixture
 from databricks.labs.blueprint.commands import CommandExecutor
-from databricks.sdk.errors import NotFound
+from databricks.sdk.errors import DatabricksError
 from databricks.sdk.service.catalog import (
     FunctionInfo,
     SchemaInfo,
@@ -10,13 +10,12 @@ from databricks.sdk.service.catalog import (
     TableType,
     DataSourceFormat,
     CatalogInfo,
-    ColumnInfo,
     StorageCredentialInfo,
     AwsIamRoleRequest,
     AzureServicePrincipal,
 )
 from databricks.sdk.service.compute import Language
-from databricks.labs.pytester.fixtures.baseline import factory, get_test_purge_time
+from databricks.labs.pytester.fixtures.baseline import factory
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +45,7 @@ def make_table(
     make_schema,
     make_random,
     log_workspace_link,
+    watchdog_remove_after,
 ) -> Generator[Callable[..., TableInfo], None, None]:
     """
     Create a table and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.TableInfo`.
@@ -75,33 +75,23 @@ def make_table(
     ```
     """
 
-    def generate_sql_schema(columns: list[ColumnInfo]) -> str:
+    def generate_sql_schema(columns: list[tuple[str, str]]) -> str:
         """Generate a SQL schema from columns."""
         schema = "("
-        for index, column in enumerate(columns):
-            schema += escape_sql_identifier(column.name or str(index), maxsplit=0)
-            if column.type_name is None:
-                type_name = "STRING"
-            else:
-                type_name = column.type_name.value
+        for index, (col_name, type_name) in enumerate(columns):
+            schema += escape_sql_identifier(col_name or str(index), maxsplit=0)
             schema += f" {type_name}, "
         schema = schema[:-2] + ")"  # Remove the last ', '
         return schema
 
-    def generate_sql_column_casting(existing_columns: list[ColumnInfo], new_columns: list[ColumnInfo]) -> str:
+    def generate_sql_column_casting(existing_columns: list[tuple[str, str]], new_columns: list[tuple[str, str]]) -> str:
         """Generate the SQL to cast columns"""
-        if any(column.name is None for column in existing_columns):
-            raise ValueError(f"Columns should have a name: {existing_columns}")
         if len(new_columns) > len(existing_columns):
             raise ValueError(f"Too many columns: {new_columns}")
         select_expressions = []
-        for index, (existing_column, new_column) in enumerate(zip(existing_columns, new_columns)):
-            column_name_new = escape_sql_identifier(new_column.name or str(index), maxsplit=0)
-            if new_column.type_name is None:
-                type_name = "STRING"
-            else:
-                type_name = new_column.type_name.value
-            select_expression = f"CAST({existing_column.name} AS {type_name}) AS {column_name_new}"
+        for index, ((existing_name, _), (new_name, new_type)) in enumerate(zip(existing_columns, new_columns)):
+            column_name_new = escape_sql_identifier(new_name or str(index), maxsplit=0)
+            select_expression = f"CAST({existing_name} AS {new_type}) AS {column_name_new}"
             select_expressions.append(select_expression)
         select = ", ".join(select_expressions)
         return select
@@ -120,7 +110,7 @@ def make_table(
         tbl_properties: dict[str, str] | None = None,
         hiveserde_ddl: str | None = None,
         storage_override: str | None = None,
-        columns: list[ColumnInfo] | None = None,
+        columns: list[tuple[str, str]] | None = None,
     ) -> TableInfo:
         if schema_name is None:
             schema = make_schema(catalog_name=catalog_name)
@@ -154,14 +144,14 @@ def make_table(
             else:
                 # These are the columns from the JSON dataset below
                 dataset_columns = [
-                    ColumnInfo(name="calories_burnt"),
-                    ColumnInfo(name="device_id"),
-                    ColumnInfo(name="id"),
-                    ColumnInfo(name="miles_walked"),
-                    ColumnInfo(name="num_steps"),
-                    ColumnInfo(name="timestamp"),
-                    ColumnInfo(name="user_id"),
-                    ColumnInfo(name="value"),
+                    ('calories_burnt', 'STRING'),
+                    ('device_id', 'STRING'),
+                    ('id', 'STRING'),
+                    ('miles_walked', 'STRING'),
+                    ('num_steps', 'STRING'),
+                    ('timestamp', 'STRING'),
+                    ('user_id', 'STRING'),
+                    ('value', 'STRING'),
                 ]
                 select = generate_sql_column_casting(dataset_columns, columns)
             # Modified, otherwise it will identify the table as a DB Dataset
@@ -193,9 +183,9 @@ def make_table(
             storage_location = f"dbfs:/user/hive/warehouse/{schema_name}/{name}"
             ddl = f"{ddl} {schema}"
         if tbl_properties:
-            tbl_properties.update({"RemoveAfter": get_test_purge_time()})
+            tbl_properties.update({"RemoveAfter": watchdog_remove_after})
         else:
-            tbl_properties = {"RemoveAfter": get_test_purge_time()}
+            tbl_properties = {"RemoveAfter": watchdog_remove_after}
 
         str_properties = ",".join([f" '{k}' = '{v}' " for k, v in tbl_properties.items()])
 
@@ -238,11 +228,9 @@ def make_table(
     def remove(table_info: TableInfo):
         try:
             sql_backend.execute(f"DROP TABLE IF EXISTS {table_info.full_name}")
-        except RuntimeError as e:
+        except DatabricksError as e:
             if "Cannot drop a view" in str(e):
                 sql_backend.execute(f"DROP VIEW IF EXISTS {table_info.full_name}")
-            elif "SCHEMA_NOT_FOUND" in str(e):
-                logger.warning("Schema was already dropped while executing the test", exc_info=e)
             else:
                 raise e
 
@@ -250,7 +238,12 @@ def make_table(
 
 
 @fixture
-def make_schema(sql_backend, make_random, log_workspace_link) -> Generator[Callable[..., SchemaInfo], None, None]:
+def make_schema(
+    sql_backend,
+    make_random,
+    log_workspace_link,
+    watchdog_remove_after,
+) -> Generator[Callable[..., SchemaInfo], None, None]:
     """
     Create a schema and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.SchemaInfo`.
 
@@ -272,20 +265,14 @@ def make_schema(sql_backend, make_random, log_workspace_link) -> Generator[Calla
         if name is None:
             name = f"dummy_S{make_random(4)}".lower()
         full_name = f"{catalog_name}.{name}".lower()
-        sql_backend.execute(f"CREATE SCHEMA {full_name} WITH DBPROPERTIES (RemoveAfter={get_test_purge_time()})")
+        sql_backend.execute(f"CREATE SCHEMA {full_name} WITH DBPROPERTIES (RemoveAfter={watchdog_remove_after})")
         schema_info = SchemaInfo(catalog_name=catalog_name, name=name, full_name=full_name)
         path = f'explore/data/{schema_info.catalog_name}/{schema_info.name}'
         log_workspace_link(f'{schema_info.full_name} schema', path)
         return schema_info
 
     def remove(schema_info: SchemaInfo):
-        try:
-            sql_backend.execute(f"DROP SCHEMA IF EXISTS {schema_info.full_name} CASCADE")
-        except RuntimeError as e:
-            if "SCHEMA_NOT_FOUND" in str(e):
-                logger.warning("Schema was already dropped while executing the test", exc_info=e)
-            else:
-                raise e
+        sql_backend.execute(f"DROP SCHEMA IF EXISTS {schema_info.full_name} CASCADE")
 
     yield from factory("schema", create, remove)
 
@@ -390,13 +377,7 @@ def make_udf(
         return udf_info
 
     def remove(udf_info: FunctionInfo):
-        try:
-            sql_backend.execute(f"DROP FUNCTION IF EXISTS {udf_info.full_name}")
-        except NotFound as e:
-            if "SCHEMA_NOT_FOUND" in str(e):
-                logger.warning("Schema was already dropped while executing the test", exc_info=e)
-            else:
-                raise e
+        sql_backend.execute(f"DROP FUNCTION IF EXISTS {udf_info.full_name}")
 
     yield from factory("table", create, remove)
 

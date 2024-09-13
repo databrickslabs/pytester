@@ -157,6 +157,11 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+exclude_also = [
+    "import",
+    "__all__",
+    "@pytest.fixture"
+]
 
 [tool.pylint.main]
 # PyLint configuration is adapted from Google Python Style Guide with modifications.

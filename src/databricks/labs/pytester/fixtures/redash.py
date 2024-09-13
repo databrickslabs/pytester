@@ -4,11 +4,13 @@ from pytest import fixture
 from databricks.sdk.errors import DatabricksError
 from databricks.sdk.service.sql import LegacyQuery
 
-from databricks.labs.pytester.fixtures.baseline import get_purge_suffix, factory
+from databricks.labs.pytester.fixtures.baseline import factory
 
 
 @fixture
-def make_query(ws, make_table, make_random, log_workspace_link) -> Generator[LegacyQuery, None, None]:
+def make_query(
+    ws, make_table, make_random, log_workspace_link, watchdog_purge_suffix
+) -> Generator[LegacyQuery, None, None]:
     """
     Create a query and remove it after the test is done. Returns the `databricks.sdk.service.sql.LegacyQuery` object.
 
@@ -33,7 +35,7 @@ def make_query(ws, make_table, make_random, log_workspace_link) -> Generator[Leg
 
     def create() -> LegacyQuery:
         table = make_table()
-        query_name = f"dummy_query_Q{make_random(4)}_{get_purge_suffix()}"
+        query_name = f"dummy_query_Q{make_random(4)}_{watchdog_purge_suffix}"
         query = ws.queries_legacy.create(
             name=query_name,
             description="TEST QUERY FOR UCX",

@@ -9,14 +9,13 @@ from databricks.labs.blueprint.paths import WorkspacePath
 from databricks.sdk.service.workspace import Language, ImportFormat, RepoInfo
 from databricks.sdk import WorkspaceClient
 
-from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix
-
+from databricks.labs.pytester.fixtures.baseline import factory
 
 logger = logging.getLogger(__name__)
 
 
 @fixture
-def make_notebook(ws, make_random) -> Generator[WorkspacePath, None, None]:
+def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[WorkspacePath, None, None]:
     """
     Returns a function to create Databricks Notebooks and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -45,7 +44,7 @@ def make_notebook(ws, make_random) -> Generator[WorkspacePath, None, None]:
         overwrite: bool = False,
     ) -> WorkspacePath:
         if path is None:
-            path = f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{get_purge_suffix()}"
+            path = f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
         elif isinstance(path, Path):
             path = str(path)
         if content is None:
@@ -60,7 +59,7 @@ def make_notebook(ws, make_random) -> Generator[WorkspacePath, None, None]:
 
 
 @fixture
-def make_directory(ws: WorkspaceClient, make_random) -> Generator[WorkspacePath, None, None]:
+def make_directory(ws: WorkspaceClient, make_random, watchdog_purge_suffix) -> Generator[WorkspacePath, None, None]:
     """
     Returns a function to create Databricks Workspace Folders and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -81,7 +80,7 @@ def make_directory(ws: WorkspaceClient, make_random) -> Generator[WorkspacePath,
 
     def create(*, path: str | Path | None = None) -> WorkspacePath:
         if path is None:
-            path = f"~/dummy-{make_random(4)}-{get_purge_suffix()}"
+            path = f"~/dummy-{make_random(4)}-{watchdog_purge_suffix}"
         workspace_path = WorkspacePath(ws, path).expanduser()
         workspace_path.mkdir(exist_ok=True)
         logger.info(f"Created folder: {workspace_path.as_uri()}")
@@ -91,7 +90,7 @@ def make_directory(ws: WorkspaceClient, make_random) -> Generator[WorkspacePath,
 
 
 @fixture
-def make_repo(ws, make_random) -> Generator[RepoInfo, None, None]:
+def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[RepoInfo, None, None]:
     """
     Returns a function to create Databricks Repos and clean them up after the test.
     The function returns a `databricks.sdk.service.workspace.RepoInfo` object.
@@ -110,7 +109,7 @@ def make_repo(ws, make_random) -> Generator[RepoInfo, None, None]:
 
     def create(*, url=None, provider=None, path=None, **kwargs) -> RepoInfo:
         if path is None:
-            path = f"/Repos/{ws.current_user.me().user_name}/sdk-{make_random(4)}-{get_purge_suffix()}"
+            path = f"/Repos/{ws.current_user.me().user_name}/sdk-{make_random(4)}-{watchdog_purge_suffix}"
         if url is None:
             url = "https://github.com/shreyas-goenka/empty-repo.git"
         if provider is None:

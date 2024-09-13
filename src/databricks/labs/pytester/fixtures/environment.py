@@ -9,7 +9,8 @@ from pytest import fixture
 from databricks.labs.blueprint.entrypoint import find_dir_with_leaf
 
 
-def _is_in_debug() -> bool:
+@fixture
+def is_in_debug() -> bool:
     return os.path.basename(sys.argv[0]) in {"_jb_pytest_runner.py", "testlauncher.py"}
 
 
@@ -70,13 +71,13 @@ def debug_env_name():
 
 
 @fixture
-def debug_env(monkeypatch, debug_env_name) -> MutableMapping[str, str]:
+def debug_env(monkeypatch, debug_env_name, is_in_debug) -> MutableMapping[str, str]:
     """
     Loads environment variables specified in [`debug_env_name` fixture](#debug_env_name-fixture) from a file
     for local debugging in IDEs, otherwise allowing the tests to run with the default environment variables
     specified in the CI/CD pipeline.
     """
-    if not _is_in_debug():
+    if not is_in_debug:
         return os.environ
     if debug_env_name == ".env":
         dot_env = _parse_dotenv()
@@ -100,7 +101,7 @@ def debug_env(monkeypatch, debug_env_name) -> MutableMapping[str, str]:
 
 
 @fixture
-def env_or_skip(debug_env) -> Callable[[str], str]:
+def env_or_skip(debug_env, is_in_debug) -> Callable[[str], str]:
     """
     Fixture to get environment variables or skip tests.
 
@@ -116,7 +117,7 @@ def env_or_skip(debug_env) -> Callable[[str], str]:
     ```
     """
     skip = pytest.skip
-    if _is_in_debug():
+    if is_in_debug:
         skip = pytest.fail  # type: ignore[assignment]
 
     def inner(var: str) -> str:
@@ -133,7 +134,7 @@ def _parse_dotenv():
     if dot_env is None:
         return {}
     env_vars = {}
-    with dot_env.open(encoding='utf8') as file:
+    with (dot_env / '.env').open(encoding='utf8') as file:
         for line in file:
             line = line.strip()
             if not line or line.startswith('#'):
