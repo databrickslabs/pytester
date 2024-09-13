@@ -68,7 +68,7 @@ path = "src/databricks/labs/pytester/__about__.py"
 dependencies = [
     "black~=24.3.0",
     "coverage[toml]~=7.4.4",
-    "mypy~=1.9.0",
+    "mypy~=1.11.0",
     "pylint~=3.2.2",
     "pylint-pytest==2.0.0a0",
     "databricks-labs-pylint~=0.4.0",
@@ -76,10 +76,7 @@ dependencies = [
     "pytest-mock~=3.14.0",
     "pytest-timeout~=2.3.1",
     "pytest-xdist~=3.5.0",
-    "python-lsp-server>=1.9.0",
     "ruff~=0.3.4",
-    "types-PyYAML~=6.0.12",
-    "types-requests~=2.31.0",
 ]
 
 # store virtual env as the child of this folder. Helps VSCode (and PyCharm) to run better
@@ -91,11 +88,11 @@ coverage    = "pytest -n auto --cov src tests/unit --timeout 30 --cov-report=htm
 integration = "pytest -n 10 --cov src tests/integration --durations 20"
 fmt         = ["black . --extend-exclude 'tests/unit/source_code/samples/'",
                "ruff check . --fix",
-               "mypy --disable-error-code 'annotation-unchecked' --exclude 'tests/resources/*' --exclude dist .",
+               "mypy --disable-error-code 'annotation-unchecked' --enable-incomplete-feature=NewGenericSyntax --exclude 'tests/resources/*' --exclude dist .",
                "pylint --output-format=colorized -j 0 src tests"]
 verify      = ["black --check . --extend-exclude 'tests/unit/source_code/samples/'",
                "ruff check .",
-               "mypy --exclude 'tests/resources/*' --exclude dist .",
+               "mypy --exclude 'tests/resources/*' --exclude dist . --enable-incomplete-feature=NewGenericSyntax",
                "pylint --output-format=colorized -j 0 src tests"]
 lint         = ["pylint --output-format=colorized -j 0 src tests"]
 
@@ -131,7 +128,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["databricks.labs.pytester"]
+known-first-party = ["databricks.labs.pytester", "unit"]
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"

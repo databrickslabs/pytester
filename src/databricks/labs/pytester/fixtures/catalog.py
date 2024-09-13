@@ -42,7 +42,6 @@ def escape_sql_identifier(path: str, *, maxsplit: int = 2) -> str:
 @fixture
 # pylint: disable-next=too-many-statements,too-complex
 def make_table(
-    ws,
     sql_backend,
     make_schema,
     make_random,

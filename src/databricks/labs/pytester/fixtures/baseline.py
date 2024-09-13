@@ -125,7 +125,7 @@ def product_info():
 
 
 @fixture
-def ws(debug_env, product_info) -> WorkspaceClient:
+def ws(debug_env: dict[str, str], product_info: tuple[str, str]) -> WorkspaceClient:
     """
     Create and provide a Databricks WorkspaceClient object.
 
@@ -145,7 +145,24 @@ def ws(debug_env, product_info) -> WorkspaceClient:
     ```
     """
     product_name, product_version = product_info
-    return WorkspaceClient(host=debug_env["DATABRICKS_HOST"], product=product_name, product_version=product_version)
+    # ignores fixed in https://github.com/databricks/databricks-sdk-py/pull/760
+    return WorkspaceClient(
+        host=debug_env["DATABRICKS_HOST"],
+        auth_type=debug_env.get("DATABRICKS_AUTH_TYPE"),  # type: ignore
+        token=debug_env.get("DATABRICKS_TOKEN"),  # type: ignore
+        username=debug_env.get("DATABRICKS_USERNAME"),  # type: ignore
+        password=debug_env.get("DATABRICKS_PASSWORD"),  # type: ignore
+        client_id=debug_env.get("DATABRICKS_CLIENT_ID"),  # type: ignore
+        client_secret=debug_env.get("DATABRICKS_CLIENT_SECRET"),  # type: ignore
+        debug_truncate_bytes=debug_env.get("DATABRICKS_DEBUG_TRUNCATE_BYTES"),  # type: ignore
+        debug_headers=debug_env.get("DATABRICKS_DEBUG_HEADERS"),  # type: ignore
+        azure_client_id=debug_env.get("ARM_CLIENT_ID"),  # type: ignore
+        azure_tenant_id=debug_env.get("ARM_TENANT_ID"),  # type: ignore
+        azure_client_secret=debug_env.get("ARM_CLIENT_SECRET"),  # type: ignore
+        cluster_id=debug_env.get("DATABRICKS_CLUSTER_ID"),  # type: ignore
+        product=product_name,
+        product_version=product_version,
+    )
 
 
 @fixture

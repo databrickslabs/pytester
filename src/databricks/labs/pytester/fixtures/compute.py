@@ -13,7 +13,7 @@ from databricks.sdk.service.sql import (
 from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.jobs import Job, NotebookTask, Task
 from databricks.sdk.service._internal import Wait
-from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails, ClusterSpec
+from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails, ClusterSpec, CreateInstancePoolResponse
 
 from databricks.labs.pytester.fixtures.baseline import factory, get_purge_suffix, get_test_purge_time
 
@@ -110,7 +110,7 @@ def make_cluster(ws, make_random, log_workspace_link) -> Generator[ClusterDetail
 
 
 @fixture
-def make_instance_pool(ws, make_random, log_workspace_link):
+def make_instance_pool(ws, make_random, log_workspace_link) -> Generator[CreateInstancePoolResponse, None, None]:
     """
     Create a Databricks instance pool and clean it up after the test. Returns a function to create instance pools.
     Use `instance_pool_id` attribute from the returned object to get an ID of the pool.
@@ -127,7 +127,7 @@ def make_instance_pool(ws, make_random, log_workspace_link):
     ```
     """
 
-    def create(*, instance_pool_name=None, node_type_id=None, **kwargs):
+    def create(*, instance_pool_name=None, node_type_id=None, **kwargs) -> CreateInstancePoolResponse:
         if instance_pool_name is None:
             instance_pool_name = f"dummy-{make_random(4)}"
         if node_type_id is None:
