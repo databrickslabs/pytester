@@ -45,5 +45,3 @@ def test_a_thing(pytester):
     pytester.makepyfile(INLINE)
     result = pytester.runpytest()
     result.assert_outcomes(passed=1)
-
-

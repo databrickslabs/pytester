@@ -51,12 +51,14 @@ from databricks.labs.pytester.fixtures.environment import debug_env, debug_env_n
 from databricks.labs.pytester.fixtures.ml import make_experiment, make_model, make_serving_endpoint
 from databricks.labs.pytester.fixtures.redash import make_query
 from databricks.labs.pytester.fixtures.watchdog import watchdog_remove_after, watchdog_purge_suffix
+from databricks.labs.pytester.fixtures.connect import spark
 
 __all__ = [
     'debug_env_name',
     'debug_env',
     'env_or_skip',
     'ws',
+    'spark',
     'sql_backend',
     'sql_exec',
     'sql_fetch_all',
