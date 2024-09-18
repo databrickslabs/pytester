@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.2.0
+
+* Added `acc` and `make_acc_group` fixtures ([#42](https://github.com/databrickslabs/pytester/issues/42)). In this release, we have added two new fixtures, `acc` and `make_acc_group`, to the open-source library. The `acc` fixture provides a Databricks AccountClient object for use in tests, which can interact with the Databricks account API and automatically determines the account host from the `DATABRICKS_HOST` environment variable. The `make_acc_group` fixture is used for managing Databricks account groups, creating them with specified members and roles, and automatically deleting them after the test is complete. This fixture mirrors the behavior of the `make_group` fixture but interacts with the account client instead of the workspace client. These fixtures enable more comprehensive integration tests for the `acc` object and its various methods, enhancing the testing and management of Databricks account groups.
+
+
 ## 0.1.1
 
 * Fixed nightly CI builds ([#40](https://github.com/databrickslabs/pytester/issues/40)). In this release, we have removed the `no-cheat` GitHub Actions workflow that checked for disables pylint directives in new code. We have also updated the pytest requirement version to ~8.3.3 and added badges for Python version support and lines of code to the README file. The `permissions.py` file in the `databricks/labs/pytester/fixtures` directory has been updated to fix nightly CI builds by improving import statements and updating types. The `SqlPermissionLevel` class has been imported from the `databricks.sdk.service.sql` module, and an existing test case has been updated to use this new permission level for SQL-specific queries. Additionally, we have updated the version constraints for three dependencies in the `pyproject.toml` file to allow for more flexibility in selecting compatible library versions. These changes may simplify the project's GitHub Actions workflows, reduce maintenance overhead, and enhance the testing process and code quality.
