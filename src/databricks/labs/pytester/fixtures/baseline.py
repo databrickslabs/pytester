@@ -4,7 +4,8 @@ import string
 
 from pytest import fixture
 
-from databricks.sdk import WorkspaceClient
+from databricks.sdk import WorkspaceClient, AccountClient
+from databricks.sdk.config import Config
 from databricks.sdk.errors import DatabricksError
 
 _LOG = logging.getLogger(__name__)
@@ -138,24 +139,68 @@ def ws(debug_env: dict[str, str], product_info: tuple[str, str]) -> WorkspaceCli
     ```
     """
     product_name, product_version = product_info
-    # ignores fixed in https://github.com/databricks/databricks-sdk-py/pull/760
     return WorkspaceClient(
         host=debug_env["DATABRICKS_HOST"],
-        auth_type=debug_env.get("DATABRICKS_AUTH_TYPE"),  # type: ignore
-        token=debug_env.get("DATABRICKS_TOKEN"),  # type: ignore
-        username=debug_env.get("DATABRICKS_USERNAME"),  # type: ignore
-        password=debug_env.get("DATABRICKS_PASSWORD"),  # type: ignore
-        client_id=debug_env.get("DATABRICKS_CLIENT_ID"),  # type: ignore
-        client_secret=debug_env.get("DATABRICKS_CLIENT_SECRET"),  # type: ignore
+        auth_type=debug_env.get("DATABRICKS_AUTH_TYPE"),
+        token=debug_env.get("DATABRICKS_TOKEN"),
+        username=debug_env.get("DATABRICKS_USERNAME"),
+        password=debug_env.get("DATABRICKS_PASSWORD"),
+        client_id=debug_env.get("DATABRICKS_CLIENT_ID"),
+        client_secret=debug_env.get("DATABRICKS_CLIENT_SECRET"),
         debug_truncate_bytes=debug_env.get("DATABRICKS_DEBUG_TRUNCATE_BYTES"),  # type: ignore
         debug_headers=debug_env.get("DATABRICKS_DEBUG_HEADERS"),  # type: ignore
-        azure_client_id=debug_env.get("ARM_CLIENT_ID"),  # type: ignore
-        azure_tenant_id=debug_env.get("ARM_TENANT_ID"),  # type: ignore
-        azure_client_secret=debug_env.get("ARM_CLIENT_SECRET"),  # type: ignore
-        cluster_id=debug_env.get("DATABRICKS_CLUSTER_ID"),  # type: ignore
+        azure_client_id=debug_env.get("ARM_CLIENT_ID"),
+        azure_tenant_id=debug_env.get("ARM_TENANT_ID"),
+        azure_client_secret=debug_env.get("ARM_CLIENT_SECRET"),
+        cluster_id=debug_env.get("DATABRICKS_CLUSTER_ID"),
         product=product_name,
         product_version=product_version,
     )
+
+
+@fixture
+def acc(debug_env: dict[str, str], product_info: tuple[str, str], env_or_skip) -> AccountClient:
+    """
+    Create and provide a Databricks AccountClient object.
+
+    This fixture initializes a Databricks AccountClient object, which can be used
+    to interact with the Databricks account API. The created instance of AccountClient
+    is shared across all test functions within the test session.
+
+    Requires `DATABRICKS_ACCOUNT_ID` environment variable to be set. If `DATABRICKS_HOST`
+    points to a workspace host, the fixture would automatically determine the account host
+    from it.
+
+    See [detailed documentation](https://databricks-sdk-py.readthedocs.io/en/latest/authentication.html) for the list
+    of environment variables that can be used to authenticate the AccountClient.
+
+    In your test functions, include this fixture as an argument to use the AccountClient:
+
+    ```python
+    def test_listing_workspaces(acc):
+        workspaces = acc.workspaces.list()
+        assert len(workspaces) >= 1
+    ```
+    """
+    product_name, product_version = product_info
+    config = Config(
+        host=debug_env["DATABRICKS_HOST"],
+        account_id=env_or_skip("DATABRICKS_ACCOUNT_ID"),
+        auth_type=debug_env.get("DATABRICKS_AUTH_TYPE"),
+        username=debug_env.get("DATABRICKS_USERNAME"),
+        password=debug_env.get("DATABRICKS_PASSWORD"),
+        client_id=debug_env.get("DATABRICKS_CLIENT_ID"),
+        client_secret=debug_env.get("DATABRICKS_CLIENT_SECRET"),
+        debug_truncate_bytes=debug_env.get("DATABRICKS_DEBUG_TRUNCATE_BYTES"),  # type: ignore
+        debug_headers=debug_env.get("DATABRICKS_DEBUG_HEADERS"),  # type: ignore
+        azure_client_id=debug_env.get("ARM_CLIENT_ID"),
+        azure_tenant_id=debug_env.get("ARM_TENANT_ID"),
+        azure_client_secret=debug_env.get("ARM_CLIENT_SECRET"),
+        product=product_name,
+        product_version=product_version,
+    )
+    config.host = config.environment.deployment_url('accounts')
+    return AccountClient(config=config)
 
 
 @fixture

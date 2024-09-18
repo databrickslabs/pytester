@@ -2,6 +2,7 @@ import pytest
 
 from databricks.labs.pytester.fixtures.baseline import (
     ws,
+    acc,
     make_random,
     product_info,
     log_workspace_link,
@@ -15,7 +16,7 @@ from databricks.labs.pytester.fixtures.compute import (
     make_pipeline,
     make_warehouse,
 )
-from databricks.labs.pytester.fixtures.iam import make_group, make_user
+from databricks.labs.pytester.fixtures.iam import make_group, make_acc_group, make_user
 from databricks.labs.pytester.fixtures.catalog import (
     make_udf,
     make_catalog,
@@ -58,6 +59,7 @@ __all__ = [
     'debug_env',
     'env_or_skip',
     'ws',
+    'acc',
     'spark',
     'sql_backend',
     'sql_exec',
@@ -74,6 +76,7 @@ __all__ = [
     'make_pipeline',
     'make_warehouse',
     'make_group',
+    'make_acc_group',
     'make_user',
     'make_pipeline_permissions',
     'make_notebook',

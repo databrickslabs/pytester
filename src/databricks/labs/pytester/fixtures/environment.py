@@ -11,6 +11,12 @@ from databricks.labs.blueprint.entrypoint import find_dir_with_leaf
 
 @fixture
 def is_in_debug() -> bool:
+    """
+    Returns true if the test is running from a debugger in IDE, otherwise false.
+
+    The following IDE are supported: IntelliJ IDEA (including Community Edition),
+    PyCharm (including Community Edition), and Visual Studio Code.
+    """
     return os.path.basename(sys.argv[0]) in {"_jb_pytest_runner.py", "testlauncher.py"}
 
 
