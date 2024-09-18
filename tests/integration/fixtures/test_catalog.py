@@ -2,6 +2,9 @@ import logging
 import pytest
 
 
+
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,3 +59,23 @@ def test_storage_credential(env_or_skip, make_storage_credential, make_random):
         credential_name=credential_name,
         aws_iam_role_arn=env_or_skip("TEST_UBER_ROLE_ID"),
     )
+
+
+def test_remove_after_property_table(ws, make_table, sql_backend):
+    new_table = make_table()
+    # TODO: tables.get is currently failing with
+    #   databricks.sdk.errors.platform.NotFound: Catalog 'hive_metastore' does not exist.
+    sql_response = list(sql_backend.fetch(f"DESCRIBE TABLE EXTENDED {new_table.full_name}"))
+    for row in sql_response:
+        if row.col_name == "Table Properties":
+            assert "RemoveAfter" in row[1]
+
+
+def test_remove_after_property_schema(ws, make_schema, sql_backend):
+    new_schema = make_schema()
+    # TODO: schemas.get is currently failing with
+    #   databricks.sdk.errors.platform.NotFound: Catalog 'hive_metastore' does not exist.
+    sql_response = list(sql_backend.fetch(f"DESCRIBE SCHEMA EXTENDED {new_schema.full_name}"))
+    for row in sql_response:
+        if row.database_description_item == "Properties":
+            assert "RemoveAfter" in row[1]
