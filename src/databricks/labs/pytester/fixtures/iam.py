@@ -70,6 +70,26 @@ def make_group(ws: WorkspaceClient, make_random, watchdog_purge_suffix):
     yield from _make_group("workspace group", ws.config, ws.groups, make_random, watchdog_purge_suffix)
 
 
+@fixture
+def make_acc_group(acc, make_random, watchdog_purge_suffix):
+    """
+    This fixture provides a function to manage Databricks account groups. Groups can be created with
+    specified members and roles, and they will be deleted after the test is complete.
+
+    Has the same arguments and behavior as [`make_group` fixture](#make_group-fixture) but uses the account
+    client instead of the workspace client.
+
+    Example usage:
+    ```python
+    def test_new_account_group(make_acc_group, acc):
+        group = make_acc_group()
+        loaded = acc.groups.get(group.id)
+        assert group.display_name == loaded.display_name
+    ```
+    """
+    yield from _make_group("account group", acc.config, acc.groups, make_random, watchdog_purge_suffix)
+
+
 def _scim_values(ids: list[str]) -> list[iam.ComplexValue]:
     return [iam.ComplexValue(value=x) for x in ids]
 

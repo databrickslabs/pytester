@@ -13,3 +13,9 @@ def test_new_group(make_group, make_user, ws):
     loaded = ws.groups.get(group.id)
     assert group.display_name == loaded.display_name
     assert group.members == loaded.members
+
+
+def test_new_account_group(make_acc_group, acc):
+    group = make_acc_group()
+    loaded = acc.groups.get(group.id)
+    assert group.display_name == loaded.display_name

@@ -200,7 +200,7 @@ Loads environment variables specified in [`debug_env_name` fixture](#debug_env_n
 for local debugging in IDEs, otherwise allowing the tests to run with the default environment variables
 specified in the CI/CD pipeline.
 
-See also [`env_or_skip`](#env_or_skip-fixture), [`ws`](#ws-fixture), [`debug_env_name`](#debug_env_name-fixture), [`is_in_debug`](#is_in_debug-fixture).
+See also [`acc`](#acc-fixture), [`env_or_skip`](#env_or_skip-fixture), [`ws`](#ws-fixture), [`debug_env_name`](#debug_env_name-fixture), [`is_in_debug`](#is_in_debug-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -219,7 +219,7 @@ def test_something(env_or_skip):
     assert token is not None
 ```
 
-See also [`make_udf`](#make_udf-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`is_in_debug`](#is_in_debug-fixture).
+See also [`acc`](#acc-fixture), [`make_udf`](#make_udf-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`is_in_debug`](#is_in_debug-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -243,6 +243,33 @@ def test_workspace_operations(ws):
 ```
 
 See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query`](#make_query-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_storage_credential`](#make_storage_credential-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`spark`](#spark-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `acc` fixture
+Create and provide a Databricks AccountClient object.
+
+This fixture initializes a Databricks AccountClient object, which can be used
+to interact with the Databricks account API. The created instance of AccountClient
+is shared across all test functions within the test session.
+
+Requires `DATABRICKS_ACCOUNT_ID` environment variable to be set. If `DATABRICKS_HOST`
+points to a workspace host, the fixture would automatically determine the account host
+from it.
+
+See [detailed documentation](https://databricks-sdk-py.readthedocs.io/en/latest/authentication.html) for the list
+of environment variables that can be used to authenticate the AccountClient.
+
+In your test functions, include this fixture as an argument to use the AccountClient:
+
+```python
+def test_listing_workspaces(acc):
+    workspaces = acc.workspaces.list()
+    assert len(workspaces) >= 1
+```
+
+See also [`make_acc_group`](#make_acc_group-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture), [`env_or_skip`](#env_or_skip-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -309,7 +336,7 @@ random_string = make_random(k=8)
 assert len(random_string) == 8
 ```
 
-See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture).
+See also [`make_acc_group`](#make_acc_group-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -502,6 +529,26 @@ def test_new_group(make_group, make_user, ws):
 ```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `make_acc_group` fixture
+This fixture provides a function to manage Databricks account groups. Groups can be created with
+specified members and roles, and they will be deleted after the test is complete.
+
+Has the same arguments and behavior as [`make_group` fixture](#make_group-fixture) but uses the account
+client instead of the workspace client.
+
+Example usage:
+```python
+def test_new_account_group(make_acc_group, acc):
+    group = make_acc_group()
+    loaded = acc.groups.get(group.id)
+    assert group.display_name == loaded.display_name
+```
+
+See also [`acc`](#acc-fixture), [`make_random`](#make_random-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -819,7 +866,7 @@ See also [`ws`](#ws-fixture).
 ### `product_info` fixture
 _No description yet._
 
-See also [`ws`](#ws-fixture).
+See also [`acc`](#acc-fixture), [`ws`](#ws-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1020,13 +1067,16 @@ See also [`make_cluster`](#make_cluster-fixture), [`make_instance_pool`](#make_i
 ### `watchdog_purge_suffix` fixture
 HEX-encoded purge time suffix for test objects.
 
-See also [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_user`](#make_user-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
+See also [`make_acc_group`](#make_acc_group-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_user`](#make_user-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
 
 ### `is_in_debug` fixture
-_No description yet._
+Returns true if the test is running from a debugger in IDE, otherwise false.
+
+The following IDE are supported: IntelliJ IDEA (including Community Edition),
+PyCharm (including Community Edition), and Visual Studio Code.
 
 See also [`debug_env`](#debug_env-fixture), [`env_or_skip`](#env_or_skip-fixture).
 
