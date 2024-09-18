@@ -39,7 +39,3 @@
 Dependency updates:
 
  * Updated pytest requirement from ~=8.1.0 to ~=8.3.3 ([#31](https://github.com/databrickslabs/pytester/pull/31)).
-
-## 0.0.0
-
-Initial release

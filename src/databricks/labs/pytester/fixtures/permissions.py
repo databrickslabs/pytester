@@ -1,8 +1,9 @@
 import pytest
 from databricks.sdk.errors import InvalidParameterValue
-from databricks.sdk.service import sql, iam
+from databricks.sdk.service import iam
 from databricks.sdk.service.iam import PermissionLevel
-from databricks.sdk.service.sql import GetResponse
+from databricks.sdk.service.sql import GetResponse, ObjectTypePlural, AccessControl
+from databricks.sdk.service.sql import PermissionLevel as RedashPermissionLevel
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
@@ -31,18 +32,18 @@ class _PermissionsChange:
 
 
 class _RedashPermissionsChange:
-    def __init__(self, object_id: str, before: list[sql.AccessControl], after: list[sql.AccessControl]):
+    def __init__(self, object_id: str, before: list[AccessControl], after: list[AccessControl]):
         self.object_id = object_id
         self.before = before
         self.after = after
 
     @staticmethod
-    def _principal(acr: sql.AccessControl) -> str:
+    def _principal(acr: AccessControl) -> str:
         if acr.user_name is not None:
             return f"user_name {acr.user_name}"
         return f"group_name {acr.group_name}"
 
-    def _list(self, acl: list[sql.AccessControl]):
+    def _list(self, acl: list[AccessControl]):
         return ", ".join(f"{self._principal(_)} {_.permission_level.value}" for _ in acl)
 
     def __repr__(self):
@@ -132,11 +133,11 @@ def _make_permissions_factory(name, resource_type, levels, id_retriever):
 
 def _make_redash_permissions_factory(name, resource_type, levels, id_retriever):
     def _non_inherited(acl: GetResponse):
-        out: list[sql.AccessControl] = []
+        out: list[AccessControl] = []
         assert acl.access_control_list is not None
         for access_control in acl.access_control_list:
             out.append(
-                sql.AccessControl(
+                AccessControl(
                     permission_level=access_control.permission_level,
                     group_name=access_control.group_name,
                     user_name=access_control.user_name,
@@ -148,10 +149,10 @@ def _make_redash_permissions_factory(name, resource_type, levels, id_retriever):
         def create(
             *,
             object_id: str,
-            permission_level: sql.PermissionLevel | None = None,
+            permission_level: RedashPermissionLevel | None = None,
             group_name: str | None = None,
             user_name: str | None = None,
-            access_control_list: list[sql.AccessControl] | None = None,
+            access_control_list: list[AccessControl] | None = None,
         ):
             nothing_specified = permission_level is None and access_control_list is None
             both_specified = permission_level is not None and access_control_list is not None
@@ -172,14 +173,14 @@ def _make_redash_permissions_factory(name, resource_type, levels, id_retriever):
                 access_control_list = []
                 if group_name is not None:
                     access_control_list.append(
-                        sql.AccessControl(
+                        AccessControl(
                             group_name=group_name,
                             permission_level=permission_level,
                         )
                     )
                 if user_name is not None:
                     access_control_list.append(
-                        sql.AccessControl(
+                        AccessControl(
                             user_name=user_name,
                             permission_level=permission_level,
                         )
@@ -190,7 +191,9 @@ def _make_redash_permissions_factory(name, resource_type, levels, id_retriever):
 
         def remove(change: _RedashPermissionsChange):
             ws.dbsql_permissions.set(
-                sql.ObjectTypePlural(resource_type), change.object_id, access_control_list=change.before
+                ObjectTypePlural(resource_type),
+                change.object_id,
+                access_control_list=change.before,
             )
 
         yield from factory(f"{name} permissions", create, remove)
@@ -371,12 +374,12 @@ make_lakeview_dashboard_permissions = pytest.fixture(
 make_dashboard_permissions = pytest.fixture(
     _make_redash_permissions_factory(
         "dashboard",
-        "dashboards",
+        ObjectTypePlural.DASHBOARDS,
         [
-            PermissionLevel.CAN_EDIT,
-            PermissionLevel.CAN_RUN,
-            PermissionLevel.CAN_MANAGE,
-            PermissionLevel.CAN_VIEW,
+            RedashPermissionLevel.CAN_EDIT,
+            RedashPermissionLevel.CAN_RUN,
+            RedashPermissionLevel.CAN_MANAGE,
+            RedashPermissionLevel.CAN_VIEW,
         ],
         _simple,
     )
@@ -384,12 +387,12 @@ make_dashboard_permissions = pytest.fixture(
 make_alert_permissions = pytest.fixture(
     _make_redash_permissions_factory(
         "alert",
-        "alerts",
+        ObjectTypePlural.ALERTS,
         [
-            PermissionLevel.CAN_EDIT,
-            PermissionLevel.CAN_RUN,
-            PermissionLevel.CAN_MANAGE,
-            PermissionLevel.CAN_VIEW,
+            RedashPermissionLevel.CAN_EDIT,
+            RedashPermissionLevel.CAN_RUN,
+            RedashPermissionLevel.CAN_MANAGE,
+            RedashPermissionLevel.CAN_VIEW,
         ],
         _simple,
     )
@@ -397,12 +400,12 @@ make_alert_permissions = pytest.fixture(
 make_query_permissions = pytest.fixture(
     _make_redash_permissions_factory(
         "query",
-        "queries",
+        ObjectTypePlural.QUERIES,
         [
-            PermissionLevel.CAN_EDIT,
-            PermissionLevel.CAN_RUN,
-            PermissionLevel.CAN_MANAGE,
-            PermissionLevel.CAN_VIEW,
+            RedashPermissionLevel.CAN_EDIT,
+            RedashPermissionLevel.CAN_RUN,
+            RedashPermissionLevel.CAN_MANAGE,
+            RedashPermissionLevel.CAN_VIEW,
         ],
         _simple,
     )

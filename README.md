@@ -1,5 +1,9 @@
 # Python Testing for Databricks
 
+[![python](https://img.shields.io/badge/python-3.10,%203.11,%203.12-green)](https://github.com/databrickslabs/pytester/actions/workflows/push.yml)
+[![lines of code](https://tokei.rs/b1/github/databrickslabs/pytester)]([https://github.com/databrickslabs/pytester](https://github.com/databrickslabs/pytester))
+
+
 <!-- TOC -->
 * [Python Testing for Databricks](#python-testing-for-databricks)
   * [Ecosystem](#ecosystem)
@@ -60,6 +64,17 @@
     * [`make_feature_table_permissions` fixture](#make_feature_table_permissions-fixture)
 * [Project Support](#project-support)
 <!-- TOC -->
+
+## Installation
+
+Add a `databricks-labs-pytester` dependency to your `pyproject.toml` file (or legacy `requirements.txt` file). You can
+also install it directly from the command line:
+
+```shell
+pip install databricks-labs-pytester
+```
+
+[[back to top](#python-testing-for-databricks)]
 
 ## Ecosystem
 
