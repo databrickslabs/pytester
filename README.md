@@ -9,6 +9,7 @@
   * [Ecosystem](#ecosystem)
   * [PyTest Fixtures](#pytest-fixtures)
     * [Logging](#logging)
+    * [Installation](#installation)
     * [`debug_env_name` fixture](#debug_env_name-fixture)
     * [`debug_env` fixture](#debug_env-fixture)
     * [`env_or_skip` fixture](#env_or_skip-fixture)
@@ -72,6 +73,41 @@ also install it directly from the command line:
 
 ```shell
 pip install databricks-labs-pytester
+```
+
+If you use `hatch` as a build system, make sure to add `databricks-labs-pytester` as 
+a test-time dependency and not as a compile-time dependency, otherwise your wheels will
+transitively depend on `pytest`, which is not usually something you need.
+
+```toml
+[project]
+name = "name-of-your-project"
+# ...
+dependencies = [
+  "databricks-sdk~=0.30",
+  # ... dependencies required for your code to execute
+]
+
+[tool.hatch.envs.default]
+dependencies = [
+  # ... dependencies required to test/validate/format your code:
+    "black~=24.3.0",
+    "coverage[toml]~=7.4.4",
+    "mypy~=1.9.0",
+    "pylint~=3.2.2",
+    "pylint-pytest==2.0.0a0",
+    "databricks-labs-pylint~=0.4.0",
+    "databricks-labs-pytester~=0.2", # <= this library 
+    "pytest~=8.3.3",
+    "pytest-cov~=4.1.0",
+    "pytest-mock~=3.14.0",
+    "pytest-timeout~=2.3.1",
+    "pytest-xdist~=3.5.0",
+    "python-lsp-server>=1.9.0",
+    "ruff~=0.3.4",
+    "types-PyYAML~=6.0.12",
+    "types-requests~=2.31.0",
+]
 ```
 
 [[back to top](#python-testing-for-databricks)]
@@ -242,7 +278,7 @@ def test_workspace_operations(ws):
     assert len(clusters) >= 0
 ```
 
-See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query`](#make_query-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_storage_credential`](#make_storage_credential-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`spark`](#spark-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
+See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table`](#make_feature_table-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query`](#make_query-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_storage_credential`](#make_storage_credential-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`spark`](#spark-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -336,7 +372,7 @@ random_string = make_random(k=8)
 assert len(random_string) == 8
 ```
 
-See also [`make_acc_group`](#make_acc_group-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture).
+See also [`make_acc_group`](#make_acc_group-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_feature_table`](#make_feature_table-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_warehouse`](#make_warehouse-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -370,7 +406,8 @@ See also [`ws`](#ws-fixture).
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_job` fixture
-Create a Databricks job and clean it up after the test. Returns a function to create jobs.
+Create a Databricks job and clean it up after the test. Returns a function to create jobs, that returns
+a [`Job`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/jobs.html#databricks.sdk.service.jobs.Job) instance.
 
 Keyword Arguments:
 * `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
@@ -1044,6 +1081,14 @@ See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_mode
 _No description yet._
 
 See also [`ws`](#ws-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `make_feature_table` fixture
+_No description yet._
+
+See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]

@@ -145,3 +145,20 @@ def make_serving_endpoint(ws, make_random, make_model, watchdog_remove_after):
         ws.serving_endpoints.delete(endpoint_name)
 
     yield from factory("Serving endpoint", create, remove)
+
+
+@fixture
+def make_feature_table(ws, make_random):
+    def create():
+        feature_table_name = make_random(6) + "." + make_random(6)
+        table = ws.api_client.do(
+            "POST",
+            "/api/2.0/feature-store/feature-tables/create",
+            body={"name": feature_table_name, "primary_keys": [{"name": "pk", "data_type": "string"}]},
+        )
+        return table['feature_table']
+
+    def remove(table: dict):
+        ws.api_client.do("DELETE", "/api/2.0/feature-store/feature-tables/delete", body={"name": table["name"]})
+
+    yield from factory("Feature table", create, remove)

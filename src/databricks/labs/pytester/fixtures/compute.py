@@ -157,7 +157,8 @@ def make_instance_pool(
 @fixture
 def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove_after) -> Generator[Job, None, None]:
     """
-    Create a Databricks job and clean it up after the test. Returns a function to create jobs.
+    Create a Databricks job and clean it up after the test. Returns a function to create jobs, that returns
+    a `databricks.sdk.service.jobs.Job` instance.
 
     Keyword Arguments:
     * `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
@@ -211,7 +212,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             kwargs["tags"].append(remove_after_tag)
         job = ws.jobs.create(**kwargs)
         log_workspace_link(kwargs["name"], f'job/{job.job_id}', anchor=False)
-        return job
+        return ws.jobs.get(job.job_id)
 
     yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))
 
