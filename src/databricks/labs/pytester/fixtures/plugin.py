@@ -49,7 +49,7 @@ from databricks.labs.pytester.fixtures.permissions import (  # noqa
 )
 from databricks.labs.pytester.fixtures.secrets import make_secret_scope, make_secret_scope_acl
 from databricks.labs.pytester.fixtures.environment import debug_env, debug_env_name, env_or_skip, is_in_debug
-from databricks.labs.pytester.fixtures.ml import make_experiment, make_model, make_serving_endpoint
+from databricks.labs.pytester.fixtures.ml import make_experiment, make_model, make_serving_endpoint, make_feature_table
 from databricks.labs.pytester.fixtures.redash import make_query
 from databricks.labs.pytester.fixtures.watchdog import watchdog_remove_after, watchdog_purge_suffix
 from databricks.labs.pytester.fixtures.connect import spark
@@ -109,6 +109,7 @@ __all__ = [
     'make_registered_model_permissions',
     'make_serving_endpoint',
     'make_serving_endpoint_permissions',
+    'make_feature_table',
     'make_feature_table_permissions',
     'watchdog_remove_after',
     'watchdog_purge_suffix',
