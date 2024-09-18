@@ -1,5 +1,7 @@
 import logging
 from collections.abc import Generator, Callable
+from unittest.mock import Mock
+
 from pytest import fixture
 from databricks.labs.blueprint.commands import CommandExecutor
 from databricks.sdk.errors import DatabricksError
@@ -299,6 +301,8 @@ def make_catalog(ws, sql_backend, make_random, watchdog_purge_suffix, log_worksp
         name = f"dummy_C{make_random(4)}_{watchdog_purge_suffix}".lower()
         sql_backend.execute(f"CREATE CATALOG {name}")
         catalog_info = ws.catalogs.get(name)
+        if isinstance(catalog_info, Mock):
+            catalog_info.name = name
         log_workspace_link(f'{name} catalog', f'explore/data/{name}')
         return catalog_info
 

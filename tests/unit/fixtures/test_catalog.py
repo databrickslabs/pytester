@@ -102,11 +102,10 @@ def test_make_table_custom_schema():
 
 
 def test_make_catalog():
-    ctx, _ = call_stateful(make_catalog)
+    ctx, info = call_stateful(make_catalog)
+    ctx['ws'].catalogs.get.assert_called_with(info.name)
 
-    ctx['ws'].catalogs.get.assert_called_with('dummy_crandom')
-
-    assert ctx['sql_backend'].queries == ['CREATE CATALOG dummy_crandom']
+    assert ctx['sql_backend'].queries == [f"CREATE CATALOG {info.name}"]
 
 
 def test_make_udf():
