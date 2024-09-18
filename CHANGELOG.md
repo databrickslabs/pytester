@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.1.1
+
+* Fixed nightly CI builds ([#40](https://github.com/databrickslabs/pytester/issues/40)). In this release, we have removed the `no-cheat` GitHub Actions workflow that checked for disables pylint directives in new code. We have also updated the pytest requirement version to ~8.3.3 and added badges for Python version support and lines of code to the README file. The `permissions.py` file in the `databricks/labs/pytester/fixtures` directory has been updated to fix nightly CI builds by improving import statements and updating types. The `SqlPermissionLevel` class has been imported from the `databricks.sdk.service.sql` module, and an existing test case has been updated to use this new permission level for SQL-specific queries. Additionally, we have updated the version constraints for three dependencies in the `pyproject.toml` file to allow for more flexibility in selecting compatible library versions. These changes may simplify the project's GitHub Actions workflows, reduce maintenance overhead, and enhance the testing process and code quality.
+
+
 ## 0.1.0
 
 * Added Databricks Connect fixture. A new fixture named `spark` has been added to the codebase, providing a Databricks Connect Spark session for testing purposes. The fixture requires the `databricks-connect` package to be installed and takes a `WorkspaceClient` object as an argument. It first checks if a `cluster_id` is present in the environment, and if not, it skips the test and raises a message. The fixture then ensures that the cluster is running and attempts to import the `DatabricksSession` class from the `databricks.connect` module. If the import fails, it skips the test and raises a message. This new fixture enables easier testing of Databricks Connect functionality, reducing boilerplate code required to set up a Spark session within tests. Additionally, a new `is_in_debug` fixture has been added, although there is no further documentation or usage examples provided for it.
