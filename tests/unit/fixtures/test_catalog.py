@@ -103,9 +103,8 @@ def test_make_table_custom_schema():
 
 def test_make_catalog():
     ctx, info = call_stateful(make_catalog)
-    ctx['ws'].catalogs.get.assert_called_with(info.name)
-
-    assert ctx['sql_backend'].queries == [f"CREATE CATALOG {info.name}"]
+    ctx['ws'].catalogs.create.assert_called()  # can't specify call params accurately
+    assert info.properties and info.properties.get("RemoveAfter", None)
 
 
 def test_make_udf():

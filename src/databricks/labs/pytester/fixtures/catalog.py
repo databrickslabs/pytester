@@ -280,7 +280,9 @@ def make_schema(
 
 
 @fixture
-def make_catalog(ws, sql_backend, make_random, watchdog_purge_suffix, log_workspace_link) -> Generator[Callable[..., CatalogInfo], None, None]:
+def make_catalog(
+    ws, make_random, watchdog_remove_after, log_workspace_link
+) -> Generator[Callable[..., CatalogInfo], None, None]:
     """
     Create a catalog and return its info. Remove it after the test.
     Returns instance of `databricks.sdk.service.catalog.CatalogInfo`.
@@ -296,11 +298,8 @@ def make_catalog(ws, sql_backend, make_random, watchdog_purge_suffix, log_worksp
     """
 
     def create() -> CatalogInfo:
-        # Warning: As of 2024-09-04 there is no way to mark this catalog for protection against the watchdog.
-        # Ref: https://github.com/databrickslabs/watchdog/blob/cdc97afdac1567e89d3b39d938f066fd6267b3ba/scan/objects/uc.go#L68
-        name = f"dummy_C{make_random(4)}_{watchdog_purge_suffix}".lower()
-        sql_backend.execute(f"CREATE CATALOG {name}")
-        catalog_info = ws.catalogs.get(name)
+        name = f"dummy_C{make_random(4)}".lower()
+        catalog_info = ws.catalogs.create(name=name, properties={"RemoveAfter": watchdog_remove_after})
         if isinstance(catalog_info, Mock):
             catalog_info.name = name
         log_workspace_link(f'{name} catalog', f'explore/data/{name}')
