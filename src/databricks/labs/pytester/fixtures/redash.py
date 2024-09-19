@@ -1,3 +1,4 @@
+import json
 from collections.abc import Generator
 
 from pytest import fixture
@@ -12,7 +13,7 @@ def make_query(
     make_table,
     make_random,
     log_workspace_link,
-    watchdog_purge_suffix,
+    watchdog_remove_after,
 ) -> Generator[LegacyQuery, None, None]:
     """
     Create a query and remove it after the test is done. Returns the `databricks.sdk.service.sql.LegacyQuery` object.
@@ -39,16 +40,23 @@ def make_query(
     ```
     """
 
-    def create(sql_query: str | None = None) -> LegacyQuery:
+    def create(sql_query: str | None = None, **kwargs) -> LegacyQuery:
         if sql_query is None:
             table = make_table()
             sql_query = f"SELECT * FROM {table.catalog_name}.{table.schema_name}.{table.name}"
-        query_name = f"dummy_query_Q{make_random(4)}_{watchdog_purge_suffix}"
+        # add RemoveAfter tag for watchdog
+        remove_after_tag = json.dumps({"key": "RemoveAfter", "value": watchdog_remove_after})
+        tags: list[str] | None = kwargs.get('tags', None)
+        if tags:
+            tags.append(remove_after_tag)
+        else:
+            tags = [remove_after_tag]
+        query_name = f"dummy_query_Q{make_random(4)}"
         query = ws.queries_legacy.create(
             name=query_name,
             description="TEST QUERY FOR UCX",
             query=sql_query,
-            tags=["original_query_tag"],
+            tags=tags,
         )
         log_workspace_link(f"{query_name} query", f'sql/editor/{query.id}')
         return query

@@ -1033,7 +1033,7 @@ def test_permissions_for_redash(
     )
 ```
 
-See also [`ws`](#ws-fixture), [`make_table`](#make_table-fixture), [`make_random`](#make_random-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
+See also [`ws`](#ws-fixture), [`make_table`](#make_table-fixture), [`make_random`](#make_random-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1104,7 +1104,7 @@ See also [`ws`](#ws-fixture).
 ### `watchdog_remove_after` fixture
 Purge time for test objects, representing the (UTC-based) hour from which objects may be purged.
 
-See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_schema`](#make_schema-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_warehouse`](#make_warehouse-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
+See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_schema`](#make_schema-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_warehouse`](#make_warehouse-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1112,7 +1112,7 @@ See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster
 ### `watchdog_purge_suffix` fixture
 HEX-encoded purge time suffix for test objects.
 
-See also [`make_acc_group`](#make_acc_group-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_user`](#make_user-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
+See also [`make_acc_group`](#make_acc_group-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_group`](#make_group-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_repo`](#make_repo-fixture), [`make_user`](#make_user-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
