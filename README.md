@@ -542,16 +542,15 @@ See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_
 [[back to top](#python-testing-for-databricks)]
 
 ### `make_group` fixture
-This fixture provides a function to manage Databricks workspace groups. Groups can be created with
-specified members and roles, and they will be deleted after the test is complete. Deals with eventual
-consistency issues by retrying the creation process for 30 seconds and allowing up to two minutes
-for group to be provisioned. Returns an instance of [`Group`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/iam.html#databricks.sdk.service.iam.Group).
+This fixture provides a function to manage Databricks workspace groups. Groups can be created with specified
+members and roles, and they will be deleted after the test is complete. Deals with eventual consistency issues by
+retrying the creation process for 30 seconds and then waiting for up to 3 minutes for the group to be provisioned.
+Returns an instance of [`Group`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/iam.html#databricks.sdk.service.iam.Group).
 
 Keyword arguments:
 * `members` (list of strings): A list of user IDs to add to the group.
 * `roles` (list of strings): A list of roles to assign to the group.
 * `display_name` (str): The display name of the group.
-* `wait_for_provisioning` (bool): If `True`, the function will wait for the group to be provisioned.
 * `entitlements` (list of strings): A list of entitlements to assign to the group.
 
 The following example creates a group with a single member and independently verifies that the group was created:
