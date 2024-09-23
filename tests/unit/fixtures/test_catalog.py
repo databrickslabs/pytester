@@ -110,7 +110,7 @@ def test_make_catalog() -> None:
 
 
 def test_make_catalog_creates_catalog_with_name() -> None:
-    ctx, info = call_stateful(make_catalog, name="test")
+    ctx, _ = call_stateful(make_catalog, name="test")
     ctx['ws'].catalogs.create.assert_called_once_with(name="test", properties=ANY)
 
 
