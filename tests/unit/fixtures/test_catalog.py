@@ -101,7 +101,7 @@ def test_make_table_custom_schema():
     ]
 
 
-def test_make_catalog():
+def test_make_catalog() -> None:
     ctx, info = call_stateful(make_catalog)
     ctx['ws'].catalogs.create.assert_called()  # can't specify call params accurately
     assert info.properties and info.properties.get("RemoveAfter", None)
