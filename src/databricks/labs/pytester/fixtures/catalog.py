@@ -297,8 +297,8 @@ def make_catalog(
     ```
     """
 
-    def create() -> CatalogInfo:
-        name = f"dummy_C{make_random(4)}".lower()
+    def create(name: str = "") -> CatalogInfo:
+        name = name or f"dummy_C{make_random(4)}".lower()
         catalog_info = ws.catalogs.create(name=name, properties={"RemoveAfter": watchdog_remove_after})
         if isinstance(catalog_info, Mock):
             catalog_info.name = name
