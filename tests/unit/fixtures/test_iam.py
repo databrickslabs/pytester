@@ -18,21 +18,17 @@ def test_make_user_no_args():
 
 
 def test_make_group_no_args():
-    # Ensure the wait-for-provisioning logic can complete.
     ws = create_autospec(WorkspaceClient)
     mock_group = Group(id="an_id")
     ws.groups.create.return_value = mock_group
     ws.groups.list.return_value = [mock_group]
 
-    # Perform the test.
     with fixtures(ws=ws):
         ctx, group = call_stateful(make_group)
 
-    # Verify the fixture for this test.
     assert ctx is not None and ctx['ws'] is ws
     assert group is mock_group
 
-    # Verify the fixture under test performed the expected actions.
     ws.groups.create.assert_called_once()
     assert ws.groups.get.call_args_list == [call("an_id"), call("an_id")]
     assert ws.groups.list.call_args_list == [
@@ -44,21 +40,17 @@ def test_make_group_no_args():
 
 
 def test_make_acc_group_no_args():
-    # Ensure the wait-for-provisioning logic can complete.
     acc = create_autospec(AccountClient)
     mock_group = Group(id="an_id")
     acc.groups.create.return_value = mock_group
     acc.groups.list.return_value = [mock_group]
 
-    # Perform the test.
     with fixtures(acc=acc):
         ctx, group = call_stateful(make_acc_group)
 
-    # Verify the fixture for this test.
     assert ctx is not None and ctx['acc'] is acc
     assert group is mock_group
 
-    # Verify the fixture under test performed the expected actions.
     acc.groups.create.assert_called_once()
     assert acc.groups.get.call_args_list == [call("an_id"), call("an_id")]
     assert acc.groups.list.call_args_list == [
@@ -73,7 +65,6 @@ def test_make_acc_group_no_args():
     [(make_group, "ws", WorkspaceClient), (make_acc_group, "acc", AccountClient)],
 )
 def test_make_group_deprecated_arg(make_group_fixture, client_fixture_name, client_class) -> None:
-    # Ensure the wait-for-provisioning logic can complete.
     client = create_autospec(client_class)
     mock_group = Group(id="an_id")
     client.groups.create.return_value = mock_group
@@ -82,7 +73,6 @@ def test_make_group_deprecated_arg(make_group_fixture, client_fixture_name, clie
     with fixtures(**{client_fixture_name: client}), warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
 
-        # Verify the fixture that we're testing.
         call_stateful(make_group_fixture, wait_for_provisioning=True)
 
         # Check that the expected warning was emitted and attributed to the caller.
