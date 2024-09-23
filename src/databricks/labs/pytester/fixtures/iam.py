@@ -116,18 +116,19 @@ def _wait_group_provisioned(interface: AccountGroupsAPI | GroupsAPI, group: Grou
     # interfaces: two subsequent calls need to succeed for us to proceed. (This is probabilistic, and not a guarantee.)
     # The REST API internals cache things for up to 60s, and we see times close to this during tests. The retry timeout
     # reflects this: if it's taking much longer then something else is wrong.
+    group_id = group.id
+    assert group_id is not None
 
     @retried(on=[NotFound], timeout=timedelta(seconds=90))
-    def _double_get_group(group: Group) -> None:
-        assert group.id
-        interface.get(group.id)
-        interface.get(group.id)
+    def _double_get_group() -> None:
+        interface.get(group_id)
+        interface.get(group_id)
 
     def _check_group_in_listing() -> None:
-        found_groups = interface.list(attributes="id", filter=f'id eq "{group.id}"')
+        found_groups = interface.list(attributes="id", filter=f'id eq "{group_id}"')
         found_ids = {found_group.id for found_group in found_groups}
-        if group.id not in found_ids:
-            msg = f"Group id not (yet) found in group listing: {group.id}"
+        if group_id not in found_ids:
+            msg = f"Group id not (yet) found in group listing: {group_id}"
             raise NotFound(msg)
 
     @retried(on=[NotFound], timeout=timedelta(seconds=90))
@@ -135,7 +136,7 @@ def _wait_group_provisioned(interface: AccountGroupsAPI | GroupsAPI, group: Grou
         _check_group_in_listing()
         _check_group_in_listing()
 
-    _double_get_group(group)
+    _double_get_group()
     _double_check_group_in_listing()
 
 
