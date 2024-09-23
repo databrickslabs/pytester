@@ -10,10 +10,9 @@ requires-python = ">=3.7"
 license = "MIT"
 keywords = []
 authors = [
-  { name = "Jonh Doe", email = "john@example.com" },
+    { name = "Jonh Doe", email = "john@example.com" },
 ]
 dependencies = []
 
 [tool.hatch.version]
 path = "src/hatchling_whl/__about__.py"
-

@@ -61,8 +61,8 @@ def overwrite_readme(part, docs):
         f.write(new_readme)
 
 
-def discover_fixtures():
-    fixtures = []
+def discover_fixtures() -> list[Fixture]:
+    fixtures: list[Fixture] = []
     see_also = collections.defaultdict(set)
     idx: dict[str, int] = {}
     for fixture in P.__all__:

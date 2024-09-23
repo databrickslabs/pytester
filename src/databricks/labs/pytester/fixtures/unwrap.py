@@ -82,7 +82,7 @@ class CallContext:
 _GENERATORS = set[str]()
 
 
-def call_stateful(some: Callable[..., T], **kwargs) -> tuple[CallContext, T]:
+def call_stateful(some: Callable[..., Generator[Callable[..., T]]], **kwargs) -> tuple[CallContext, T]:
     # pylint: disable=too-complex
     ctx = CallContext()
     drains = []

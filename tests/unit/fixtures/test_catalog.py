@@ -1,3 +1,5 @@
+from unittest.mock import ANY
+
 from databricks.sdk.service.catalog import TableInfo, TableType, DataSourceFormat, FunctionInfo
 
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
@@ -101,10 +103,15 @@ def test_make_table_custom_schema():
     ]
 
 
-def test_make_catalog():
+def test_make_catalog() -> None:
     ctx, info = call_stateful(make_catalog)
-    ctx['ws'].catalogs.create.assert_called()  # can't specify call params accurately
+    ctx['ws'].catalogs.create.assert_called_once()  # can't specify call params accurately
     assert info.properties and info.properties.get("RemoveAfter", None)
+
+
+def test_make_catalog_creates_catalog_with_name() -> None:
+    ctx, _ = call_stateful(make_catalog, name="test")
+    ctx['ws'].catalogs.create.assert_called_once_with(name="test", properties=ANY)
 
 
 def test_make_udf():
