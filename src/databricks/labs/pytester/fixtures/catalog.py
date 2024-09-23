@@ -287,6 +287,9 @@ def make_catalog(
     Create a catalog and return its info. Remove it after the test.
     Returns instance of `databricks.sdk.service.catalog.CatalogInfo`.
 
+    Keyword Arguments:
+    * `name` (str): The name of the catalog. Default is a random string.
+
     Usage:
     ```python
     def test_catalog_fixture(make_catalog, make_schema, make_table):
