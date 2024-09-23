@@ -806,6 +806,9 @@ See also [`ws`](#ws-fixture), [`env_or_skip`](#env_or_skip-fixture), [`sql_backe
 Create a catalog and return its info. Remove it after the test.
 Returns instance of [`CatalogInfo`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/catalog.html#databricks.sdk.service.catalog.CatalogInfo).
 
+Keyword Arguments:
+* `name` (str): The name of the catalog. Default is a random string.
+
 Usage:
 ```python
 def test_catalog_fixture(make_catalog, make_schema, make_table):
