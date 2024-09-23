@@ -58,8 +58,8 @@ databricks-labs-pytester = "databricks.labs.pytester.fixtures.plugin"
 
 
 [project.urls]
-Issues = "https://github.com/databricks/pytester/issues"
-Source = "https://github.com/databricks/pytester"
+Issues = "https://github.com/databrickslabs/pytester/issues"
+Source = "https://github.com/databrickslabs/pytester"
 
 [tool.hatch.version]
 path = "src/databricks/labs/pytester/__about__.py"
