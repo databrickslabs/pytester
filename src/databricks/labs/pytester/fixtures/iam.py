@@ -1,14 +1,15 @@
 import logging
+import warnings
 from collections.abc import Generator
 from datetime import timedelta
 
 from pytest import fixture
+from databricks.sdk import AccountGroupsAPI, GroupsAPI, WorkspaceClient
 from databricks.sdk.config import Config
 from databricks.sdk.errors import ResourceConflict, NotFound
 from databricks.sdk.retries import retried
-from databricks.sdk.service.iam import User, Group
-from databricks.sdk import WorkspaceClient
 from databricks.sdk.service import iam
+from databricks.sdk.service.iam import User, Group
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
@@ -44,16 +45,15 @@ def make_user(ws, make_random, log_workspace_link, watchdog_purge_suffix):
 @fixture
 def make_group(ws: WorkspaceClient, make_random, watchdog_purge_suffix):
     """
-    This fixture provides a function to manage Databricks workspace groups. Groups can be created with
-    specified members and roles, and they will be deleted after the test is complete. Deals with eventual
-    consistency issues by retrying the creation process for 30 seconds and allowing up to two minutes
-    for group to be provisioned. Returns an instance of `databricks.sdk.service.iam.Group`.
+    This fixture provides a function to manage Databricks workspace groups. Groups can be created with specified
+    members and roles, and they will be deleted after the test is complete. Deals with eventual consistency issues by
+    retrying the creation process for 30 seconds and then waiting for up to 3 minutes for the group to be provisioned.
+    Returns an instance of `databricks.sdk.service.iam.Group`.
 
     Keyword arguments:
     * `members` (list of strings): A list of user IDs to add to the group.
     * `roles` (list of strings): A list of roles to assign to the group.
     * `display_name` (str): The display name of the group.
-    * `wait_for_provisioning` (bool): If `True`, the function will wait for the group to be provisioned.
     * `entitlements` (list of strings): A list of entitlements to assign to the group.
 
     The following example creates a group with a single member and independently verifies that the group was created:
@@ -94,7 +94,55 @@ def _scim_values(ids: list[str]) -> list[iam.ComplexValue]:
     return [iam.ComplexValue(value=x) for x in ids]
 
 
+def _wait_group_provisioned(interface: AccountGroupsAPI | GroupsAPI, group: Group) -> None:
+    """Wait for a group to be visible via the supplied group interface.
+
+    Due to consistency issues in the group-management APIs, new groups are not always visible in a consistent manner
+    after being created or modified. This method can be used to mitigate against this by checking that a group:
+
+     - Is visible via the `.get()` interface;
+     - Is visible via the `.list()` interface that enumerates groups.
+
+    Visibility is assumed when 2 calls in a row return the expected results.
+
+    Args:
+          interface: the group-management interface to use for checking whether the groups are visible.
+          group: the group whose visibility should be verified.
+    Raises:
+          NotFound: this is thrown if it takes longer than 90 seconds for the group to become visible via the
+          management interface.
+    """
+    # Use double-checking to try and compensate for the lack of monotonic consistency with the group-management
+    # interfaces: two subsequent calls need to succeed for us to proceed. (This is probabilistic, and not a guarantee.)
+    # The REST API internals cache things for up to 60s, and we see times close to this during tests. The retry timeout
+    # reflects this: if it's taking much longer then something else is wrong.
+    group_id = group.id
+    assert group_id is not None
+
+    @retried(on=[NotFound], timeout=timedelta(seconds=90))
+    def _double_get_group() -> None:
+        interface.get(group_id)
+        interface.get(group_id)
+
+    def _check_group_in_listing() -> None:
+        found_groups = interface.list(attributes="id", filter=f'id eq "{group_id}"')
+        found_ids = {found_group.id for found_group in found_groups}
+        if group_id not in found_ids:
+            msg = f"Group id not (yet) found in group listing: {group_id}"
+            raise NotFound(msg)
+
+    @retried(on=[NotFound], timeout=timedelta(seconds=90))
+    def _double_check_group_in_listing() -> None:
+        _check_group_in_listing()
+        _check_group_in_listing()
+
+    _double_get_group()
+    _double_check_group_in_listing()
+
+
 def _make_group(name: str, cfg: Config, interface, make_random, watchdog_purge_suffix) -> Generator[Group, None, None]:
+    _not_specified = object()
+
     @retried(on=[ResourceConflict], timeout=timedelta(seconds=30))
     def create(
         *,
@@ -102,7 +150,7 @@ def _make_group(name: str, cfg: Config, interface, make_random, watchdog_purge_s
         roles: list[str] | None = None,
         entitlements: list[str] | None = None,
         display_name: str | None = None,
-        wait_for_provisioning: bool = False,
+        wait_for_provisioning: bool | object = _not_specified,
         **kwargs,
     ):
         kwargs["display_name"] = (
@@ -114,6 +162,13 @@ def _make_group(name: str, cfg: Config, interface, make_random, watchdog_purge_s
             kwargs["roles"] = _scim_values(roles)
         if entitlements is not None:
             kwargs["entitlements"] = _scim_values(entitlements)
+        if wait_for_provisioning is not _not_specified:
+            warnings.warn(
+                "Specifying wait_for_provisioning when making a group is deprecated; we always wait.",
+                DeprecationWarning,
+                # Call stack is: create()[iam.py], wrapper()[retries.py], inner()[baseline.py], client_code
+                stacklevel=4,
+            )
         # TODO: REQUEST_LIMIT_EXCEEDED: GetUserPermissionsRequest RPC token bucket limit has been exceeded.
         group = interface.create(**kwargs)
         if cfg.is_account_client:
@@ -121,12 +176,7 @@ def _make_group(name: str, cfg: Config, interface, make_random, watchdog_purge_s
         else:
             logger.info(f"Workspace group {group.display_name}: {cfg.host}#setting/accounts/groups/{group.id}")
 
-        @retried(on=[NotFound], timeout=timedelta(minutes=2))
-        def _wait_for_provisioning() -> None:
-            interface.get(group.id)
-
-        if wait_for_provisioning:
-            _wait_for_provisioning()
+        _wait_group_provisioned(interface, group)
 
         return group
 
