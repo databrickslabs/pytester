@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.2.3
+
+* Support providing name in `make_catalog` fixture ([#52](https://github.com/databrickslabs/pytester/issues/52)). The `make_catalog` fixture in our open-source library has been updated to allow users to specify a name for the catalog using a new `name` parameter. Previously, the catalog was given a random name, but now users can have more control and customization over catalog names in their tests. This change includes updates to the docstring and the addition of unit tests to ensure the fixture behaves as expected with the new parameter. Additionally, the underlying `call_stateful` function was updated to expect a callable that returns a generator of callables, enabling the support for providing a name. The `test_make_catalog_creates_catalog_with_name` and `test_make_catalog` tests have been added to verify the behavior of the fixture with the new `name` parameter.
+
+
 ## 0.2.2
 
 * Use watchdog timeout to catalog properties ([#48](https://github.com/databrickslabs/pytester/issues/48)). This pull request introduces a new `RemoveAfter` property for catalogs, which allows for marking them for skipping by the watchdog. This change addresses the current implementation gap, which does not explicitly indicate when catalogs are being used. The new property will specify the time from which objects can be purged. A corresponding fixture `watchdog_remove_after` has been added to the list of available fixtures, and the `make_catalog` fixture has been updated to include this new property. Additionally, a timeout mechanism for catalogs has been implemented, which improves the system's efficiency and safety by marking catalogs as in use. A test for the `make_catalog` function has been included to ensure that the `RemoveAfter` entry is correctly added to the catalog properties. However, the specific call parameters for the `catalogs.create` method cannot be accurately determined in the test.
