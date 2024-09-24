@@ -76,7 +76,8 @@ def test_make_group_deprecated_arg(make_group_fixture, client_fixture_name, clie
         call_stateful(make_group_fixture, wait_for_provisioning=True)
 
         # Check that the expected warning was emitted and attributed to the caller.
-        (the_warning,) = w
+        (the_warning, *other_warnings) = w
+        assert not other_warnings
         assert issubclass(the_warning.category, DeprecationWarning)
         assert "wait_for_provisioning when making a group is deprecated" in str(the_warning.message)
         assert the_warning.filename == sys.modules[call_stateful.__module__].__file__
