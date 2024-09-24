@@ -2,9 +2,7 @@
 
 import inspect
 from collections.abc import Callable, Generator
-from contextlib import contextmanager
-from contextvars import ContextVar
-from typing import Any, TypeVar
+from typing import TypeVar
 from unittest.mock import MagicMock
 
 from databricks.labs.lsql.backends import MockBackend
@@ -23,20 +21,6 @@ def call_fixture(fixture_fn: Callable[..., T], *args, **kwargs) -> T:
     return wrapped.obj(*args, **kwargs)
 
 
-_FIXTURES: ContextVar[dict[str, Callable[..., T]]] = ContextVar('fixtures')
-
-
-@contextmanager
-def fixtures(**kwargs: Callable[..., Any]) -> Generator[None, None, None]:
-    prior_fixtures = _FIXTURES.get({})
-    updated_fixtures = {**prior_fixtures, **kwargs}
-    token = _FIXTURES.set(updated_fixtures)
-    try:
-        yield
-    finally:
-        _FIXTURES.reset(token)
-
-
 class CallContext:
     def __init__(self):
         self._fixtures = {
@@ -45,7 +29,6 @@ class CallContext:
             'env_or_skip': self.env_or_skip,
             'watchdog_remove_after': '2024091313',
             'watchdog_purge_suffix': 'XXXXX',
-            **_FIXTURES.get({}),
         }
 
     def __getitem__(self, name: str):
@@ -82,9 +65,14 @@ class CallContext:
 _GENERATORS = set[str]()
 
 
-def call_stateful(some: Callable[..., Generator[Callable[..., T]]], **kwargs) -> tuple[CallContext, T]:
+def call_stateful(
+    some: Callable[..., Generator[Callable[..., T]]],
+    call_context_setup: Callable[[CallContext], CallContext] = lambda x: x,
+    **kwargs,
+) -> tuple[CallContext, T]:
     # pylint: disable=too-complex
     ctx = CallContext()
+    ctx = call_context_setup(ctx)
     drains = []
 
     if len(_GENERATORS) == 0:

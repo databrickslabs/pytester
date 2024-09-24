@@ -1,12 +1,12 @@
-import warnings
 import sys
-from unittest.mock import call, create_autospec
+import warnings
+from functools import partial
+from unittest.mock import call
 
 import pytest
-from databricks.sdk import AccountClient, WorkspaceClient
 
-from databricks.labs.pytester.fixtures.iam import make_user, make_group, make_acc_group, Group
-from databricks.labs.pytester.fixtures.unwrap import call_stateful, fixtures
+from databricks.labs.pytester.fixtures.iam import make_acc_group, make_group, make_user, Group
+from databricks.labs.pytester.fixtures.unwrap import call_stateful, CallContext
 
 
 def test_make_user_no_args() -> None:
@@ -17,63 +17,55 @@ def test_make_user_no_args() -> None:
     ctx['ws'].users.delete.assert_called_once()
 
 
-def test_make_group_no_args() -> None:
-    ws = create_autospec(WorkspaceClient)
+def _setup_groups_api(call_context: CallContext, *, client_fixture_name: str) -> CallContext:
+    """Minimum mocking of the specific client so that when a group is created it is also visible via the list() method.
+    This is required because the make_group and make_acc_group fixtures double-check after creating a group to ensure
+    the group is visible."""
     mock_group = Group(id="an_id")
-    ws.groups.create.return_value = mock_group
-    ws.groups.list.return_value = [mock_group]
+    call_context[client_fixture_name].groups.create.return_value = mock_group
+    call_context[client_fixture_name].groups.list.return_value = [mock_group]
+    return call_context
 
-    with fixtures(ws=ws):
-        ctx, group = call_stateful(make_group)
 
-    assert ctx is not None and ctx['ws'] is ws
-    assert group is mock_group
+def test_make_group_no_args() -> None:
+    ctx, group = call_stateful(make_group, call_context_setup=partial(_setup_groups_api, client_fixture_name="ws"))
 
-    ws.groups.create.assert_called_once()
-    assert ws.groups.get.call_args_list == [call("an_id"), call("an_id")]
-    assert ws.groups.list.call_args_list == [
+    assert group is not None
+    ctx['ws'].groups.create.assert_called_once()
+    assert ctx['ws'].groups.get.call_args_list == [call("an_id"), call("an_id")]
+    assert ctx['ws'].groups.list.call_args_list == [
         call(attributes="id", filter='id eq "an_id"'),
         call(attributes="id", filter='id eq "an_id"'),
     ]
-    ws.groups.delete.assert_called_once()
     ctx['ws'].groups.delete.assert_called_once()
 
 
 def test_make_acc_group_no_args() -> None:
-    acc = create_autospec(AccountClient)
-    mock_group = Group(id="an_id")
-    acc.groups.create.return_value = mock_group
-    acc.groups.list.return_value = [mock_group]
+    ctx, group = call_stateful(make_acc_group, call_context_setup=partial(_setup_groups_api, client_fixture_name="acc"))
 
-    with fixtures(acc=acc):
-        ctx, group = call_stateful(make_acc_group)
-
-    assert ctx is not None and ctx['acc'] is acc
-    assert group is mock_group
-
-    acc.groups.create.assert_called_once()
-    assert acc.groups.get.call_args_list == [call("an_id"), call("an_id")]
-    assert acc.groups.list.call_args_list == [
+    assert group is not None
+    ctx['acc'].groups.create.assert_called_once()
+    assert ctx['acc'].groups.get.call_args_list == [call("an_id"), call("an_id")]
+    assert ctx['acc'].groups.list.call_args_list == [
         call(attributes="id", filter='id eq "an_id"'),
         call(attributes="id", filter='id eq "an_id"'),
     ]
-    acc.groups.delete.assert_called_once()
+    ctx['acc'].groups.delete.assert_called_once()
 
 
 @pytest.mark.parametrize(
-    "make_group_fixture, client_fixture_name, client_class",
-    [(make_group, "ws", WorkspaceClient), (make_acc_group, "acc", AccountClient)],
+    "make_group_fixture, client_fixture_name",
+    [(make_group, "ws"), (make_acc_group, "acc")],
 )
-def test_make_group_deprecated_arg(make_group_fixture, client_fixture_name, client_class) -> None:
-    client = create_autospec(client_class)
-    mock_group = Group(id="an_id")
-    client.groups.create.return_value = mock_group
-    client.groups.list.return_value = [mock_group]
-
-    with fixtures(**{client_fixture_name: client}), warnings.catch_warnings(record=True) as w:
+def test_make_group_deprecated_arg(make_group_fixture, client_fixture_name) -> None:
+    with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
 
-        call_stateful(make_group_fixture, wait_for_provisioning=True)
+        call_stateful(
+            make_group_fixture,
+            wait_for_provisioning=True,
+            call_context_setup=partial(_setup_groups_api, client_fixture_name=client_fixture_name),
+        )
 
         # Check that the expected warning was emitted and attributed to the caller.
         (the_warning, *other_warnings) = w
