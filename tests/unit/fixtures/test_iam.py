@@ -9,7 +9,7 @@ from databricks.labs.pytester.fixtures.iam import make_user, make_group, make_ac
 from databricks.labs.pytester.fixtures.unwrap import call_stateful, fixtures
 
 
-def test_make_user_no_args():
+def test_make_user_no_args() -> None:
     ctx, user = call_stateful(make_user)
     assert ctx is not None
     assert user is not None
@@ -17,7 +17,7 @@ def test_make_user_no_args():
     ctx['ws'].users.delete.assert_called_once()
 
 
-def test_make_group_no_args():
+def test_make_group_no_args() -> None:
     ws = create_autospec(WorkspaceClient)
     mock_group = Group(id="an_id")
     ws.groups.create.return_value = mock_group
@@ -39,7 +39,7 @@ def test_make_group_no_args():
     ctx['ws'].groups.delete.assert_called_once()
 
 
-def test_make_acc_group_no_args():
+def test_make_acc_group_no_args() -> None:
     acc = create_autospec(AccountClient)
     mock_group = Group(id="an_id")
     acc.groups.create.return_value = mock_group
