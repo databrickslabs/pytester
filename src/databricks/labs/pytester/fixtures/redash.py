@@ -54,7 +54,7 @@ def make_query(
         query_name = f"dummy_query_Q{make_random(4)}"
         query = ws.queries_legacy.create(
             name=query_name,
-            description="TEST QUERY FOR UCX",
+            description="Test query",
             query=sql_query,
             tags=tags,
         )

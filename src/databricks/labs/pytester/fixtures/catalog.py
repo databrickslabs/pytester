@@ -119,7 +119,7 @@ def make_table(
             catalog_name = schema.catalog_name
             schema_name = schema.name
         if name is None:
-            name = f"ucx_T{make_random(4)}".lower()
+            name = f"dummy_t{make_random(4).lower()}"
         table_type: TableType | None = None
         data_source_format = None
         storage_location = None
@@ -140,7 +140,7 @@ def make_table(
             table_type = TableType.EXTERNAL  # pylint: disable=redefined-variable-type
             data_source_format = DataSourceFormat.JSON
             # DBFS locations are not purged; no suffix necessary.
-            storage_location = f"dbfs:/tmp/ucx_test_{make_random(4)}"
+            storage_location = f"dbfs:/tmp/{name}"
             if columns is None:
                 select = "*"
             else:
@@ -265,7 +265,7 @@ def make_schema(
 
     def create(*, catalog_name: str = "hive_metastore", name: str | None = None) -> SchemaInfo:
         if name is None:
-            name = f"dummy_S{make_random(4)}".lower()
+            name = f"dummy_s{make_random(4)}".lower()
         full_name = f"{catalog_name}.{name}".lower()
         sql_backend.execute(f"CREATE SCHEMA {full_name} WITH DBPROPERTIES (RemoveAfter={watchdog_remove_after})")
         schema_info = SchemaInfo(catalog_name=catalog_name, name=name, full_name=full_name)
@@ -301,7 +301,7 @@ def make_catalog(
     """
 
     def create(*, name: str | None = None) -> CatalogInfo:
-        name = name or f"dummy_C{make_random(4)}".lower()
+        name = name or f"dummy_c{make_random(4)}".lower()
         catalog_info = ws.catalogs.create(name=name, properties={"RemoveAfter": watchdog_remove_after})
         if isinstance(catalog_info, Mock):
             catalog_info.name = name
@@ -354,7 +354,7 @@ def make_udf(
             schema_name = schema.name
 
         if name is None:
-            name = f"ucx_t{make_random(4).lower()}"
+            name = f"dummy_f{make_random(4)}".lower()
 
         # Note: the Watchdog does not explicitly scan for functions; they are purged along with their parent schema.
         # As such the function can't be marked (and doesn't need to be if the schema as marked) for purge protection.
