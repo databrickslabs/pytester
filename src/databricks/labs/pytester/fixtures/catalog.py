@@ -118,8 +118,7 @@ def make_table(
             schema = make_schema(catalog_name=catalog_name)
             catalog_name = schema.catalog_name
             schema_name = schema.name
-        if name is None:
-            name = f"dummy_t{make_random(4).lower()}"
+        name = name or f"dummy_t{make_random(4).lower()}"
         table_type: TableType | None = None
         data_source_format = None
         storage_location = None
@@ -264,8 +263,7 @@ def make_schema(
     """
 
     def create(*, catalog_name: str = "hive_metastore", name: str | None = None) -> SchemaInfo:
-        if name is None:
-            name = f"dummy_s{make_random(4)}".lower()
+        name = name or f"dummy_s{make_random(4)}".lower()
         full_name = f"{catalog_name}.{name}".lower()
         sql_backend.execute(f"CREATE SCHEMA {full_name} WITH DBPROPERTIES (RemoveAfter={watchdog_remove_after})")
         schema_info = SchemaInfo(catalog_name=catalog_name, name=name, full_name=full_name)
@@ -353,8 +351,7 @@ def make_udf(
             catalog_name = schema.catalog_name
             schema_name = schema.name
 
-        if name is None:
-            name = f"dummy_f{make_random(4)}".lower()
+        name = name or f"dummy_f{make_random(4)}".lower()
 
         # Note: the Watchdog does not explicitly scan for functions; they are purged along with their parent schema.
         # As such the function can't be marked (and doesn't need to be if the schema as marked) for purge protection.
