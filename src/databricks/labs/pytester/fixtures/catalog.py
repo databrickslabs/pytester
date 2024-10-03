@@ -1,3 +1,4 @@
+import json
 import logging
 from collections.abc import Generator, Callable
 from unittest.mock import Mock
@@ -419,7 +420,7 @@ def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[...
         aws_iam_role_arn: str = "",
         read_only=False,
     ) -> StorageCredentialInfo:
-        comment = {"RemoveAfter": watchdog_remove_after}
+        comment = json.dumps({"RemoveAfter": watchdog_remove_after})
         if aws_iam_role_arn != "":
             storage_credential = ws.storage_credentials.create(
                 credential_name,
