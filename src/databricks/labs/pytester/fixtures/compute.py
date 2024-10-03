@@ -1,19 +1,24 @@
 import json
 from collections.abc import Generator
 from pathlib import Path
-from pytest import fixture
 
+from pytest import fixture
+from databricks.sdk.service._internal import Wait
+from databricks.sdk.service.compute import (
+    CreatePolicyResponse,
+    ClusterDetails,
+    ClusterSpec,
+    CreateInstancePoolResponse,
+    Library,
+)
+from databricks.sdk.service.jobs import Job, NotebookTask, Task
+from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.sql import (
     CreateWarehouseRequestWarehouseType,
     EndpointTags,
     EndpointTagPair,
     GetWarehouseResponse,
 )
-
-from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
-from databricks.sdk.service.jobs import Job, NotebookTask, Task
-from databricks.sdk.service._internal import Wait
-from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails, ClusterSpec, CreateInstancePoolResponse
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
@@ -177,18 +182,19 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
     ```
     """
 
-    def create(notebook_path: str | Path | None = None, **kwargs) -> Job:
-        if "name" not in kwargs:
-            kwargs["name"] = f"dummy-{make_random(4)}"
-        task_spark_conf = kwargs.pop("spark_conf", None)
-        libraries = kwargs.pop("libraries", None)
-        if isinstance(notebook_path, Path):
-            notebook_path = str(notebook_path)
-        if not notebook_path:
-            notebook_path = make_notebook()
-        assert notebook_path is not None
-        if "tasks" not in kwargs:
-            kwargs["tasks"] = [
+    def create(
+        *,
+        name: str | None = None,
+        notebook_path: str | Path | None = None,
+        spark_conf: dict[str, str] | None = None,
+        libraries: list[Library] | None = None,
+        tasks: list[Task] | None = None,
+        tags: list[dict[str, str]] | None = None,
+    ) -> Job:
+        name = name or f"dummy-j{make_random(4)}"
+        notebook_path = notebook_path or make_notebook()
+        if not tasks:
+            tasks = [
                 Task(
                     task_key=make_random(4),
                     description=make_random(4),
@@ -196,22 +202,20 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
                         num_workers=1,
                         node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
                         spark_version=ws.clusters.select_spark_version(latest=True),
-                        spark_conf=task_spark_conf,
+                        spark_conf=spark_conf,
                     ),
                     notebook_task=NotebookTask(notebook_path=str(notebook_path)),
                     libraries=libraries,
                     timeout_seconds=0,
                 )
             ]
-        # add RemoveAfter tag for test job cleanup
-        date_to_remove = watchdog_remove_after
-        remove_after_tag = {"key": "RemoveAfter", "value": date_to_remove}
-        if 'tags' not in kwargs:
-            kwargs["tags"] = [remove_after_tag]
+        remove_after_tag = {"key": "RemoveAfter", "value": watchdog_remove_after}
+        if tags:
+            tags.append(remove_after_tag)
         else:
-            kwargs["tags"].append(remove_after_tag)
-        job = ws.jobs.create(**kwargs)
-        log_workspace_link(kwargs["name"], f'job/{job.job_id}', anchor=False)
+            tags = [remove_after_tag]
+        job = ws.jobs.create(name=name, tasks=tasks, tags=tags)
+        log_workspace_link(name, f"job/{job.job_id}", anchor=False)
         return ws.jobs.get(job.job_id)
 
     yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))
