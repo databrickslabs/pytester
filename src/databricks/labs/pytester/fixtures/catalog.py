@@ -386,7 +386,7 @@ def make_udf(
 
 
 @fixture
-def make_storage_credential(ws) -> Generator[Callable[..., StorageCredentialInfo], None, None]:
+def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[..., StorageCredentialInfo], None, None]:
     """
     Create a storage credential and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.StorageCredentialInfo`.
 
@@ -419,14 +419,15 @@ def make_storage_credential(ws) -> Generator[Callable[..., StorageCredentialInfo
         aws_iam_role_arn: str = "",
         read_only=False,
     ) -> StorageCredentialInfo:
+        comment = { "RemoveAfter": watchdog_remove_after }
         if aws_iam_role_arn != "":
             storage_credential = ws.storage_credentials.create(
-                credential_name, aws_iam_role=AwsIamRoleRequest(role_arn=aws_iam_role_arn), read_only=read_only
+                credential_name, aws_iam_role=AwsIamRoleRequest(role_arn=aws_iam_role_arn), read_only=read_only, comment=comment
             )
         else:
             azure_service_principal = AzureServicePrincipal(directory_id, application_id, client_secret)
             storage_credential = ws.storage_credentials.create(
-                credential_name, azure_service_principal=azure_service_principal, read_only=read_only
+                credential_name, azure_service_principal=azure_service_principal, read_only=read_only, comment=comment
             )
         return storage_credential
 
