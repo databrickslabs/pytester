@@ -419,10 +419,13 @@ def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[...
         aws_iam_role_arn: str = "",
         read_only=False,
     ) -> StorageCredentialInfo:
-        comment = { "RemoveAfter": watchdog_remove_after }
+        comment = {"RemoveAfter": watchdog_remove_after}
         if aws_iam_role_arn != "":
             storage_credential = ws.storage_credentials.create(
-                credential_name, aws_iam_role=AwsIamRoleRequest(role_arn=aws_iam_role_arn), read_only=read_only, comment=comment
+                credential_name,
+                aws_iam_role=AwsIamRoleRequest(role_arn=aws_iam_role_arn),
+                read_only=read_only,
+                comment=comment,
             )
         else:
             azure_service_principal = AzureServicePrincipal(directory_id, application_id, client_secret)

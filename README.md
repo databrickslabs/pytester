@@ -897,7 +897,7 @@ def test_storage_credential(env_or_skip, make_storage_credential, make_random):
     )
 ```
 
-See also [`ws`](#ws-fixture).
+See also [`ws`](#ws-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1106,7 +1106,7 @@ See also [`ws`](#ws-fixture).
 ### `watchdog_remove_after` fixture
 Purge time for test objects, representing the (UTC-based) hour from which objects may be purged.
 
-See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_schema`](#make_schema-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_warehouse`](#make_warehouse-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
+See also [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_schema`](#make_schema-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_storage_credential`](#make_storage_credential-fixture), [`make_table`](#make_table-fixture), [`make_warehouse`](#make_warehouse-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
