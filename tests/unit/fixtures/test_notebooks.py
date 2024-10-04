@@ -1,5 +1,7 @@
 import io
 
+import pytest
+
 from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_directory, make_repo
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
 
@@ -13,6 +15,13 @@ def test_make_notebook_no_args() -> None:
     assert notebook.suffix == ".py"
     assert notebook.read_text() == "print(1)"
     assert notebook.as_uri() == 'https://adb-12345679.10.azuredatabricks.net/#workspace/Users/test-user/dummy-RANDOM-XXXXX.py'
+
+
+
+@pytest.mark.parametrize("argument", ["content", "encoding", "language"])
+def test_make_notebook_with_path_and_content_or_encoding_or_language_raises_value_error(argument: str) -> None:
+    with pytest.raises(ValueError, match="The `path` parameter is exclusive with the `content`, `language` and `encoding` parameters."):
+        call_stateful(make_notebook, path="test.py", **{argument: "foo"})
 
 
 def test_make_notebook_with_path() -> None:
