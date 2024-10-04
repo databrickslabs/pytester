@@ -187,6 +187,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
         *,
         name: str | None = None,
         path: str | Path | None = None,
+        content: str | None = None,
         notebook_path: str | Path | None = None,
         spark_conf: dict[str, str] | None = None,
         libraries: list[Library] | None = None,
@@ -201,7 +202,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             )
             path = path or notebook_path
         else:
-            path = path or make_notebook()
+            path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
         if not tasks:
             tasks = [
