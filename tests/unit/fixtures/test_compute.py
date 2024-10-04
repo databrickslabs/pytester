@@ -31,6 +31,7 @@ def test_make_job_no_args():
     ctx, job = call_stateful(make_job)
     assert ctx is not None
     assert job is not None
+    assert len(job.settings.tasks) == 1
 
 
 def test_make_job_with_name() -> None:
