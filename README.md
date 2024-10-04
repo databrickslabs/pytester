@@ -413,7 +413,7 @@ Keyword Arguments:
 * `name` (str, optional): The name of the job. If not provided, a random name will be generated.
 * `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
 * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
-* `content` (str, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
+* `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
 * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `NotebookTask` will be used.
 * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
 * `libraries` (list, optional): The list of libraries to install on the job.
@@ -624,7 +624,7 @@ The function returns [`os.PathLike` object](https://github.com/databrickslabs/bl
 
 Keyword arguments:
 * `path` (str, optional): The path of the notebook. Defaults to `dummy-*` notebook in current user's home folder.
-* `content` (str | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
+* `content` (str | bytes | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
 * `language` ([`Language`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.Language), optional): The language of the notebook. Defaults to `Language.PYTHON`.
 * `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
 * [DEPRECATED] `format` ([`ImportFormat`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.ImportFormat), optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.

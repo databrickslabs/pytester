@@ -1,5 +1,5 @@
 from databricks.labs.blueprint.paths import WorkspacePath
-from databricks.sdk.service.jobs import Task, SparkPythonTask
+from databricks.sdk.service.jobs import SparkPythonTask
 
 from databricks.labs.pytester.fixtures.compute import (
     make_cluster_policy,
