@@ -46,13 +46,13 @@ def test_make_job_no_args() -> None:
 
 
 def test_make_job_with_name() -> None:
-    ctx, job = call_stateful(make_job, name="test")
+    _, job = call_stateful(make_job, name="test")
     assert job.settings.name == "test"
 
 
 def test_make_job_with_path() -> None:
-    ctx, job = call_stateful(make_job, path="test.py")
-    tasks: list[Task] = job.settings.tasks
+    _, job = call_stateful(make_job, path="test.py")
+    tasks = job.settings.tasks
     assert len(tasks) == 1
     assert tasks[0].notebook_task.notebook_path == "test.py"
 
@@ -66,7 +66,7 @@ def test_make_job_with_content() -> None:
 
 
 def test_make_job_with_spark_python_task() -> None:
-    ctx, job = call_stateful(make_job, path="test.py", task_type=SparkPythonTask)
+    _, job = call_stateful(make_job, path="test.py", task_type=SparkPythonTask)
     tasks = job.settings.tasks
     assert len(tasks) == 1
     assert tasks[0].notebook_task is None
