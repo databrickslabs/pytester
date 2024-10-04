@@ -4,6 +4,7 @@ import sys
 import warnings
 from collections.abc import Generator, Callable
 from pathlib import Path
+from unittest.mock import Mock
 
 from pytest import fixture
 from databricks.labs.blueprint.paths import WorkspacePath
@@ -65,10 +66,13 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
             raise ValueError(f"Unsupported language: {language}")
         path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
         workspace_path = WorkspacePath(ws, path)
+        content = content or default_content
         if isinstance(content, io.BytesIO):
             workspace_path.write_bytes(content.read())
         else:
-            workspace_path.write_text(content or default_content, encoding=encoding)
+            workspace_path.write_text(content, encoding=encoding)
+            if isinstance(ws, Mock):  # For testing
+                ws.workspace.download.return_value = io.BytesIO(content.encode(encoding))
         logger.info(f"Created notebook: {workspace_path.as_uri()}")
         return workspace_path
 

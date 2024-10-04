@@ -13,6 +13,11 @@ def test_make_notebook_with_path() -> None:
     assert notebook.name == "test.py"
 
 
+def test_make_notebook_with_text_content() -> None:
+    _, notebook = call_stateful(make_notebook, content="print(2)")
+    assert notebook.read_text() == "print(2)"
+
+
 def test_make_directory_no_args():
     ctx, directory = call_stateful(make_directory)
     assert ctx is not None
