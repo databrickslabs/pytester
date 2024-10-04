@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def test_creates_some_notebook(make_notebook):
+def test_creates_some_notebook(make_notebook) -> None:
     notebook = make_notebook()
     assert "print(1)" in notebook.read_text()
 
