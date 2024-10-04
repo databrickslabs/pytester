@@ -1,17 +1,20 @@
 import io
 import logging
+import sys
+import warnings
 from collections.abc import Generator
 from pathlib import Path
-import warnings
 
 from pytest import fixture
 from databricks.labs.blueprint.paths import WorkspacePath
-from databricks.sdk.service.workspace import Language, ImportFormat, RepoInfo
+from databricks.sdk.service.workspace import Language, RepoInfo
 from databricks.sdk import WorkspaceClient
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
+
 logger = logging.getLogger(__name__)
+_DEFAULT_ENCODING = sys.getdefaultencoding()
 
 
 @fixture
@@ -24,6 +27,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
     * `path` (str, optional): The path of the notebook. Defaults to `dummy-*` notebook in current user's home folder.
     * `content` (str | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
     * `language` (`databricks.sdk.service.workspace.Language`, optional): The language of the notebook. Defaults to `Language.PYTHON`.
+    * `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
     * [DEPRECATED] `format` (`databricks.sdk.service.workspace.ImportFormat`, optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
     * [DEPRECATED] `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
 
@@ -40,6 +44,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
         path: str | Path | None = None,
         content: str | io.BytesIO | None = None,
         language: Language = Language.PYTHON,
+        encoding=_DEFAULT_ENCODING,
         **kwargs,
     ) -> WorkspacePath:
         if kwargs:
@@ -57,7 +62,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
         if isinstance(content, io.BytesIO):
             workspace_path.write_bytes(content.read())
         else:
-            workspace_path.write_text(content or default_content)
+            workspace_path.write_text(content or default_content, encoding=encoding)
         logger.info(f"Created notebook: {workspace_path.as_uri()}")
         return workspace_path
 
