@@ -241,7 +241,6 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             job = Job(settings=JobSettings(name=name, tasks=tasks, tags=tags))
         return job
 
-
     yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))
 
 

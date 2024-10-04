@@ -410,14 +410,17 @@ Create a Databricks job and clean it up after the test. Returns a function to cr
 a [`Job`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/jobs.html#databricks.sdk.service.jobs.Job) instance.
 
 Keyword Arguments:
-* `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
 * `name` (str, optional): The name of the job. If not provided, a random name will be generated.
-* `spark_conf` (dict, optional): The Spark configuration of the job.
+* `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
+* [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
+* `content` (str, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
+* `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `NotebookTask` will be used.
+* `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
 * `libraries` (list, optional): The list of libraries to install on the job.
-* other arguments are passed to `WorkspaceClient.jobs.create` method.
-
-If no task argument is provided, a single task with a notebook task will be created, along with a disposable notebook.
-Latest Spark version and a single worker clusters will be used to run this ephemeral job.
+* `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
+* `tasks` (list[Task], optional): A list of job tags. If not provided, a single task with a notebook task will be
+   created, along with a disposable notebook. Latest Spark version and a single worker clusters will be used to run
+   this ephemeral job.
 
 Usage:
 ```python
@@ -621,10 +624,11 @@ The function returns [`os.PathLike` object](https://github.com/databrickslabs/bl
 
 Keyword arguments:
 * `path` (str, optional): The path of the notebook. Defaults to `dummy-*` notebook in current user's home folder.
-* `content` (typing.BinaryIO, optional): The content of the notebook. Defaults to `print(1)`.
+* `content` (str | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
 * `language` ([`Language`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.Language), optional): The language of the notebook. Defaults to `Language.PYTHON`.
-* `format` ([`ImportFormat`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.ImportFormat), optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
-* `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
+* `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
+* [DEPRECATED] `format` ([`ImportFormat`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/workspace.html#databricks.sdk.service.workspace.ImportFormat), optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
+* [DEPRECATED] `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
 
 This example creates a notebook and verifies that `print(1)` is in the content:
 ```python
