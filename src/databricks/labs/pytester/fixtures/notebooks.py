@@ -71,6 +71,63 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
 
 
 @fixture
+def make_file(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
+    """
+    Returns a function to create Databricks workspace file and clean up after the test.
+    The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
+
+    Keyword arguments:
+    * `path` (str, optional): The path of the file. Defaults to `dummy-*` notebook in current user's home folder.
+    * `content` (str | bytes, optional): The content of the file. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
+    * `language` (`databricks.sdk.service.workspace.Language`, optional): The language of the notebook. Defaults to `Language.PYTHON`.
+    * `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
+
+    This example creates a notebook and verifies that the workspace path is an existing file with contents `print(1)`:
+    ```python
+    def test_create_file(make_notebook):
+        workspace_path = make_file()
+        assert workspace_path.is_file()
+        assert "print(1)" in workspace_path.read_text()
+    ```
+
+    TODO:
+    Merge functionality with `make_notebook` if `WorkspacePath` supports creating notebooks.
+    """
+
+    def create(
+        *,
+        path: str | Path | None = None,
+        content: str | bytes | None = None,
+        language: Language | None = None,
+        encoding: str | None = None,
+    ) -> WorkspacePath:
+        language = language or Language.PYTHON
+        if language == Language.PYTHON:
+            default_content = "print(1)"
+            suffix = ".py"
+        elif language == Language.SQL:
+            default_content = "SELECT 1"
+            suffix = ".sql"
+        else:
+            raise ValueError(f"Unsupported language: {language}")
+        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
+        content = content or default_content
+        encoding = encoding or _DEFAULT_ENCODING
+        workspace_path = WorkspacePath(ws, path)
+        if isinstance(content, bytes):
+            workspace_path.write_bytes(content)
+        else:
+            workspace_path.write_text(content, encoding=encoding)
+            content = content.encode(encoding)  # For testing
+        if isinstance(ws, Mock):  # For testing
+            ws.workspace.download.return_value = io.BytesIO(content)
+        logger.info(f"Created file: {workspace_path.as_uri()}")
+        return workspace_path
+
+    yield from factory("file", create, lambda path: path.unlink(missing_ok=True))
+
+
+@fixture
 def make_directory(ws: WorkspaceClient, make_random, watchdog_purge_suffix) -> Generator[WorkspacePath, None, None]:
     """
     Returns a function to create Databricks Workspace Folders and clean them up after the test.
