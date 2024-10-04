@@ -1,6 +1,7 @@
 import logging
 import random
 import string
+from typing import Any, Callable, Generator, TypeVar
 
 from pytest import fixture
 
@@ -55,7 +56,14 @@ def make_random():
     return inner
 
 
-def factory(name, create, remove):
+T = TypeVar("T")
+
+
+def factory(
+    name: str,
+    create: Callable[..., T],
+    remove: Callable[[T], None],
+) -> Generator[Callable[..., T], None, None]:
     """
     Factory function for creating fixtures.
 
@@ -95,9 +103,9 @@ def factory(name, create, remove):
 
            yield from factory("secret scope", create, cleanup)
     """
-    cleanup = []
+    cleanup: list[T] = []
 
-    def inner(**kwargs):
+    def inner(**kwargs: Any) -> T:
         some = create(**kwargs)
         _LOG.debug(f"added {name} fixture: {some}")
         cleanup.append(some)
