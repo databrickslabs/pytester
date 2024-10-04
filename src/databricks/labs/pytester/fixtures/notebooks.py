@@ -43,16 +43,22 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
         *,
         path: str | Path | None = None,
         content: str | io.BytesIO | None = None,
-        language: Language = Language.PYTHON,
-        encoding: str = _DEFAULT_ENCODING,
+        language: Language | None = None,
+        encoding: str | None = None,
         **kwargs,
     ) -> WorkspacePath:
         if kwargs:
             warnings.warn(f"Deprecated parameter(s): {kwargs}", DeprecationWarning)
-        if language == language.PYTHON:
+        if path and (content or encoding or language):
+            raise ValueError(
+                "The `path` parameter is exclusive with the `content`, `language` and `encoding` parameters."
+            )
+        encoding = encoding or _DEFAULT_ENCODING
+        language = language or Language.PYTHON
+        if language == Language.PYTHON:
             suffix = ".py"
             default_content = "print(1)"
-        elif language == language.SQL:
+        elif language == Language.SQL:
             suffix = ".sql"
             default_content = "SELECT 1"
         else:
