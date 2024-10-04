@@ -1,7 +1,8 @@
 import logging
 import random
 import string
-from typing import Any, Callable, Generator, TypeVar
+from collections.abc import Callable, Generator
+from typing import Any, TypeVar
 
 from pytest import fixture
 
