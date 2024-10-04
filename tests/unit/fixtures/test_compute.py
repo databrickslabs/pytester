@@ -74,6 +74,13 @@ def test_make_job_with_spark_python_task() -> None:
     assert tasks[0].spark_python_task.python_file == "test.py"
 
 
+def test_make_job_with_spark_conf() -> None:
+    _, job = call_stateful(make_job, spark_conf={"value": "test"})
+    tasks = job.settings.tasks
+    assert len(tasks) == 1
+    assert tasks[0].new_cluster.spark_conf == {"value": "test"}
+
+
 def test_make_pipeline_no_args():
     ctx, pipeline = call_stateful(make_pipeline)
     assert ctx is not None
