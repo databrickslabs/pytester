@@ -1,5 +1,5 @@
 import json
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 
 from pytest import fixture
 from databricks.sdk.service.sql import LegacyQuery
@@ -14,7 +14,7 @@ def make_query(
     make_random,
     log_workspace_link,
     watchdog_remove_after,
-) -> Generator[LegacyQuery, None, None]:
+) -> Generator[Callable[..., LegacyQuery], None, None]:
     """
     Create a query and remove it after the test is done. Returns the `databricks.sdk.service.sql.LegacyQuery` object.
 

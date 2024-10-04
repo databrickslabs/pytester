@@ -1,7 +1,7 @@
 import io
 import logging
 import typing
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from pathlib import Path
 
 from pytest import fixture
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @fixture
-def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[WorkspacePath, None, None]:
+def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
     """
     Returns a function to create Databricks Notebooks and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -59,7 +59,9 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
 
 
 @fixture
-def make_directory(ws: WorkspaceClient, make_random, watchdog_purge_suffix) -> Generator[WorkspacePath, None, None]:
+def make_directory(
+    ws: WorkspaceClient, make_random, watchdog_purge_suffix
+) -> Generator[Callable[..., WorkspacePath], None, None]:
     """
     Returns a function to create Databricks Workspace Folders and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -90,7 +92,7 @@ def make_directory(ws: WorkspaceClient, make_random, watchdog_purge_suffix) -> G
 
 
 @fixture
-def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[RepoInfo, None, None]:
+def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., RepoInfo], None, None]:
     """
     Returns a function to create Databricks Repos and clean them up after the test.
     The function returns a `databricks.sdk.service.workspace.RepoInfo` object.
