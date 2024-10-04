@@ -179,7 +179,7 @@ def make_job(
     * `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
     * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
     * `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
-    * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `NotebookTask` will be used.
+    * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `type[NotebookTask]` will be used.
     * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
     * `libraries` (list, optional): The list of libraries to install on the job.
     * `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
