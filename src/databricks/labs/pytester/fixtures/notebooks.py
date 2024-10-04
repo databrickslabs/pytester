@@ -72,7 +72,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
         if isinstance(content, bytes):
             workspace_path.write_bytes(content)
             if isinstance(ws, Mock):  # For testing
-                ws.workspace.download.return_value = content
+                ws.workspace.download.return_value = io.BytesIO(content)
         else:
             workspace_path.write_text(content, encoding=encoding)
             if isinstance(ws, Mock):  # For testing

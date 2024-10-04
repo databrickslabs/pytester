@@ -1,3 +1,5 @@
+import io
+
 from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_directory, make_repo
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
 
@@ -16,6 +18,11 @@ def test_make_notebook_with_path() -> None:
 def test_make_notebook_with_text_content() -> None:
     _, notebook = call_stateful(make_notebook, content="print(2)")
     assert notebook.read_text() == "print(2)"
+
+
+def test_make_notebook_with_bytes_content() -> None:
+    _, notebook = call_stateful(make_notebook, content=b"print(2)")
+    assert notebook.read_bytes() == b"print(2)"
 
 
 def test_make_directory_no_args():
