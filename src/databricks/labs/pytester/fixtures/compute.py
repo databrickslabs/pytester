@@ -171,7 +171,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
     * `name` (str, optional): The name of the job. If not provided, a random name will be generated.
     * `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
     * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
-    * `content` (str, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
+    * `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
     * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `NotebookTask` will be used.
     * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
     * `libraries` (list, optional): The list of libraries to install on the job.
@@ -192,7 +192,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
         name: str | None = None,
         path: str | Path | None = None,
         notebook_path: str | Path | None = None,  # DEPRECATED
-        content: str | None = None,
+        content: str | bytes | None = None,
         task_type: type[NotebookTask] | type[SparkPythonTask] = NotebookTask,
         spark_conf: dict[str, str] | None = None,
         libraries: list[Library] | None = None,

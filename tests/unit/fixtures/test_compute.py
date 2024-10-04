@@ -1,3 +1,4 @@
+from databricks.labs.blueprint.paths import WorkspacePath
 from databricks.sdk.service.jobs import Task
 
 from databricks.labs.pytester.fixtures.compute import (
@@ -54,6 +55,14 @@ def test_make_job_with_path() -> None:
     tasks: list[Task] = job.settings.tasks
     assert len(tasks) == 1
     assert tasks[0].notebook_task.notebook_path == "test.py"
+
+
+def test_make_job_with_content() -> None:
+    ctx, job = call_stateful(make_job, content="print(2)")
+    tasks = job.settings.tasks
+    assert len(tasks) == 1
+    workspace_path = WorkspacePath(ctx["ws"], tasks[0].notebook_task.notebook_path)
+    assert workspace_path.read_text() == "print(2)"
 
 
 def test_make_pipeline_no_args():
