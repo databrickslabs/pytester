@@ -77,6 +77,13 @@ def test_make_job_with_spark_python_task() -> None:
     assert workspace_path.read_text() == "print(3)"
 
 
+def test_make_job_with_instance_pool_id() -> None:
+    _, job = call_stateful(make_job, instance_pool_id="test")
+    tasks = job.settings.tasks
+    assert len(tasks) == 1
+    assert tasks[0].new_cluster.instance_pool_id == "test"
+
+
 def test_make_job_with_spark_conf() -> None:
     _, job = call_stateful(make_job, spark_conf={"value": "test"})
     tasks = job.settings.tasks

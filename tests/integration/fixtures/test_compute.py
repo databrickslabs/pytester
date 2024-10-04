@@ -22,16 +22,16 @@ def test_instance_pool(make_instance_pool):
     logger.info(f"created {make_instance_pool()}")
 
 
-def test_job(ws: WorkspaceClient, make_job) -> None:
-    job = make_job()
+def test_job(ws: WorkspaceClient, make_job, env_or_skip) -> None:
+    job = make_job(instance_pool_id=env_or_skip("TEST_INSTANCE_POOL_ID"))
     run = ws.jobs.run_now(job.job_id)
     ws.jobs.wait_get_run_job_terminated_or_skipped(run_id=run.run_id)
     run_state = ws.jobs.get_run(run_id=run.run_id).state
     assert run_state is not None and run_state.result_state == RunResultState.SUCCESS
 
 
-def test_job_with_spark_python_task(ws: WorkspaceClient, make_job) -> None:
-    job = make_job(task_type=SparkPythonTask)
+def test_job_with_spark_python_task(ws: WorkspaceClient, make_job, env_or_skip) -> None:
+    job = make_job(task_type=SparkPythonTask, instance_pool_id=env_or_skip("TEST_INSTANCE_POOL_ID"))
     run = ws.jobs.run_now(job.job_id)
     ws.jobs.wait_get_run_job_terminated_or_skipped(run_id=run.run_id)
     run_state = ws.jobs.get_run(run_id=run.run_id).state

@@ -180,6 +180,7 @@ def make_job(
     * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
     * `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
     * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `type[NotebookTask]` will be used.
+    * `instance_pool_id` (str, optional): The instance pool id to add to the job cluster. If not provided, no instance pool will be used.
     * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
     * `libraries` (list, optional): The list of libraries to install on the job.
     * `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
@@ -202,6 +203,7 @@ def make_job(
         content: str | bytes | None = None,
         task_type: type[NotebookTask] | type[SparkPythonTask] = NotebookTask,
         spark_conf: dict[str, str] | None = None,
+        instance_pool_id: str | None = None,
         libraries: list[Library] | None = None,
         tags: dict[str, str] | None = None,
         tasks: list[Task] | None = None,
@@ -223,13 +225,17 @@ def make_job(
         tags = tags or {}
         tags["RemoveAfter"] = tags.get("RemoveAfter", watchdog_remove_after)
         if not tasks:
+            node_type_id = None
+            if instance_pool_id is None:
+                node_type_id = ws.clusters.select_node_type(local_disk=True, min_memory_gb=16)
             task = Task(
                 task_key=make_random(4),
                 description=make_random(4),
                 new_cluster=ClusterSpec(
                     num_workers=1,
-                    node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
+                    node_type_id=node_type_id,
                     spark_version=ws.clusters.select_spark_version(latest=True),
+                    instance_pool_id=instance_pool_id,
                     spark_conf=spark_conf,
                 ),
                 libraries=libraries,
