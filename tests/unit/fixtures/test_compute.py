@@ -1,5 +1,5 @@
 from databricks.labs.blueprint.paths import WorkspacePath
-from databricks.sdk.service.jobs import Task
+from databricks.sdk.service.jobs import Task, SparkPythonTask
 
 from databricks.labs.pytester.fixtures.compute import (
     make_cluster_policy,
@@ -63,6 +63,15 @@ def test_make_job_with_content() -> None:
     assert len(tasks) == 1
     workspace_path = WorkspacePath(ctx["ws"], tasks[0].notebook_task.notebook_path)
     assert workspace_path.read_text() == "print(2)"
+
+
+def test_make_job_with_spark_python_task() -> None:
+    ctx, job = call_stateful(make_job, path="test.py", task_type=SparkPythonTask)
+    tasks = job.settings.tasks
+    assert len(tasks) == 1
+    assert tasks[0].notebook_task is None
+    assert tasks[0].spark_python_task is not None
+    assert tasks[0].spark_python_task.python_file == "test.py"
 
 
 def test_make_pipeline_no_args():
