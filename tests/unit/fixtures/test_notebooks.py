@@ -26,7 +26,7 @@ def test_make_notebook_with_path_and_content_or_encoding_or_language_raises_valu
     with pytest.raises(
         ValueError, match="The `path` parameter is exclusive with the `content`, `language` and `encoding` parameters."
     ):
-        call_stateful(make_notebook, path="test.py", **{argument: "foo"})
+        call_stateful(make_notebook, path="test.py", **{argument: "foo"})  # type: ignore
 
 
 def test_make_notebook_with_path() -> None:
