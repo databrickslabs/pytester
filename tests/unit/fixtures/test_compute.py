@@ -33,6 +33,11 @@ def test_make_job_no_args():
     assert job is not None
 
 
+def test_make_job_with_name() -> None:
+    ctx, job = call_stateful(make_job, name="test")
+    assert job.settings.name == "test"
+
+
 def test_make_pipeline_no_args():
     ctx, pipeline = call_stateful(make_pipeline)
     assert ctx is not None
