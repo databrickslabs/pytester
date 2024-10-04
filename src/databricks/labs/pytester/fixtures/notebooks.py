@@ -71,12 +71,11 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
             content = content.read()
         if isinstance(content, bytes):
             workspace_path.write_bytes(content)
-            if isinstance(ws, Mock):  # For testing
-                ws.workspace.download.return_value = io.BytesIO(content)
         else:
             workspace_path.write_text(content, encoding=encoding)
-            if isinstance(ws, Mock):  # For testing
-                ws.workspace.download.return_value = io.BytesIO(content.encode(encoding))
+            content = content.encode(encoding)  # For testing
+        if isinstance(ws, Mock):  # For testing
+            ws.workspace.download.return_value = io.BytesIO(content)
         logger.info(f"Created notebook: {workspace_path.as_uri()}")
         return workspace_path
 
