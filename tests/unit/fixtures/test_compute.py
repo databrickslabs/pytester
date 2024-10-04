@@ -62,16 +62,19 @@ def test_make_job_with_content() -> None:
     tasks = job.settings.tasks
     assert len(tasks) == 1
     workspace_path = WorkspacePath(ctx["ws"], tasks[0].notebook_task.notebook_path)
+    assert not workspace_path.suffix  # Notebooks have no suffix
     assert workspace_path.read_text() == "print(2)"
 
 
 def test_make_job_with_spark_python_task() -> None:
-    _, job = call_stateful(make_job, path="test.py", task_type=SparkPythonTask)
+    ctx, job = call_stateful(make_job, content="print(3)", task_type=SparkPythonTask)
     tasks = job.settings.tasks
     assert len(tasks) == 1
     assert tasks[0].notebook_task is None
     assert tasks[0].spark_python_task is not None
-    assert tasks[0].spark_python_task.python_file == "test.py"
+    workspace_path = WorkspacePath(ctx["ws"], tasks[0].spark_python_task.python_file)
+    assert workspace_path.suffix == ".py"  # Python files have suffix
+    assert workspace_path.read_text() == "print(3)"
 
 
 def test_make_job_with_spark_conf() -> None:

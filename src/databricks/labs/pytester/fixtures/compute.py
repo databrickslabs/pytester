@@ -162,7 +162,14 @@ def make_instance_pool(
 
 
 @fixture
-def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove_after) -> Generator[Job, None, None]:
+def make_job(
+    ws,
+    make_random,
+    make_notebook,
+    make_workspace_file,
+    log_workspace_link,
+    watchdog_remove_after,
+) -> Generator[Job, None, None]:
     """
     Create a Databricks job and clean it up after the test. Returns a function to create jobs, that returns
     a `databricks.sdk.service.jobs.Job` instance.
@@ -212,7 +219,6 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             raise ValueError(
                 "The `tasks` parameter is exclusive with the `path`, `content` `spark_conf` and `libraries` parameters."
             )
-        path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
         tags = tags or {}
         tags["RemoveAfter"] = tags.get("RemoveAfter", watchdog_remove_after)
@@ -230,8 +236,10 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
                 timeout_seconds=0,
             )
             if task_type == SparkPythonTask:
+                path = path or make_workspace_file(content=content)
                 task.spark_python_task = SparkPythonTask(python_file=str(path))
             else:
+                path = path or make_notebook(content=content)
                 task.notebook_task = NotebookTask(notebook_path=str(path))
             tasks = [task]
         response = ws.jobs.create(name=name, tasks=tasks, tags=tags)
