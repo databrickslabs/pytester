@@ -29,11 +29,19 @@ def test_make_instance_pool_no_args():
     assert instance_pool is not None
 
 
-def test_make_job_no_args():
+def test_make_job_no_args() -> None:
     ctx, job = call_stateful(make_job)
     assert ctx is not None
     assert job is not None
+    assert job.settings.name == "dummy-jRANDOM"
+    assert job.settings.tags == [{"key": "RemoveAfter", "value": "2024091313"}]
     assert len(job.settings.tasks) == 1
+    assert job.settings.tasks[0].task_key == "RANDOM"
+    assert job.settings.tasks[0].description == "RANDOM"
+    assert job.settings.tasks[0].new_cluster.num_workers == 1
+    assert job.settings.tasks[0].new_cluster.spark_conf is None
+    assert job.settings.tasks[0].libraries is None
+    assert job.settings.tasks[0].timeout_seconds == 0
 
 
 def test_make_job_with_name() -> None:
