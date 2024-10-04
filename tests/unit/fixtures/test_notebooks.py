@@ -1,6 +1,7 @@
 import io
 
 import pytest
+from databricks.sdk.service.workspace import Language
 
 from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_directory, make_repo
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
@@ -41,6 +42,12 @@ def test_make_notebook_with_bytes_content() -> None:
 def test_make_notebook_with_io_bytes_content() -> None:
     _, notebook = call_stateful(make_notebook, content=io.BytesIO(b"print(2)"))
     assert notebook.read_bytes() == b"print(2)"
+
+
+def test_make_notebook_with_sql_language() -> None:
+    _, notebook = call_stateful(make_notebook, language=Language.SQL)
+    assert notebook.suffix == ".sql"
+    assert notebook.read_text() == "SELECT 1"
 
 
 def test_make_directory_no_args():
