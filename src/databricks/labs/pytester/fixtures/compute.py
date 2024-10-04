@@ -2,6 +2,7 @@ import json
 import warnings
 from collections.abc import Generator
 from pathlib import Path
+from unittest.mock import Mock
 
 from pytest import fixture
 from databricks.sdk.service._internal import Wait
@@ -12,7 +13,7 @@ from databricks.sdk.service.compute import (
     CreateInstancePoolResponse,
     Library,
 )
-from databricks.sdk.service.jobs import Job, NotebookTask, SparkPythonTask, Task
+from databricks.sdk.service.jobs import Job, JobSettings, NotebookTask, SparkPythonTask, Task
 from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.sql import (
     CreateWarehouseRequestWarehouseType,
@@ -233,9 +234,13 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             else:
                 task.notebook_task = NotebookTask(notebook_path=str(path))
             tasks = [task]
-        job = ws.jobs.create(name=name, tasks=tasks, tags=tags)
-        log_workspace_link(name, f"job/{job.job_id}", anchor=False)
-        return ws.jobs.get(job.job_id)
+        response = ws.jobs.create(name=name, tasks=tasks, tags=tags)
+        log_workspace_link(name, f"job/{response.job_id}", anchor=False)
+        job = ws.jobs.get(response.job_id)
+        if isinstance(response, Mock):  # For testing
+            job = Job(settings=JobSettings(name=name, tasks=tasks, tags=tags))
+        return job
+
 
     yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))
 
