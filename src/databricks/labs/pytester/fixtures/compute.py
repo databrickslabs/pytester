@@ -207,9 +207,9 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             path = notebook_path
         if path and content:
             raise ValueError("The `path` and `content` parameters are exclusive.")
-        if tasks and (path or spark_conf or libraries):
+        if tasks and (path or content or spark_conf or libraries):
             raise ValueError(
-                "The `tasks` parameter is exclusive with the `path`, `spark_conf` and `libraries` parameter."
+                "The `tasks` parameter is exclusive with the `path`, `content` `spark_conf` and `libraries` parameter."
             )
         path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
