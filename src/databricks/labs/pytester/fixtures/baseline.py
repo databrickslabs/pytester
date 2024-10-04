@@ -106,10 +106,10 @@ def factory(
     cleanup: list[T] = []
 
     def inner(**kwargs: Any) -> T:
-        some = create(**kwargs)
-        _LOG.debug(f"added {name} fixture: {some}")
-        cleanup.append(some)
-        return some
+        out = create(**kwargs)
+        _LOG.debug(f"added {name} fixture: {out}")
+        cleanup.append(out)
+        return out
 
     yield inner
     _LOG.debug(f"clearing {len(cleanup)} {name} fixtures")
