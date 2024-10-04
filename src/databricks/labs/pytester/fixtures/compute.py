@@ -167,14 +167,17 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
     a `databricks.sdk.service.jobs.Job` instance.
 
     Keyword Arguments:
-    * `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
     * `name` (str, optional): The name of the job. If not provided, a random name will be generated.
-    * `spark_conf` (dict, optional): The Spark configuration of the job.
+    * `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
+    * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
+    * `content` (str, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
+    * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `NotebookTask` will be used.
+    * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
     * `libraries` (list, optional): The list of libraries to install on the job.
-    * other arguments are passed to `WorkspaceClient.jobs.create` method.
-
-    If no task argument is provided, a single task with a notebook task will be created, along with a disposable notebook.
-    Latest Spark version and a single worker clusters will be used to run this ephemeral job.
+    * `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
+    * `tasks` (list[Task], optional): A list of job tags. If not provided, a single task with a notebook task will be
+       created, along with a disposable notebook. Latest Spark version and a single worker clusters will be used to run
+       this ephemeral job.
 
     Usage:
     ```python
@@ -192,8 +195,8 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
         task_type: type[NotebookTask] | type[SparkPythonTask] = NotebookTask,
         spark_conf: dict[str, str] | None = None,
         libraries: list[Library] | None = None,
-        tasks: list[Task] | None = None,
         tags: list[dict[str, str]] | None = None,
+        tasks: list[Task] | None = None,
     ) -> Job:
         if notebook_path is not None:
             warnings.warn(
@@ -204,6 +207,10 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             path = path or notebook_path
         if path and content:
             raise ValueError("The `path` and `content` parameters are exclusive.")
+        if tasks and (path or spark_conf or libraries):
+            raise ValueError(
+                "The `tasks` parameter is exclusive with the `path`, `spark_conf` and `libraries` parameter."
+            )
         path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
         if not tasks:
