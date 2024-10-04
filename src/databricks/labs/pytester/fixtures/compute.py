@@ -204,7 +204,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
                 "when introducing workspace paths to python scripts.",
                 DeprecationWarning,
             )
-            path = path or notebook_path
+            path = notebook_path
         if path and content:
             raise ValueError("The `path` and `content` parameters are exclusive.")
         if tasks and (path or spark_conf or libraries):
