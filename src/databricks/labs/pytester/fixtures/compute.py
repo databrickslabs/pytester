@@ -202,8 +202,9 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
                 DeprecationWarning,
             )
             path = path or notebook_path
-        else:
-            path = path or make_notebook(content=content)
+        if path and content:
+            raise ValueError("The `path` and `content` parameters are exclusive.")
+        path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
         if not tasks:
             task = Task(
