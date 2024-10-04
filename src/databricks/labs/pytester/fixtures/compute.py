@@ -12,7 +12,7 @@ from databricks.sdk.service.compute import (
     CreateInstancePoolResponse,
     Library,
 )
-from databricks.sdk.service.jobs import Job, NotebookTask, Task
+from databricks.sdk.service.jobs import Job, NotebookTask, SparkPythonTask, Task
 from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.sql import (
     CreateWarehouseRequestWarehouseType,
@@ -187,8 +187,9 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
         *,
         name: str | None = None,
         path: str | Path | None = None,
+        notebook_path: str | Path | None = None,  # DEPRECATED
         content: str | None = None,
-        notebook_path: str | Path | None = None,
+        task_type: type[NotebookTask] | type[SparkPythonTask] = NotebookTask,
         spark_conf: dict[str, str] | None = None,
         libraries: list[Library] | None = None,
         tasks: list[Task] | None = None,
@@ -205,21 +206,23 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
         if not tasks:
-            tasks = [
-                Task(
-                    task_key=make_random(4),
-                    description=make_random(4),
-                    new_cluster=ClusterSpec(
-                        num_workers=1,
-                        node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
-                        spark_version=ws.clusters.select_spark_version(latest=True),
-                        spark_conf=spark_conf,
-                    ),
-                    notebook_task=NotebookTask(notebook_path=str(path)),
-                    libraries=libraries,
-                    timeout_seconds=0,
-                )
-            ]
+            task = Task(
+                task_key=make_random(4),
+                description=make_random(4),
+                new_cluster=ClusterSpec(
+                    num_workers=1,
+                    node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
+                    spark_version=ws.clusters.select_spark_version(latest=True),
+                    spark_conf=spark_conf,
+                ),
+                libraries=libraries,
+                timeout_seconds=0,
+            )
+            if task_type == SparkPythonTask:
+                task.spark_python_task = SparkPythonTask(python_file=str(path))
+            else:
+                task.notebook_task = NotebookTask(notebook_path=str(path))
+            tasks = [task]
         remove_after_tag = {"key": "RemoveAfter", "value": watchdog_remove_after}
         if tags:
             tags.append(remove_after_tag)
