@@ -12,13 +12,11 @@ def test_make_notebook_no_args() -> None:
     assert ctx is not None
     assert notebook is not None
     # First part is the root slash
-    assert "/".join(notebook.parts)[1:] == "/Users/test-user/dummy-RANDOM-XXXXX.py"
-    assert notebook.suffix == ".py"
+    assert "/".join(notebook.parts)[1:] == "/Users/test-user/dummy-RANDOM-XXXXX"
+    assert not notebook.suffix
     assert notebook.read_text() == "print(1)"
-    assert (
-        notebook.as_uri()
-        == 'https://adb-12345679.10.azuredatabricks.net/#workspace/Users/test-user/dummy-RANDOM-XXXXX.py'
-    )
+    uri = notebook.as_uri()
+    assert uri == 'https://adb-12345679.10.azuredatabricks.net/#workspace/Users/test-user/dummy-RANDOM-XXXXX'
 
 
 @pytest.mark.parametrize("argument", ["content", "encoding", "language"])
@@ -51,7 +49,6 @@ def test_make_notebook_with_io_bytes_content() -> None:
 
 def test_make_notebook_with_sql_language() -> None:
     _, notebook = call_stateful(make_notebook, language=Language.SQL)
-    assert notebook.suffix == ".sql"
     assert notebook.read_text() == "SELECT 1"
 
 

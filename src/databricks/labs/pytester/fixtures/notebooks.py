@@ -1,14 +1,13 @@
 import io
 import logging
 import sys
-import warnings
 from collections.abc import Generator, Callable
 from pathlib import Path
 from unittest.mock import Mock
 
 from pytest import fixture
 from databricks.labs.blueprint.paths import WorkspacePath
-from databricks.sdk.service.workspace import Language, RepoInfo
+from databricks.sdk.service.workspace import ImportFormat, Language, RepoInfo
 from databricks.sdk import WorkspaceClient
 
 from databricks.labs.pytester.fixtures.baseline import factory
@@ -46,10 +45,9 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
         content: str | bytes | io.BytesIO | None = None,
         language: Language | None = None,
         encoding: str | None = None,
-        **kwargs,
+        format: ImportFormat = ImportFormat.SOURCE,  # pylint:  disable=redefined-builtin
+        overwrite: bool = False,
     ) -> WorkspacePath:
-        if kwargs:
-            warnings.warn(f"Deprecated parameter(s): {kwargs}", DeprecationWarning)
         if path and (content or encoding or language):
             raise ValueError(
                 "The `path` parameter is exclusive with the `content`, `language` and `encoding` parameters."
@@ -57,25 +55,19 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
         encoding = encoding or _DEFAULT_ENCODING
         language = language or Language.PYTHON
         if language == Language.PYTHON:
-            suffix = ".py"
             default_content = "print(1)"
         elif language == Language.SQL:
-            suffix = ".sql"
             default_content = "SELECT 1"
         else:
             raise ValueError(f"Unsupported language: {language}")
-        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
-        workspace_path = WorkspacePath(ws, path)
+        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
         content = content or default_content
-        if isinstance(content, io.BytesIO):  # Legacy support
-            content = content.read()
-        if isinstance(content, bytes):
-            workspace_path.write_bytes(content)
-        else:
-            workspace_path.write_text(content, encoding=encoding)
-            content = content.encode(encoding)  # For testing
+        if isinstance(content, str):
+            content = io.BytesIO(content.encode(encoding))
         if isinstance(ws, Mock):  # For testing
-            ws.workspace.download.return_value = io.BytesIO(content)
+            ws.workspace.download.return_value = content if isinstance(content, io.BytesIO) else io.BytesIO(content)
+        ws.workspace.upload(path, content, language=language, format=format, overwrite=overwrite)
+        workspace_path = WorkspacePath(ws, path)
         logger.info(f"Created notebook: {workspace_path.as_uri()}")
         return workspace_path
 
