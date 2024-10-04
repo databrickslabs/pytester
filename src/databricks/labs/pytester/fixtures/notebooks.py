@@ -2,7 +2,7 @@ import io
 import logging
 import sys
 import warnings
-from collections.abc import Generator
+from collections.abc import Generator, Callable
 from pathlib import Path
 
 from pytest import fixture
@@ -18,7 +18,7 @@ _DEFAULT_ENCODING = sys.getdefaultencoding()
 
 
 @fixture
-def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[WorkspacePath, None, None]:
+def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
     """
     Returns a function to create Databricks Notebooks and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
