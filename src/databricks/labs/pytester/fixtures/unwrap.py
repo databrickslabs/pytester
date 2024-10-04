@@ -27,7 +27,7 @@ class CallContext:
     def __init__(self):
         workspace_client = create_autospec(WorkspaceClient)
         workspace_client.current_user.me.return_value = iam.User(
-            user_name="user",
+            user_name="test-user",
             groups=[iam.ComplexValue(display="admins")],
         )
         workspace_client.get_workspace_id.return_value = 123456789
