@@ -48,10 +48,6 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
         format: ImportFormat = ImportFormat.SOURCE,  # pylint:  disable=redefined-builtin
         overwrite: bool = False,
     ) -> WorkspacePath:
-        if path and (content or encoding or language):
-            raise ValueError(
-                "The `path` parameter is exclusive with the `content`, `language` and `encoding` parameters."
-            )
         encoding = encoding or _DEFAULT_ENCODING
         language = language or Language.PYTHON
         if language == Language.PYTHON:
