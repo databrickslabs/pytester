@@ -30,6 +30,7 @@ class CallContext:
             user_name="test-user",
             groups=[iam.ComplexValue(display="admins")],
         )
+        workspace_client.config.host = "https://adb-12345679.10.azuredatabricks.net/"
         workspace_client.get_workspace_id.return_value = 123456789
         self._fixtures = {
             'sql_backend': MockBackend(),
