@@ -28,7 +28,6 @@ def test_make_notebook_with_path() -> None:
     _, notebook = call_stateful(make_notebook, path="test.py")
     assert notebook.name == "test.py"
 
-
 def test_make_notebook_with_text_content() -> None:
     _, notebook = call_stateful(make_notebook, content="print(2)")
     assert notebook.read_text() == "print(2)"
@@ -36,6 +35,11 @@ def test_make_notebook_with_text_content() -> None:
 
 def test_make_notebook_with_bytes_content() -> None:
     _, notebook = call_stateful(make_notebook, content=b"print(2)")
+    assert notebook.read_bytes() == b"print(2)"
+
+
+def test_make_notebook_with_io_bytes_content() -> None:
+    _, notebook = call_stateful(make_notebook, content=io.BytesIO(b"print(2)"))
     assert notebook.read_bytes() == b"print(2)"
 
 
