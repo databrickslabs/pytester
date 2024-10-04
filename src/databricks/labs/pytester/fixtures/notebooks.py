@@ -26,7 +26,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
 
     Keyword arguments:
     * `path` (str, optional): The path of the notebook. Defaults to `dummy-*` notebook in current user's home folder.
-    * `content` (str | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
+    * `content` (str | bytes | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
     * `language` (`databricks.sdk.service.workspace.Language`, optional): The language of the notebook. Defaults to `Language.PYTHON`.
     * `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
     * [DEPRECATED] `format` (`databricks.sdk.service.workspace.ImportFormat`, optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
@@ -43,7 +43,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
     def create(
         *,
         path: str | Path | None = None,
-        content: str | io.BytesIO | None = None,
+        content: str | bytes | io.BytesIO | None = None,
         language: Language | None = None,
         encoding: str | None = None,
         **kwargs,
@@ -67,8 +67,12 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
         path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
         workspace_path = WorkspacePath(ws, path)
         content = content or default_content
-        if isinstance(content, io.BytesIO):
-            workspace_path.write_bytes(content.read())
+        if isinstance(content, io.BytesIO):  # Legacy support
+            content = content.read()
+        if isinstance(content, bytes):
+            workspace_path.write_bytes(content)
+            if isinstance(ws, Mock):  # For testing
+                ws.workspace.download.return_value = content
         else:
             workspace_path.write_text(content, encoding=encoding)
             if isinstance(ws, Mock):  # For testing
