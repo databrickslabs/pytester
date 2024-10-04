@@ -9,10 +9,10 @@ def test_creates_some_notebook(make_notebook) -> None:
     assert "print(1)" in notebook.read_text()
 
 
-def test_creates_some_file(make_file) -> None:
-    workspace_path = make_file()
-    assert workspace_path.is_file()
-    assert "print(1)" in workspace_path.read_text()
+def test_creates_some_workspace_file(make_workspace_file) -> None:
+    workspace_file = make_workspace_file()
+    assert workspace_file.is_file()
+    assert "print(1)" in workspace_file.read_text()
 
 
 def test_creates_some_folder_with_a_notebook(make_directory, make_notebook):

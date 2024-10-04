@@ -2,7 +2,7 @@ import io
 
 from databricks.sdk.service.workspace import Language
 
-from databricks.labs.pytester.fixtures.notebooks import make_directory, make_file, make_notebook, make_repo
+from databricks.labs.pytester.fixtures.notebooks import make_directory, make_workspace_file, make_notebook, make_repo
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
 
 
@@ -44,36 +44,36 @@ def test_make_notebook_with_sql_language() -> None:
 
 
 def test_make_file_no_args() -> None:
-    ctx, file = call_stateful(make_file)
+    ctx, workspace_file = call_stateful(make_workspace_file)
     assert ctx is not None
-    assert file is not None
+    assert workspace_file is not None
     # First part is the root slash
-    assert "/".join(file.parts)[1:] == "/Users/test-user/dummy-RANDOM-XXXXX.py"
-    assert file.suffix == ".py"
-    assert file.read_text() == "print(1)"
-    uri = file.as_uri()
+    assert "/".join(workspace_file.parts)[1:] == "/Users/test-user/dummy-RANDOM-XXXXX.py"
+    assert workspace_file.suffix == ".py"
+    assert workspace_file.read_text() == "print(1)"
+    uri = workspace_file.as_uri()
     assert uri == 'https://adb-12345679.10.azuredatabricks.net/#workspace/Users/test-user/dummy-RANDOM-XXXXX.py'
 
 
 def test_make_file_with_path() -> None:
-    _, file = call_stateful(make_file, path="test.py")
-    assert file.name == "test.py"
+    _, workspace_file = call_stateful(make_workspace_file, path="test.py")
+    assert workspace_file.name == "test.py"
 
 
 def test_make_file_with_text_content() -> None:
-    _, file = call_stateful(make_file, content="print(2)")
-    assert file.read_text() == "print(2)"
+    _, workspace_file = call_stateful(make_workspace_file, content="print(2)")
+    assert workspace_file.read_text() == "print(2)"
 
 
 def test_make_file_with_bytes_content() -> None:
-    _, file = call_stateful(make_file, content=b"print(2)")
-    assert file.read_bytes() == b"print(2)"
+    _, workspace_file = call_stateful(make_workspace_file, content=b"print(2)")
+    assert workspace_file.read_bytes() == b"print(2)"
 
 
 def test_make_file_with_sql_language() -> None:
-    _, file = call_stateful(make_file, language=Language.SQL)
-    assert file.suffix == ".sql"
-    assert file.read_text() == "SELECT 1"
+    _, workspace_file = call_stateful(make_workspace_file, language=Language.SQL)
+    assert workspace_file.suffix == ".sql"
+    assert workspace_file.read_text() == "SELECT 1"
 
 
 def test_make_directory_no_args():

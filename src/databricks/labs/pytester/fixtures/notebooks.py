@@ -71,7 +71,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
 
 
 @fixture
-def make_file(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
+def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
     """
     Returns a function to create Databricks workspace file and clean up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -84,10 +84,10 @@ def make_file(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[...,
 
     This example creates a notebook and verifies that the workspace path is an existing file with contents `print(1)`:
     ```python
-    def test_create_file(make_notebook):
-        workspace_path = make_file()
-        assert workspace_path.is_file()
-        assert "print(1)" in workspace_path.read_text()
+    def test_create_file(make_workspace_file):
+        workspace_file = make_workspace_file()
+        assert workspace_file.is_file()
+        assert "print(1)" in workspace_file.read_text()
     ```
 
     TODO:
