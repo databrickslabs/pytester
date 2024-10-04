@@ -1,8 +1,8 @@
 import io
 import logging
-import typing
 from collections.abc import Generator
 from pathlib import Path
+import warnings
 
 from pytest import fixture
 from databricks.labs.blueprint.paths import WorkspacePath
@@ -22,10 +22,10 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
 
     Keyword arguments:
     * `path` (str, optional): The path of the notebook. Defaults to `dummy-*` notebook in current user's home folder.
-    * `content` (typing.BinaryIO, optional): The content of the notebook. Defaults to `print(1)`.
+    * `content` (str | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
     * `language` (`databricks.sdk.service.workspace.Language`, optional): The language of the notebook. Defaults to `Language.PYTHON`.
-    * `format` (`databricks.sdk.service.workspace.ImportFormat`, optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
-    * `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
+    * [DEPRECATED] `format` (`databricks.sdk.service.workspace.ImportFormat`, optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
+    * [DEPRECATED] `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
 
     This example creates a notebook and verifies that `print(1)` is in the content:
     ```python
@@ -38,20 +38,26 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
     def create(
         *,
         path: str | Path | None = None,
-        content: typing.BinaryIO | None = None,
+        content: str | io.BytesIO | None = None,
         language: Language = Language.PYTHON,
-        format: ImportFormat = ImportFormat.SOURCE,  # pylint:  disable=redefined-builtin
-        overwrite: bool = False,
+        **kwargs,
     ) -> WorkspacePath:
-        if path is None:
-            path = f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
-        elif isinstance(path, Path):
-            path = str(path)
-        if content is None:
-            content = io.BytesIO(b"print(1)")
-        path = str(path)
-        ws.workspace.upload(path, content, language=language, format=format, overwrite=overwrite)
+        if kwargs:
+            warnings.warn(f"Deprecated parameter(s): {kwargs}", DeprecationWarning)
+        if language == language.PYTHON:
+            suffix = ".py"
+            default_content = "print(1)"
+        elif language == language.SQL:
+            suffix = ".sql"
+            default_content = "SELECT 1"
+        else:
+            raise ValueError(f"Unsupported language: {language}")
+        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
         workspace_path = WorkspacePath(ws, path)
+        if isinstance(content, io.BytesIO):
+            workspace_path.write_bytes(content.read())
+        else:
+            workspace_path.write_text(content or default_content)
         logger.info(f"Created notebook: {workspace_path.as_uri()}")
         return workspace_path
 
