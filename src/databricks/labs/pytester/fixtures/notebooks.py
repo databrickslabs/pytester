@@ -44,7 +44,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Workspace
         path: str | Path | None = None,
         content: str | io.BytesIO | None = None,
         language: Language = Language.PYTHON,
-        encoding=_DEFAULT_ENCODING,
+        encoding: str = _DEFAULT_ENCODING,
         **kwargs,
     ) -> WorkspacePath:
         if kwargs:
