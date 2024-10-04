@@ -196,7 +196,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
         task_type: type[NotebookTask] | type[SparkPythonTask] = NotebookTask,
         spark_conf: dict[str, str] | None = None,
         libraries: list[Library] | None = None,
-        tags: list[dict[str, str]] | None = None,
+        tags: dict[str, str] | None = None,
         tasks: list[Task] | None = None,
     ) -> Job:
         if notebook_path is not None:
@@ -214,8 +214,8 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             )
         path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
-        tags = tags or []
-        tags.append({"key": "RemoveAfter", "value": watchdog_remove_after})
+        tags = tags or {}
+        tags["RemoveAfter"] = tags.get("RemoveAfter", watchdog_remove_after)
         if not tasks:
             task = Task(
                 task_key=make_random(4),

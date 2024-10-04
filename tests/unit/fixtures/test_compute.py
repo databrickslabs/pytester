@@ -35,7 +35,7 @@ def test_make_job_no_args() -> None:
     assert ctx is not None
     assert job is not None
     assert job.settings.name == "dummy-jRANDOM"
-    assert job.settings.tags == [{"key": "RemoveAfter", "value": "2024091313"}]
+    assert job.settings.tags == {"RemoveAfter": "2024091313"}
     assert len(job.settings.tasks) == 1
     assert job.settings.tasks[0].task_key == "RANDOM"
     assert job.settings.tasks[0].description == "RANDOM"
@@ -82,8 +82,8 @@ def test_make_job_with_spark_conf() -> None:
 
 
 def test_make_job_with_tags() -> None:
-    _, job = call_stateful(make_job, tags=[{"key": "test", "value": "test"}])
-    assert job.settings.tags == [{"key": "test", "value": "test"}, {"key": "RemoveAfter", "value": "2024091313"}]
+    _, job = call_stateful(make_job, tags={"value": "test"})
+    assert job.settings.tags == {"value": "test", "RemoveAfter": "2024091313"}
 
 
 def test_make_job_with_tasks() -> None:
