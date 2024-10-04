@@ -213,6 +213,8 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             )
         path = path or make_notebook(content=content)
         name = name or f"dummy-j{make_random(4)}"
+        tags = tags or []
+        tags.append({"key": "RemoveAfter", "value": watchdog_remove_after})
         if not tasks:
             task = Task(
                 task_key=make_random(4),
@@ -231,11 +233,6 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
             else:
                 task.notebook_task = NotebookTask(notebook_path=str(path))
             tasks = [task]
-        remove_after_tag = {"key": "RemoveAfter", "value": watchdog_remove_after}
-        if tags:
-            tags.append(remove_after_tag)
-        else:
-            tags = [remove_after_tag]
         job = ws.jobs.create(name=name, tasks=tasks, tags=tags)
         log_workspace_link(name, f"job/{job.job_id}", anchor=False)
         return ws.jobs.get(job.job_id)
