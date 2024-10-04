@@ -1,4 +1,5 @@
 import json
+import warnings
 from collections.abc import Generator
 from pathlib import Path
 
@@ -185,14 +186,23 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
     def create(
         *,
         name: str | None = None,
+        path: str | Path | None = None,
         notebook_path: str | Path | None = None,
         spark_conf: dict[str, str] | None = None,
         libraries: list[Library] | None = None,
         tasks: list[Task] | None = None,
         tags: list[dict[str, str]] | None = None,
     ) -> Job:
+        if notebook_path is not None:
+            warnings.warn(
+                "The `notebook_path` parameter is replaced with the more general `path` parameter "
+                "when introducing workspace paths to python scripts.",
+                DeprecationWarning,
+            )
+            path = path or notebook_path
+        else:
+            path = path or make_notebook()
         name = name or f"dummy-j{make_random(4)}"
-        notebook_path = notebook_path or make_notebook()
         if not tasks:
             tasks = [
                 Task(
@@ -204,7 +214,7 @@ def make_job(ws, make_random, make_notebook, log_workspace_link, watchdog_remove
                         spark_version=ws.clusters.select_spark_version(latest=True),
                         spark_conf=spark_conf,
                     ),
-                    notebook_task=NotebookTask(notebook_path=str(notebook_path)),
+                    notebook_task=NotebookTask(notebook_path=str(path)),
                     libraries=libraries,
                     timeout_seconds=0,
                 )
