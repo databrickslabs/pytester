@@ -86,6 +86,11 @@ def test_make_job_with_tags() -> None:
     assert job.settings.tags == [{"key": "test", "value": "test"}, {"key": "RemoveAfter", "value": "2024091313"}]
 
 
+def test_make_job_with_tasks() -> None:
+    _, job = call_stateful(make_job, tasks=["CustomTasks"])
+    assert job.settings.tasks == ["CustomTasks"]
+
+
 def test_make_pipeline_no_args():
     ctx, pipeline = call_stateful(make_pipeline)
     assert ctx is not None
