@@ -28,8 +28,8 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
     * `content` (str | bytes | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
     * `language` (`databricks.sdk.service.workspace.Language`, optional): The language of the notebook. Defaults to `Language.PYTHON`.
     * `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
-    * [DEPRECATED] `format` (`databricks.sdk.service.workspace.ImportFormat`, optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
-    * [DEPRECATED] `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
+    * `format` (`databricks.sdk.service.workspace.ImportFormat`, optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
+    * `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
 
     This example creates a notebook and verifies that `print(1)` is in the content:
     ```python
