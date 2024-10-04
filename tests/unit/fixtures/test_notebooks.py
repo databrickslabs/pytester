@@ -4,10 +4,15 @@ from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_dire
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
 
 
-def test_make_notebook_no_args():
+def test_make_notebook_no_args() -> None:
     ctx, notebook = call_stateful(make_notebook)
     assert ctx is not None
     assert notebook is not None
+    # First part is the root slash
+    assert "/".join(notebook.parts)[1:] == "/Users/test-user/dummy-RANDOM-XXXXX.py"
+    assert notebook.suffix == ".py"
+    assert notebook.read_text() == "print(1)"
+    assert notebook.as_uri() == 'https://adb-12345679.10.azuredatabricks.net/#workspace/Users/test-user/dummy-RANDOM-XXXXX.py'
 
 
 def test_make_notebook_with_path() -> None:
