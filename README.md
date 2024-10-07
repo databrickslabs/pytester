@@ -414,7 +414,8 @@ Keyword Arguments:
 * `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
 * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
 * `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
-* `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `NotebookTask` will be used.
+* `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `type[NotebookTask]` will be used.
+* `instance_pool_id` (str, optional): The instance pool id to add to the job cluster. If not provided, no instance pool will be used.
 * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
 * `libraries` (list, optional): The list of libraries to install on the job.
 * `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
@@ -428,7 +429,7 @@ def test_job(make_job):
     logger.info(f"created {make_job()}")
 ```
 
-See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_notebook`](#make_notebook-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
+See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_notebook`](#make_notebook-fixture), [`make_workspace_file`](#make_workspace_file-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -671,7 +672,7 @@ def test_create_file(make_workspace_file):
 TODO:
 Merge functionality with `make_notebook` if `WorkspacePath` supports creating notebooks.
 
-See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
+See also [`make_job`](#make_job-fixture), [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
