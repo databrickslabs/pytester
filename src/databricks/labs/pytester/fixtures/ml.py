@@ -1,4 +1,4 @@
-from collections.abc import Generator, Callable
+from collections.abc import Callable, Generator
 
 from pytest import fixture
 from databricks.sdk.service._internal import Wait
@@ -9,7 +9,7 @@ from databricks.sdk.service.serving import (
     ServedModelInputWorkloadSize,
     EndpointTag,
 )
-from databricks.sdk.service.ml import CreateExperimentResponse, ModelTag, GetModelResponse
+from databricks.sdk.service.ml import CreateExperimentResponse, ModelDatabricks, ModelTag
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
@@ -21,7 +21,7 @@ def make_experiment(
     make_directory,
     log_workspace_link,
     watchdog_purge_suffix,
-) -> Generator[CreateExperimentResponse, None, None]:
+) -> Generator[Callable[..., CreateExperimentResponse], None, None]:
     """
     Returns a function to create Databricks Experiments and clean them up after the test.
     The function returns a `databricks.sdk.service.ml.CreateExperimentResponse` object.
@@ -63,7 +63,7 @@ def make_experiment(
 
 
 @fixture
-def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[..., GetModelResponse], None, None]:
+def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[..., ModelDatabricks], None, None]:
     """
     Returns a function to create Databricks Models and clean them up after the test.
     The function returns a `databricks.sdk.service.ml.GetModelResponse` object.
@@ -86,7 +86,7 @@ def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[...
     ```
     """
 
-    def create(*, model_name: str | None = None, **kwargs) -> GetModelResponse:
+    def create(*, model_name: str | None = None, **kwargs) -> ModelDatabricks:
         if model_name is None:
             model_name = f"dummy-{make_random(4)}"
         remove_after_tag = ModelTag(key="RemoveAfter", value=watchdog_remove_after)
@@ -96,6 +96,7 @@ def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[...
             kwargs["tags"].append(remove_after_tag)
         created_model = ws.model_registry.create_model(model_name, **kwargs)
         model = ws.model_registry.get_model(created_model.registered_model.name)
+        assert model.registered_model_databricks is not None
         return model.registered_model_databricks
 
     yield from factory("model", create, lambda item: ws.model_registry.delete_model(item.id))
