@@ -1015,7 +1015,7 @@ See also [`ws`](#ws-fixture).
 Create a query and remove it after the test is done. Returns the [`LegacyQuery`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/sql.html#databricks.sdk.service.sql.LegacyQuery) object.
 
 Keyword Arguments:
-- `query`: The query to be stored. Default is `SELECT * FROM <newly created random table>`.
+- `sql_query`: The query to be stored. Default is `SELECT * FROM <newly created random table>`.
 
 Usage:
 ```python
