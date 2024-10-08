@@ -1,7 +1,7 @@
 import io
 import logging
 import sys
-from collections.abc import Generator, Callable
+from collections.abc import Callable, Generator
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -128,7 +128,9 @@ def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Cal
 
 
 @fixture
-def make_directory(ws: WorkspaceClient, make_random, watchdog_purge_suffix) -> Generator[WorkspacePath, None, None]:
+def make_directory(
+    ws: WorkspaceClient, make_random, watchdog_purge_suffix
+) -> Generator[Callable[..., WorkspacePath], None, None]:
     """
     Returns a function to create Databricks Workspace Folders and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -159,7 +161,7 @@ def make_directory(ws: WorkspaceClient, make_random, watchdog_purge_suffix) -> G
 
 
 @fixture
-def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[RepoInfo, None, None]:
+def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., RepoInfo], None, None]:
     """
     Returns a function to create Databricks Repos and clean them up after the test.
     The function returns a `databricks.sdk.service.workspace.RepoInfo` object.

@@ -1,6 +1,6 @@
 import logging
 import warnings
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from datetime import timedelta
 
 from pytest import fixture
@@ -140,7 +140,9 @@ def _wait_group_provisioned(interface: AccountGroupsAPI | GroupsAPI, group: Grou
     _double_check_group_in_listing()
 
 
-def _make_group(name: str, cfg: Config, interface, make_random, watchdog_purge_suffix) -> Generator[Group, None, None]:
+def _make_group(
+    name: str, cfg: Config, interface, make_random, watchdog_purge_suffix
+) -> Generator[Callable[..., Group], None, None]:
     _not_specified = object()
 
     @retried(on=[ResourceConflict], timeout=timedelta(seconds=30))
