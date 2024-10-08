@@ -1,17 +1,20 @@
 import io
 import logging
-import typing
+import sys
 from collections.abc import Callable, Generator
 from pathlib import Path
+from unittest.mock import Mock
 
 from pytest import fixture
 from databricks.labs.blueprint.paths import WorkspacePath
-from databricks.sdk.service.workspace import Language, ImportFormat, RepoInfo
+from databricks.sdk.service.workspace import ImportFormat, Language, RepoInfo
 from databricks.sdk import WorkspaceClient
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
+
 logger = logging.getLogger(__name__)
+_DEFAULT_ENCODING = sys.getdefaultencoding()
 
 
 @fixture
@@ -22,8 +25,9 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
 
     Keyword arguments:
     * `path` (str, optional): The path of the notebook. Defaults to `dummy-*` notebook in current user's home folder.
-    * `content` (typing.BinaryIO, optional): The content of the notebook. Defaults to `print(1)`.
+    * `content` (str | bytes | io.BinaryIO, optional): The content of the notebook. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
     * `language` (`databricks.sdk.service.workspace.Language`, optional): The language of the notebook. Defaults to `Language.PYTHON`.
+    * `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
     * `format` (`databricks.sdk.service.workspace.ImportFormat`, optional): The format of the notebook. Defaults to `ImportFormat.SOURCE`.
     * `overwrite` (bool, optional): Whether to overwrite the notebook if it already exists. Defaults to `False`.
 
@@ -38,24 +42,89 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
     def create(
         *,
         path: str | Path | None = None,
-        content: typing.BinaryIO | None = None,
-        language: Language = Language.PYTHON,
+        content: str | bytes | io.BytesIO | None = None,
+        language: Language | None = None,
+        encoding: str | None = None,
         format: ImportFormat = ImportFormat.SOURCE,  # pylint:  disable=redefined-builtin
         overwrite: bool = False,
     ) -> WorkspacePath:
-        if path is None:
-            path = f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
-        elif isinstance(path, Path):
-            path = str(path)
-        if content is None:
-            content = io.BytesIO(b"print(1)")
-        path = str(path)
+        encoding = encoding or _DEFAULT_ENCODING
+        language = language or Language.PYTHON
+        if language == Language.PYTHON:
+            default_content = "print(1)"
+        elif language == Language.SQL:
+            default_content = "SELECT 1"
+        else:
+            raise ValueError(f"Unsupported language: {language}")
+        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
+        content = content or default_content
+        if isinstance(content, str):
+            content = io.BytesIO(content.encode(encoding))
+        if isinstance(ws, Mock):  # For testing
+            ws.workspace.download.return_value = content if isinstance(content, io.BytesIO) else io.BytesIO(content)
         ws.workspace.upload(path, content, language=language, format=format, overwrite=overwrite)
         workspace_path = WorkspacePath(ws, path)
         logger.info(f"Created notebook: {workspace_path.as_uri()}")
         return workspace_path
 
     yield from factory("notebook", create, lambda path: path.unlink(missing_ok=True))
+
+
+@fixture
+def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
+    """
+    Returns a function to create Databricks workspace file and clean up after the test.
+    The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
+
+    Keyword arguments:
+    * `path` (str, optional): The path of the file. Defaults to `dummy-*` notebook in current user's home folder.
+    * `content` (str | bytes, optional): The content of the file. Defaults to `print(1)` for Python and `SELECT 1` for SQL.
+    * `language` (`databricks.sdk.service.workspace.Language`, optional): The language of the notebook. Defaults to `Language.PYTHON`.
+    * `encoding` (`str`, optional): The file encoding. Defaults to `sys.getdefaultencoding()`.
+
+    This example creates a notebook and verifies that the workspace path is an existing file with contents `print(1)`:
+    ```python
+    def test_create_file(make_workspace_file):
+        workspace_file = make_workspace_file()
+        assert workspace_file.is_file()
+        assert "print(1)" in workspace_file.read_text()
+    ```
+
+    TODO:
+    Merge functionality with `make_notebook` if `WorkspacePath` supports creating notebooks.
+    """
+
+    def create(
+        *,
+        path: str | Path | None = None,
+        content: str | bytes | None = None,
+        language: Language | None = None,
+        encoding: str | None = None,
+    ) -> WorkspacePath:
+        language = language or Language.PYTHON
+        if language == Language.PYTHON:
+            default_content = "print(1)"
+            suffix = ".py"
+        elif language == Language.SQL:
+            default_content = "SELECT 1"
+            suffix = ".sql"
+        else:
+            raise ValueError(f"Unsupported language: {language}")
+        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
+        content = content or default_content
+        encoding = encoding or _DEFAULT_ENCODING
+        workspace_path = WorkspacePath(ws, path)
+        if isinstance(content, bytes):
+            workspace_path.write_bytes(content)
+        else:
+            workspace_path.write_text(content, encoding=encoding)
+            content = content.encode(encoding)  # For testing
+        if isinstance(ws, Mock):  # For testing
+            ws.workspace.download.return_value = io.BytesIO(content)
+        logger.info(f"Created file: {workspace_path.as_uri()}")
+        return workspace_path
+
+    yield from factory("file", create, lambda path: path.unlink(missing_ok=True))
 
 
 @fixture

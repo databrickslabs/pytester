@@ -3,9 +3,11 @@
 import inspect
 from collections.abc import Callable, Generator
 from typing import TypeVar
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, create_autospec
 
 from databricks.labs.lsql.backends import MockBackend
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.service import iam
 
 import databricks.labs.pytester.fixtures.plugin as P
 
@@ -23,8 +25,16 @@ def call_fixture(fixture_fn: Callable[..., T], *args, **kwargs) -> T:
 
 class CallContext:
     def __init__(self):
+        workspace_client = create_autospec(WorkspaceClient)
+        workspace_client.current_user.me.return_value = iam.User(
+            user_name="test-user",
+            groups=[iam.ComplexValue(display="admins")],
+        )
+        workspace_client.config.host = "https://adb-12345679.10.azuredatabricks.net/"
+        workspace_client.get_workspace_id.return_value = 123456789
         self._fixtures = {
             'sql_backend': MockBackend(),
+            'ws': workspace_client,
             'make_random': self.make_random,
             'env_or_skip': self.env_or_skip,
             'watchdog_remove_after': '2024091313',

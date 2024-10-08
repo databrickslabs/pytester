@@ -1,19 +1,26 @@
 import json
+import warnings
 from collections.abc import Callable, Generator
 from pathlib import Path
-from pytest import fixture
+from unittest.mock import Mock
 
+from pytest import fixture
+from databricks.sdk.service._internal import Wait
+from databricks.sdk.service.compute import (
+    CreatePolicyResponse,
+    ClusterDetails,
+    ClusterSpec,
+    CreateInstancePoolResponse,
+    Library,
+)
+from databricks.sdk.service.jobs import Job, JobSettings, NotebookTask, SparkPythonTask, Task
+from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.sql import (
     CreateWarehouseRequestWarehouseType,
     EndpointTags,
     EndpointTagPair,
     GetWarehouseResponse,
 )
-
-from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
-from databricks.sdk.service.jobs import Job, NotebookTask, Task
-from databricks.sdk.service._internal import Wait
-from databricks.sdk.service.compute import CreatePolicyResponse, ClusterDetails, ClusterSpec, CreateInstancePoolResponse
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
@@ -158,21 +165,30 @@ def make_instance_pool(
 
 @fixture
 def make_job(
-    ws, make_random, make_notebook, log_workspace_link, watchdog_remove_after
+    ws,
+    make_random,
+    make_notebook,
+    make_workspace_file,
+    log_workspace_link,
+    watchdog_remove_after,
 ) -> Generator[Callable[..., Job], None, None]:
     """
     Create a Databricks job and clean it up after the test. Returns a function to create jobs, that returns
     a `databricks.sdk.service.jobs.Job` instance.
 
     Keyword Arguments:
-    * `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
     * `name` (str, optional): The name of the job. If not provided, a random name will be generated.
-    * `spark_conf` (dict, optional): The Spark configuration of the job.
+    * `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
+    * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
+    * `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
+    * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `type[NotebookTask]` will be used.
+    * `instance_pool_id` (str, optional): The instance pool id to add to the job cluster. If not provided, no instance pool will be used.
+    * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
     * `libraries` (list, optional): The list of libraries to install on the job.
-    * other arguments are passed to `WorkspaceClient.jobs.create` method.
-
-    If no task argument is provided, a single task with a notebook task will be created, along with a disposable notebook.
-    Latest Spark version and a single worker clusters will be used to run this ephemeral job.
+    * `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
+    * `tasks` (list[Task], optional): A list of job tags. If not provided, a single task with a notebook task will be
+       created, along with a disposable notebook. Latest Spark version and a single worker clusters will be used to run
+       this ephemeral job.
 
     Usage:
     ```python
@@ -181,42 +197,65 @@ def make_job(
     ```
     """
 
-    def create(notebook_path: str | Path | None = None, **kwargs) -> Job:
-        if "name" not in kwargs:
-            kwargs["name"] = f"dummy-{make_random(4)}"
-        task_spark_conf = kwargs.pop("spark_conf", None)
-        libraries = kwargs.pop("libraries", None)
-        if isinstance(notebook_path, Path):
-            notebook_path = str(notebook_path)
-        if not notebook_path:
-            notebook_path = make_notebook()
-        assert notebook_path is not None
-        if "tasks" not in kwargs:
-            kwargs["tasks"] = [
-                Task(
-                    task_key=make_random(4),
-                    description=make_random(4),
-                    new_cluster=ClusterSpec(
-                        num_workers=1,
-                        node_type_id=ws.clusters.select_node_type(local_disk=True, min_memory_gb=16),
-                        spark_version=ws.clusters.select_spark_version(latest=True),
-                        spark_conf=task_spark_conf,
-                    ),
-                    notebook_task=NotebookTask(notebook_path=str(notebook_path)),
-                    libraries=libraries,
-                    timeout_seconds=0,
-                )
-            ]
-        # add RemoveAfter tag for test job cleanup
-        date_to_remove = watchdog_remove_after
-        remove_after_tag = {"key": "RemoveAfter", "value": date_to_remove}
-        if 'tags' not in kwargs:
-            kwargs["tags"] = [remove_after_tag]
-        else:
-            kwargs["tags"].append(remove_after_tag)
-        job = ws.jobs.create(**kwargs)
-        log_workspace_link(kwargs["name"], f'job/{job.job_id}', anchor=False)
-        return ws.jobs.get(job.job_id)
+    def create(  # pylint: disable=too-many-arguments
+        *,
+        name: str | None = None,
+        path: str | Path | None = None,
+        notebook_path: str | Path | None = None,  # DEPRECATED
+        content: str | bytes | None = None,
+        task_type: type[NotebookTask] | type[SparkPythonTask] = NotebookTask,
+        spark_conf: dict[str, str] | None = None,
+        instance_pool_id: str | None = None,
+        libraries: list[Library] | None = None,
+        tags: dict[str, str] | None = None,
+        tasks: list[Task] | None = None,
+    ) -> Job:
+        if notebook_path is not None:
+            warnings.warn(
+                "The `notebook_path` parameter is replaced with the more general `path` parameter "
+                "when introducing workspace paths to python scripts.",
+                DeprecationWarning,
+            )
+            path = notebook_path
+        if path and content:
+            raise ValueError("The `path` and `content` parameters are exclusive.")
+        if tasks and (path or content or spark_conf or libraries):
+            raise ValueError(
+                "The `tasks` parameter is exclusive with the `path`, `content` `spark_conf` and `libraries` parameters."
+            )
+        name = name or f"dummy-j{make_random(4)}"
+        tags = tags or {}
+        tags["RemoveAfter"] = tags.get("RemoveAfter", watchdog_remove_after)
+        if not tasks:
+            node_type_id = None
+            if instance_pool_id is None:
+                node_type_id = ws.clusters.select_node_type(local_disk=True, min_memory_gb=16)
+            task = Task(
+                task_key=make_random(4),
+                description=make_random(4),
+                new_cluster=ClusterSpec(
+                    num_workers=1,
+                    node_type_id=node_type_id,
+                    spark_version=ws.clusters.select_spark_version(latest=True),
+                    instance_pool_id=instance_pool_id,
+                    spark_conf=spark_conf,
+                ),
+                libraries=libraries,
+                timeout_seconds=0,
+            )
+            if task_type == SparkPythonTask:
+                path = path or make_workspace_file(content=content)
+                task.spark_python_task = SparkPythonTask(python_file=str(path))
+            else:
+                path = path or make_notebook(content=content)
+                task.notebook_task = NotebookTask(notebook_path=str(path))
+            tasks = [task]
+        response = ws.jobs.create(name=name, tasks=tasks, tags=tags)
+        log_workspace_link(name, f"job/{response.job_id}", anchor=False)
+        job = ws.jobs.get(response.job_id)
+        if isinstance(response, Mock):  # For testing
+            job = Job(settings=JobSettings(name=name, tasks=tasks, tags=tags))
+        return job
 
     yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))
 

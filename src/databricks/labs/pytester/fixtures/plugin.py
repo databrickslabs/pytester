@@ -24,7 +24,7 @@ from databricks.labs.pytester.fixtures.catalog import (
     make_table,
     make_storage_credential,
 )
-from databricks.labs.pytester.fixtures.notebooks import make_notebook, make_directory, make_repo
+from databricks.labs.pytester.fixtures.notebooks import make_directory, make_workspace_file, make_notebook, make_repo
 from databricks.labs.pytester.fixtures.permissions import (  # noqa
     make_cluster_policy_permissions,
     make_instance_pool_permissions,
@@ -81,6 +81,7 @@ __all__ = [
     'make_pipeline_permissions',
     'make_notebook',
     'make_notebook_permissions',
+    'make_workspace_file',
     'make_directory',
     'make_directory_permissions',
     'make_repo',
