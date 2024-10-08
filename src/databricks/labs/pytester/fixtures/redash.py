@@ -19,7 +19,7 @@ def make_query(
     Create a query and remove it after the test is done. Returns the `databricks.sdk.service.sql.LegacyQuery` object.
 
     Keyword Arguments:
-    - `query`: The query to be stored. Default is `SELECT * FROM <newly created random table>`.
+    - `sql_query`: The query to be stored. Default is `SELECT * FROM <newly created random table>`.
 
     Usage:
     ```python
