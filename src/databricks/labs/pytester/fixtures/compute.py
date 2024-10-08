@@ -197,7 +197,7 @@ def make_job(
     ```
     """
 
-    def create(
+    def create(  # pylint: disable=too-many-arguments
         *,
         name: str | None = None,
         path: str | Path | None = None,
