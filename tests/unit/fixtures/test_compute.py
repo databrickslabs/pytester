@@ -101,13 +101,13 @@ def test_make_job_with_tasks() -> None:
     assert job.settings.tasks == ["CustomTasks"]
 
 
-def test_make_pipeline_no_args():
+def test_make_pipeline_no_args() -> None:
     ctx, pipeline = call_stateful(make_pipeline)
     assert ctx is not None
     assert pipeline is not None
 
 
-def test_make_warehouse_no_args():
+def test_make_warehouse_no_args() -> None:
     ctx, warehouse = call_stateful(make_warehouse)
     assert ctx is not None
     assert warehouse is not None
