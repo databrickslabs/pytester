@@ -26,8 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         downstream:
-          - name: blueprint
-          - name: lsql
           - name: ucx
           - name: remorph
     runs-on: ubuntu-latest
