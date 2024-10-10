@@ -859,6 +859,7 @@ Create a schema and return its info. Remove it after the test. Returns instance 
 Keyword Arguments:
 * `catalog_name` (str): The name of the catalog where the schema will be created. Default is `hive_metastore`.
 * `name` (str): The name of the schema. Default is a random string.
+* `location` (str): The path to the location if it should be a managed schema.
 
 Usage:
 ```python
