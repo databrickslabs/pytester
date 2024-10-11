@@ -241,10 +241,7 @@ def make_table(
 
 @fixture
 def make_schema(
-    sql_backend,
-    make_random,
-    log_workspace_link,
-    watchdog_remove_after,
+    sql_backend, make_random, log_workspace_link, watchdog_remove_after
 ) -> Generator[Callable[..., SchemaInfo], None, None]:
     """
     Create a schema and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.SchemaInfo`.
@@ -252,6 +249,7 @@ def make_schema(
     Keyword Arguments:
     * `catalog_name` (str): The name of the catalog where the schema will be created. Default is `hive_metastore`.
     * `name` (str): The name of the schema. Default is a random string.
+    * `location` (str): The path to the location if it should be a managed schema.
 
     Usage:
     ```python
@@ -263,11 +261,17 @@ def make_schema(
     ```
     """
 
-    def create(*, catalog_name: str = "hive_metastore", name: str | None = None) -> SchemaInfo:
+    def create(
+        *, catalog_name: str = "hive_metastore", name: str | None = None, location: str | None = None
+    ) -> SchemaInfo:
         name = name or f"dummy_s{make_random(4)}".lower()
         full_name = f"{catalog_name}.{name}".lower()
-        sql_backend.execute(f"CREATE SCHEMA {full_name} WITH DBPROPERTIES (RemoveAfter={watchdog_remove_after})")
-        schema_info = SchemaInfo(catalog_name=catalog_name, name=name, full_name=full_name)
+        schema_ddl = f"CREATE SCHEMA {full_name}"
+        if location:
+            schema_ddl = f"{schema_ddl} LOCATION '{location}'"
+        schema_ddl = f"{schema_ddl} WITH DBPROPERTIES (RemoveAfter={watchdog_remove_after})"
+        sql_backend.execute(schema_ddl)
+        schema_info = SchemaInfo(catalog_name=catalog_name, name=name, full_name=full_name, storage_location=location)
         path = f'explore/data/{schema_info.catalog_name}/{schema_info.name}'
         log_workspace_link(f'{schema_info.full_name} schema', path)
         return schema_info

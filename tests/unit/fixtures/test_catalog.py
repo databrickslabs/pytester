@@ -1,9 +1,15 @@
 from unittest.mock import ANY
 
-from databricks.sdk.service.catalog import TableInfo, TableType, DataSourceFormat, FunctionInfo
+from databricks.sdk.service.catalog import TableInfo, TableType, DataSourceFormat, FunctionInfo, SchemaInfo
 
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
-from databricks.labs.pytester.fixtures.catalog import make_table, make_udf, make_catalog, make_storage_credential
+from databricks.labs.pytester.fixtures.catalog import (
+    make_table,
+    make_udf,
+    make_catalog,
+    make_storage_credential,
+    make_schema,
+)
 
 
 def test_make_table_no_args():
@@ -137,3 +143,17 @@ def test_storage_credential():
     ctx, fn_info = call_stateful(make_storage_credential, credential_name='abc')
     assert ctx is not None
     assert fn_info is not None
+
+
+def test_make_schema() -> None:
+    ctx, info = call_stateful(make_schema, name='abc', location='abfss://container1@storage.com')
+    assert ctx['sql_backend'].queries == [
+        "CREATE SCHEMA hive_metastore.abc LOCATION 'abfss://container1@storage.com' WITH DBPROPERTIES (RemoveAfter=2024091313)",
+        "DROP SCHEMA IF EXISTS hive_metastore.abc CASCADE",
+    ]
+    assert info == SchemaInfo(
+        catalog_name='hive_metastore',
+        name='abc',
+        full_name='hive_metastore.abc',
+        storage_location='abfss://container1@storage.com',
+    )
