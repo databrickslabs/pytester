@@ -9,6 +9,7 @@ from databricks.labs.pytester.fixtures.catalog import (
     make_catalog,
     make_storage_credential,
     make_schema,
+    make_volume,
 )
 
 
@@ -157,3 +158,23 @@ def test_make_schema() -> None:
         full_name='hive_metastore.abc',
         storage_location='abfss://container1@storage.com',
     )
+
+
+def test_make_volume():
+    ctx, info = call_stateful(make_volume)
+
+    ctx['ws'].volumes.create.assert_called_once()
+    print(info)
+    assert info.catalog_name is not None
+    assert info.schema_name is not None
+    assert info.name is not None
+
+
+def test_make_volume_with_name():
+    ctx, info = call_stateful(make_volume, name='test_volume')
+
+    ctx['ws'].volumes.create.assert_called_once()
+    assert info.catalog_name is not None
+    assert info.schema_name is not None
+    assert info.name == 'test_volume'
+
