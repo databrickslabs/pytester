@@ -497,7 +497,7 @@ def make_volume(
             schema_name = schema.name
 
         if not name:
-            name = f"dummy_vol_{make_random(6).lower()}"
+            name = f"dummy_v{make_random(6).lower()}"
 
         volume_info = ws.volumes.create(
             catalog_name=catalog_name,
@@ -505,13 +505,11 @@ def make_volume(
             name=name,
             volume_type=VolumeType.MANAGED,
         )
-        if isinstance(volume_info, Mock):
-            volume_info.name = name
         path = f'explore/data/{volume_info.catalog_name}/{volume_info.schema_name}/{volume_info.name}'
         log_workspace_link(f'{volume_info.name} volume', path)
         return volume_info
 
     def remove(volume_info: VolumeInfo):
-        ws.volumes.delete(f"{volume_info.catalog_name}.{volume_info.schema_name}.{volume_info.name}", force=True)
+        ws.volumes.delete(f"{volume_info.catalog_name}.{volume_info.schema_name}.{volume_info.name}")
 
     yield from factory("volume", create, remove)
