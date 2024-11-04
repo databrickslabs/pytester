@@ -23,6 +23,7 @@ from databricks.labs.pytester.fixtures.catalog import (
     make_schema,
     make_table,
     make_storage_credential,
+    make_volume,
 )
 from databricks.labs.pytester.fixtures.notebooks import make_directory, make_workspace_file, make_notebook, make_repo
 from databricks.labs.pytester.fixtures.permissions import (  # noqa
@@ -96,6 +97,7 @@ __all__ = [
     'make_schema',
     'make_table',
     'make_storage_credential',
+    'make_volume',
     'product_info',
     'make_model',
     'make_experiment',

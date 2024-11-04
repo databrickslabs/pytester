@@ -1,6 +1,6 @@
 from unittest.mock import ANY
 
-from databricks.sdk.service.catalog import TableInfo, TableType, DataSourceFormat, FunctionInfo, SchemaInfo
+from databricks.sdk.service.catalog import TableInfo, TableType, DataSourceFormat, FunctionInfo, SchemaInfo, VolumeType, VolumeInfo
 
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
 from databricks.labs.pytester.fixtures.catalog import (
@@ -9,6 +9,7 @@ from databricks.labs.pytester.fixtures.catalog import (
     make_catalog,
     make_storage_credential,
     make_schema,
+    make_volume,
 )
 
 
@@ -157,3 +158,20 @@ def test_make_schema() -> None:
         full_name='hive_metastore.abc',
         storage_location='abfss://container1@storage.com',
     )
+
+
+def test_make_volume_noargs():
+    ctx, info = call_stateful(make_volume)
+    ctx['ws'].volumes.create.assert_called_once()
+    assert info is not None
+
+
+def test_make_volume_with_name():
+    ctx, info = call_stateful(make_volume, name='test_volume')
+    ctx['ws'].volumes.create.assert_called_once_with(
+        name='test_volume',
+        catalog_name="dummy_crandom", 
+        schema_name="dummy_srandom",
+        volume_type=VolumeType.MANAGED
+    )
+    assert info is not None

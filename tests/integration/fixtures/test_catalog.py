@@ -64,6 +64,10 @@ def test_storage_credential(env_or_skip, make_storage_credential, make_random):
     )
 
 
+def test_make_volume(make_volume):
+    logger.info(f"Created new volume: {make_volume()}")
+
+
 def test_remove_after_property_table(ws, make_table, sql_backend):
     new_table = make_table()
     # TODO: tables.get is currently failing with

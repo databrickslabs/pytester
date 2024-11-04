@@ -16,6 +16,8 @@ from databricks.sdk.service.catalog import (
     StorageCredentialInfo,
     AwsIamRoleRequest,
     AzureServicePrincipal,
+    VolumeInfo,
+    VolumeType,
 )
 from databricks.sdk.service.compute import Language
 from databricks.labs.pytester.fixtures.baseline import factory
@@ -443,3 +445,71 @@ def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[...
         ws.storage_credentials.delete(storage_credential.name, force=True)
 
     yield from factory("storage_credential", create, remove)
+
+
+@fixture
+def make_volume(
+    ws, make_catalog, make_schema, make_random, log_workspace_link
+) -> Generator[Callable[..., VolumeInfo], None, None]:
+    """
+    Create a volume and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.VolumeInfo`.
+
+    Keyword Arguments:
+    * `catalog_name` (str): The name of the catalog where the schema and the volume are.
+    * `schema_name` (str): The name of the schema where the volume is.
+    * `name` (str): The name of the volume.
+    * `comment` (str, optional): The comment attached to the volume.
+
+    Usage:
+    ```python
+    def test_volume_creation(make_catalog, make_schema, make_volume, make_random):
+        # Create a catalog
+        catalog = make_catalog()
+
+        # Create a schema in the catalog
+        schema = make_schema(catalog_name=catalog.name)
+
+        # Generate a random name for the volume
+        volume_name = f"dummy_vol_{make_random(6).lower()}"
+
+        # Create the volume
+        volume = make_volume(
+            catalog_name=catalog.name,
+            schema_name=schema.name,
+            name=volume_name
+        )
+    ```
+    """
+
+    def create(
+        *,
+        catalog_name: str | None = None,
+        schema_name: str | None = None,
+        name: str | None = None,
+    ) -> VolumeInfo:
+
+        if not catalog_name:
+            catalog = make_catalog()
+            catalog_name = catalog.name
+
+        if not schema_name:
+            schema = make_schema(catalog_name=catalog_name)
+            schema_name = schema.name
+
+        if not name:
+            name = f"dummy_v{make_random(6).lower()}"
+
+        volume_info = ws.volumes.create(
+            catalog_name=catalog_name,
+            schema_name=schema_name,
+            name=name,
+            volume_type=VolumeType.MANAGED,
+        )
+        path = f'explore/data/{volume_info.catalog_name}/{volume_info.schema_name}/{volume_info.name}'
+        log_workspace_link(f'{volume_info.name} volume', path)
+        return volume_info
+
+    def remove(volume_info: VolumeInfo):
+        ws.volumes.delete(f"{volume_info.catalog_name}.{volume_info.schema_name}.{volume_info.name}")
+
+    yield from factory("volume", create, remove)
