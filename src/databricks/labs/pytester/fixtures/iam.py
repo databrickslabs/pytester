@@ -3,13 +3,17 @@ import warnings
 from collections.abc import Callable, Generator
 from datetime import timedelta
 
+from _pytest.fixtures import SubRequest, FixtureDef, fixture
+from _pytest.scope import Scope
+
 from pytest import fixture
-from databricks.sdk import AccountGroupsAPI, GroupsAPI, WorkspaceClient
+from databricks.sdk import AccountGroupsAPI, GroupsAPI, WorkspaceClient, AccountClient
 from databricks.sdk.config import Config
 from databricks.sdk.errors import ResourceConflict, NotFound
 from databricks.sdk.retries import retried
 from databricks.sdk.service import iam
-from databricks.sdk.service.iam import User, Group
+from databricks.sdk.service.iam import User, Group, ServicePrincipal, Patch, PatchOp, ComplexValue, PatchSchema, \
+    WorkspacePermission
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
@@ -183,3 +187,86 @@ def _make_group(
         return group
 
     yield from factory(name, create, lambda item: interface.delete(item.id))
+
+
+class RunAs:
+    def __init__(self, service_principal: ServicePrincipal, workspace_client: WorkspaceClient, request: SubRequest):
+        self._request = SubRequest(
+            request,
+            Scope.Function,
+            None,
+            request.param_index,
+            FixtureDef(
+                config=request.config,
+                baseid='ws',
+                argname='ws',
+                func=lambda: workspace_client,
+                scope=None,
+                params=None,
+            ),
+        )
+        self._request._arg2fixturedefs = {}
+        self._request._fixture_defs = {}
+        self._service_principal = service_principal
+
+    def __getattr__(self, item: str):
+        if item in self.__dict__:
+            return self.__dict__[item]
+        fixture_value = self._request.getfixturevalue(item)
+        return fixture_value
+
+    @property
+    def display_name(self) -> str:
+        return self._service_principal.display_name
+
+    @property
+    def application_id(self) -> str:
+        return self._service_principal.application_id
+
+    def __repr__(self):
+        return f'RunAs({self.display_name})'
+
+
+@fixture
+def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_skip, request, log_account_link):
+    """
+    This fixture provides a function to create a service principal and assign it to a workspace. The service principal
+    is removed after the test is complete. The fixture returns an instance of `RunAs` that proxies the calls to
+    the other fixtures supported by the plugin, for example, `sql_fetch_all`.
+
+    The service principal is created with a random display name and assigned to the workspace with
+    """
+
+    def create(*, account_groups: list[str] = None):
+        workspace_id = ws.get_workspace_id()
+        service_principal = acc.service_principals.create(display_name=f'spn-{make_random()}')
+        created_secret = acc.service_principal_secrets.create(service_principal.id)
+        if account_groups:
+            group_mapping = {}
+            for group in acc.groups.list(attributes='id,displayName'):
+                group_mapping[group.display_name] = group.id
+            for group_name in account_groups:
+                if group_name not in group_mapping:
+                    raise ValueError(f'Group {group_name} does not exist')
+                group_id = group_mapping[group_name]
+                acc.groups.patch(
+                    group_id,
+                    operations=[Patch(PatchOp.ADD, 'members', [ComplexValue(value=service_principal.id).as_dict()])],
+                    schemas=[PatchSchema.URN_IETF_PARAMS_SCIM_API_MESSAGES_2_0_PATCH_OP],
+                )
+        permissions = [WorkspacePermission.USER]
+        acc.workspace_assignment.update(workspace_id, service_principal.id, permissions=permissions)
+        ws_as_spn = WorkspaceClient(
+            host=ws.config.host,
+            client_id=service_principal.application_id,
+            client_secret=created_secret.secret,
+        )
+
+        log_account_link('account service principal', f'users/serviceprincipals/{service_principal.id}')
+
+        return RunAs(service_principal, ws_as_spn, request)
+
+    def remove(run_as: RunAs):
+        acc.service_principals.delete(run_as._service_principal.id)
+
+    yield from factory("service principal", create, remove)

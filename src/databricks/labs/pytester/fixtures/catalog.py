@@ -25,6 +25,7 @@ from databricks.labs.pytester.fixtures.baseline import factory
 logger = logging.getLogger(__name__)
 
 
+# TODO: replace with LSQL implementation
 def escape_sql_identifier(path: str, *, maxsplit: int = 2) -> str:
     """
     Escapes the path components to make them SQL safe.

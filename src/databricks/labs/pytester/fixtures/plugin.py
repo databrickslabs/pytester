@@ -6,6 +6,7 @@ from databricks.labs.pytester.fixtures.baseline import (
     make_random,
     product_info,
     log_workspace_link,
+    log_account_link,
 )
 from databricks.labs.pytester.fixtures.sql import sql_backend, sql_exec, sql_fetch_all
 from databricks.labs.pytester.fixtures.compute import (
@@ -16,7 +17,7 @@ from databricks.labs.pytester.fixtures.compute import (
     make_pipeline,
     make_warehouse,
 )
-from databricks.labs.pytester.fixtures.iam import make_group, make_acc_group, make_user
+from databricks.labs.pytester.fixtures.iam import make_group, make_acc_group, make_user, make_run_as
 from databricks.labs.pytester.fixtures.catalog import (
     make_udf,
     make_catalog,
@@ -105,6 +106,7 @@ __all__ = [
     'make_warehouse_permissions',
     'make_lakeview_dashboard_permissions',
     'log_workspace_link',
+    'log_account_link',
     'make_dashboard_permissions',
     'make_alert_permissions',
     'make_query',
