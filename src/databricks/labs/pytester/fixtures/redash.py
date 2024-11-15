@@ -40,7 +40,7 @@ def make_query(
     ```
     """
 
-    def create(sql_query: str | None = None, **kwargs) -> LegacyQuery:
+    def create(*, sql_query: str | None = None, **kwargs) -> LegacyQuery:
         if sql_query is None:
             table = make_table()
             sql_query = f"SELECT * FROM {table.catalog_name}.{table.schema_name}.{table.name}"
