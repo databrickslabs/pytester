@@ -298,6 +298,7 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
         acc.workspace_assignment.update(workspace_id, service_principal_id, permissions=permissions)
         ws_as_spn = WorkspaceClient(
             host=ws.config.host,
+            auth_type='oauth-m2m',
             client_id=service_principal.application_id,
             client_secret=created_secret.secret,
         )
