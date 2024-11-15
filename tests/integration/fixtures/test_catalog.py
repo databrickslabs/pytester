@@ -17,6 +17,7 @@ def test_schema_fixture(make_schema):
     logger.info(f"Created new schema: {make_schema()}")
 
 
+@pytest.mark.skip("Invalid configuration value detected for fs.azure.account.key")
 def test_managed_schema_fixture(make_schema, make_random, env_or_skip):
     schema_name = f"dummy_s{make_random(4)}".lower()
     schema_location = f"{env_or_skip('TEST_MOUNT_CONTAINER')}/a/{schema_name}"
