@@ -1,6 +1,13 @@
 from unittest.mock import ANY
 
-from databricks.sdk.service.catalog import TableInfo, TableType, DataSourceFormat, FunctionInfo, SchemaInfo, VolumeType, VolumeInfo
+from databricks.sdk.service.catalog import (
+    TableInfo,
+    TableType,
+    DataSourceFormat,
+    FunctionInfo,
+    SchemaInfo,
+    VolumeType,
+)
 
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
 from databricks.labs.pytester.fixtures.catalog import (
@@ -169,9 +176,6 @@ def test_make_volume_noargs():
 def test_make_volume_with_name():
     ctx, info = call_stateful(make_volume, name='test_volume')
     ctx['ws'].volumes.create.assert_called_once_with(
-        name='test_volume',
-        catalog_name="dummy_crandom", 
-        schema_name="dummy_srandom",
-        volume_type=VolumeType.MANAGED
+        name='test_volume', catalog_name="dummy_crandom", schema_name="dummy_srandom", volume_type=VolumeType.MANAGED
     )
     assert info is not None

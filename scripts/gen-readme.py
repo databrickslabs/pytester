@@ -70,7 +70,7 @@ def discover_fixtures() -> list[Fixture]:
         upstreams = []
         sig = inspect.signature(fn)
         for param in sig.parameters.values():
-            if param.name in {'fresh_local_wheel_file', 'monkeypatch', 'log_workspace_link'}:
+            if param.name in {'fresh_local_wheel_file', 'monkeypatch', 'log_workspace_link', 'request'}:
                 continue
             upstreams.append(param.name)
             see_also[param.name].add(fixture)

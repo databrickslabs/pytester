@@ -222,3 +222,15 @@ def log_workspace_link(ws):
         _LOG.info(f'Created {name}: {url}')
 
     return inner
+
+
+@fixture
+def log_account_link(acc):
+    """Returns a function to log an account link."""
+
+    def inner(name: str, path: str, *, anchor: bool = False):
+        a = '#' if anchor else ''
+        url = f'https://{acc.config.hostname}/{a}{path}'
+        _LOG.info(f'Created {name}: {url}')
+
+    return inner
