@@ -3,9 +3,11 @@ import warnings
 from collections.abc import Callable, Generator, Iterable
 from datetime import timedelta
 
+import pytest
+from pytest import fixture
 from databricks.sdk.credentials_provider import OAuthCredentialsProvider, OauthCredentialsStrategy
 from databricks.sdk.oauth import ClientCredentials, Token
-from pytest import fixture
+from databricks.sdk.service.oauth2 import CreateServicePrincipalSecretResponse
 from databricks.labs.lsql import Row
 from databricks.labs.lsql.backends import StatementExecutionBackend, SqlBackend
 from databricks.sdk import AccountGroupsAPI, GroupsAPI, WorkspaceClient, AccountClient
@@ -242,8 +244,41 @@ class RunAs:
         return f'RunAs({self.display_name})'
 
 
+def _make_workspace_client(
+    ws: WorkspaceClient,
+    created_secret: CreateServicePrincipalSecretResponse,
+    service_principal: ServicePrincipal,
+) -> WorkspaceClient:
+    oidc = ws.config.oidc_endpoints
+    assert oidc is not None, 'OIDC is required'
+    application_id = service_principal.application_id
+    secret_value = created_secret.secret
+    assert application_id is not None
+    assert secret_value is not None
+
+    token_source = ClientCredentials(
+        client_id=application_id,
+        client_secret=secret_value,
+        token_url=oidc.token_endpoint,
+        scopes=["all-apis"],
+        use_header=True,
+    )
+
+    def inner() -> dict[str, str]:
+        inner_token = token_source.token()
+        return {'Authorization': f'{inner_token.token_type} {inner_token.access_token}'}
+
+    def token() -> Token:
+        return token_source.token()
+
+    credentials_provider = OAuthCredentialsProvider(inner, token)
+    credentials_strategy = OauthCredentialsStrategy('oauth-m2m', lambda _: credentials_provider)
+    ws_as_spn = WorkspaceClient(host=ws.config.host, credentials_strategy=credentials_strategy)
+    return ws_as_spn
+
+
 @fixture
-def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_skip, log_account_link):
+def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_skip, log_account_link, is_in_debug):
     """
     This fixture provides a function to create an account service principal via [`acc` fixture](#acc-fixture) and
     assign it to a workspace. The service principal is removed after the test is complete. The service principal is
@@ -288,7 +323,17 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
         notebook = make_notebook()
         assert notebook.exists()
     ```
+
+    This fixture currently doesn't work with Databricks Metadata Service authentication on Azure Databricks.
     """
+
+    if ws.config.auth_type == 'metadata-service' and ws.config.is_azure:
+        # TODO: fix `invalid_scope: AADSTS1002012: The provided value for scope all-apis is not valid.` error
+        #
+        # We're having issues with the Azure Metadata Service and service principals. The error message is:
+        # Client credential flows must have a scope value with /.default suffixed to the resource identifier
+        # (application ID URI)
+        pytest.skip('Azure Metadata Service does not support service principals')
 
     def create(*, account_groups: list[str] | None = None):
         workspace_id = ws.get_workspace_id()
@@ -315,38 +360,11 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
                 )
         permissions = [WorkspacePermission.USER]
         acc.workspace_assignment.update(workspace_id, service_principal_id, permissions=permissions)
-        ws_as_spn = _make_workspace_client(created_secret, service_principal)
+        ws_as_spn = _make_workspace_client(ws, created_secret, service_principal)
 
         log_account_link('account service principal', f'users/serviceprincipals/{service_principal_id}')
 
         return RunAs(service_principal, ws_as_spn, env_or_skip)
-
-    def _make_workspace_client(created_secret, service_principal):
-        oidc = ws.config.oidc_endpoints
-        assert oidc is not None, 'OIDC is required'
-        application_id = service_principal.application_id
-        secret_value = created_secret.secret
-        assert application_id is not None
-        assert secret_value is not None
-        token_source = ClientCredentials(
-            client_id=application_id,
-            client_secret=secret_value,
-            token_url=oidc.token_endpoint,
-            scopes=["all-apis"],
-            use_header=True,
-        )
-
-        def inner() -> dict[str, str]:
-            inner_token = token_source.token()
-            return {'Authorization': f'{inner_token.token_type} {inner_token.access_token}'}
-
-        def token() -> Token:
-            return token_source.token()
-
-        credentials_provider = OAuthCredentialsProvider(inner, token)
-        credentials_strategy = OauthCredentialsStrategy('oauth-m2m', lambda _: credentials_provider)
-        ws_as_spn = WorkspaceClient(host=ws.config.host, credentials_strategy=credentials_strategy)
-        return ws_as_spn
 
     def remove(run_as: RunAs):
         service_principal_id = run_as._service_principal.id  # pylint: disable=protected-access

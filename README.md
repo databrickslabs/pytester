@@ -338,7 +338,9 @@ def test_creating_notebook_on_behalf_of_ephemeral_principal(make_notebook):
     assert notebook.exists()
 ```
 
-See also [`acc`](#acc-fixture), [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`env_or_skip`](#env_or_skip-fixture), [`log_account_link`](#log_account_link-fixture).
+This fixture currently doesn't work with Databricks Metadata Service authentication on Azure Databricks.
+
+See also [`acc`](#acc-fixture), [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`env_or_skip`](#env_or_skip-fixture), [`log_account_link`](#log_account_link-fixture), [`is_in_debug`](#is_in_debug-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1259,7 +1261,7 @@ Returns true if the test is running from a debugger in IDE, otherwise false.
 The following IDE are supported: IntelliJ IDEA (including Community Edition),
 PyCharm (including Community Edition), and Visual Studio Code.
 
-See also [`debug_env`](#debug_env-fixture), [`env_or_skip`](#env_or_skip-fixture).
+See also [`debug_env`](#debug_env-fixture), [`env_or_skip`](#env_or_skip-fixture), [`make_run_as`](#make_run_as-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
