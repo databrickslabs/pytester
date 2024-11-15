@@ -2,7 +2,7 @@ import io
 
 from databricks.sdk.service.workspace import Language
 
-from databricks.labs.pytester.fixtures.notebooks import make_directory, make_workspace_file, make_notebook, make_repo
+from databricks.labs.pytester.fixtures.workspace import make_directory, make_workspace_file, make_notebook, make_repo
 from databricks.labs.pytester.fixtures.unwrap import call_stateful
 
 
