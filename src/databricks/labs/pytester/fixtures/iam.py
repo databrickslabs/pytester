@@ -250,16 +250,6 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
     Use the `account_groups` argument to assign the service principal to account groups, which have the required
     permissions to perform a specific action.
 
-    Returned object has the following properties:
-    * `ws`: Workspace client that is authenticated as the ephemeral service principal.
-    * `sql_backend`: SQL backend that is authenticated as the ephemeral service principal.
-    * `sql_exec`: Function to execute a SQL statement on behalf of the ephemeral service principal.
-    * `sql_fetch_all`: Function to fetch all rows from a SQL statement on behalf of the ephemeral service principal.
-    * `display_name`: Display name of the ephemeral service principal.
-    * `application_id`: Application ID of the ephemeral service principal.
-    * ... other fixtures are not currently available through the returned object yet, as it's quite complex to
-      implement, but there's a possibility to add generic support for them in the future.
-
     Example:
 
     ```python
@@ -268,6 +258,33 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
         through_query = next(run_as.sql_fetch_all("SELECT CURRENT_USER() AS my_name"))
         me = ws.current_user.me()
         assert me.user_name != through_query.my_name
+    ```
+
+    Returned object has the following properties:
+    * `ws`: Workspace client that is authenticated as the ephemeral service principal.
+    * `sql_backend`: SQL backend that is authenticated as the ephemeral service principal.
+    * `sql_exec`: Function to execute a SQL statement on behalf of the ephemeral service principal.
+    * `sql_fetch_all`: Function to fetch all rows from a SQL statement on behalf of the ephemeral service principal.
+    * `display_name`: Display name of the ephemeral service principal.
+    * `application_id`: Application ID of the ephemeral service principal.
+    * if you want to have other fixtures available in the context of the ephemeral service principal, you can override
+      the [`ws` fixture](#ws-fixture) on the file level, which would make all workspace fixtures provided by this
+      plugin to run as lower privilege ephemeral service principal. You cannot combine it with the account-admin-level
+      principal you're using to create the ephemeral principal.
+
+    Example:
+
+    ```python
+    from pytest import fixture
+
+    @fixture
+    def ws(make_run_as):
+        run_as = make_run_as(account_groups=['account.group.used.for.all.tests.in.this.file'])
+        return run_as.ws
+
+    def test_creating_notebook_on_behalf_of_ephemeral_principal(make_notebook):
+        notebook = make_notebook()
+        assert notebook.exists()
     ```
     """
 
