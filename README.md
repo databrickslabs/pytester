@@ -6,14 +6,20 @@
 
 <!-- TOC -->
 * [Python Testing for Databricks](#python-testing-for-databricks)
+  * [Installation](#installation)
   * [Ecosystem](#ecosystem)
   * [PyTest Fixtures](#pytest-fixtures)
     * [Logging](#logging)
-    * [Installation](#installation)
     * [`debug_env_name` fixture](#debug_env_name-fixture)
     * [`debug_env` fixture](#debug_env-fixture)
     * [`env_or_skip` fixture](#env_or_skip-fixture)
     * [`ws` fixture](#ws-fixture)
+    * [`make_run_as` fixture](#make_run_as-fixture)
+    * [`acc` fixture](#acc-fixture)
+    * [`spark` fixture](#spark-fixture)
+    * [`sql_backend` fixture](#sql_backend-fixture)
+    * [`sql_exec` fixture](#sql_exec-fixture)
+    * [`sql_fetch_all` fixture](#sql_fetch_all-fixture)
     * [`make_random` fixture](#make_random-fixture)
     * [`make_instance_pool` fixture](#make_instance_pool-fixture)
     * [`make_instance_pool_permissions` fixture](#make_instance_pool_permissions-fixture)
@@ -26,10 +32,12 @@
     * [`make_pipeline` fixture](#make_pipeline-fixture)
     * [`make_warehouse` fixture](#make_warehouse-fixture)
     * [`make_group` fixture](#make_group-fixture)
+    * [`make_acc_group` fixture](#make_acc_group-fixture)
     * [`make_user` fixture](#make_user-fixture)
     * [`make_pipeline_permissions` fixture](#make_pipeline_permissions-fixture)
     * [`make_notebook` fixture](#make_notebook-fixture)
     * [`make_notebook_permissions` fixture](#make_notebook_permissions-fixture)
+    * [`make_workspace_file` fixture](#make_workspace_file-fixture)
     * [`make_directory` fixture](#make_directory-fixture)
     * [`make_directory_permissions` fixture](#make_directory_permissions-fixture)
     * [`make_repo` fixture](#make_repo-fixture)
@@ -44,17 +52,15 @@
     * [`make_schema` fixture](#make_schema-fixture)
     * [`make_table` fixture](#make_table-fixture)
     * [`make_storage_credential` fixture](#make_storage_credential-fixture)
+    * [`make_volume` fixture](#make_volume-fixture)
     * [`product_info` fixture](#product_info-fixture)
-    * [`sql_backend` fixture](#sql_backend-fixture)
-    * [`sql_exec` fixture](#sql_exec-fixture)
-    * [`sql_fetch_all` fixture](#sql_fetch_all-fixture)
     * [`make_model` fixture](#make_model-fixture)
     * [`make_experiment` fixture](#make_experiment-fixture)
     * [`make_experiment_permissions` fixture](#make_experiment_permissions-fixture)
     * [`make_warehouse_permissions` fixture](#make_warehouse_permissions-fixture)
     * [`make_lakeview_dashboard_permissions` fixture](#make_lakeview_dashboard_permissions-fixture)
-    * [`workspace_library` fixture](#workspace_library-fixture)
     * [`log_workspace_link` fixture](#log_workspace_link-fixture)
+    * [`log_account_link` fixture](#log_account_link-fixture)
     * [`make_dashboard_permissions` fixture](#make_dashboard_permissions-fixture)
     * [`make_alert_permissions` fixture](#make_alert_permissions-fixture)
     * [`make_query` fixture](#make_query-fixture)
@@ -62,7 +68,11 @@
     * [`make_registered_model_permissions` fixture](#make_registered_model_permissions-fixture)
     * [`make_serving_endpoint` fixture](#make_serving_endpoint-fixture)
     * [`make_serving_endpoint_permissions` fixture](#make_serving_endpoint_permissions-fixture)
+    * [`make_feature_table` fixture](#make_feature_table-fixture)
     * [`make_feature_table_permissions` fixture](#make_feature_table_permissions-fixture)
+    * [`watchdog_remove_after` fixture](#watchdog_remove_after-fixture)
+    * [`watchdog_purge_suffix` fixture](#watchdog_purge_suffix-fixture)
+    * [`is_in_debug` fixture](#is_in_debug-fixture)
 * [Project Support](#project-support)
 <!-- TOC -->
 
@@ -75,7 +85,7 @@ also install it directly from the command line:
 pip install databricks-labs-pytester
 ```
 
-If you use `hatch` as a build system, make sure to add `databricks-labs-pytester` as 
+If you use `hatch` as a build system, make sure to add `databricks-labs-pytester` as
 a test-time dependency and not as a compile-time dependency, otherwise your wheels will
 transitively depend on `pytest`, which is not usually something you need.
 
@@ -97,7 +107,7 @@ dependencies = [
     "pylint~=3.2.2",
     "pylint-pytest==2.0.0a0",
     "databricks-labs-pylint~=0.4.0",
-    "databricks-labs-pytester~=0.2", # <= this library 
+    "databricks-labs-pytester~=0.2", # <= this library
     "pytest~=8.3.3",
     "pytest-cov~=4.1.0",
     "pytest-mock~=3.14.0",
@@ -116,7 +126,7 @@ dependencies = [
 
 Built on top of [Databricks SDK for Python](https://github.com/databricks/databricks-sdk-py), this library is part of the Databricks Labs Python ecosystem, which includes the following projects:
 * [PyLint Plugin for Databricks](https://github.com/databrickslabs/pylint-plugin) for static code analysis and early bug detection.
-* [Blueprint](https://github.com/databrickslabs/blueprint) for 
+* [Blueprint](https://github.com/databrickslabs/blueprint) for
   [Python-native pathlib.Path-like interfaces](https://github.com/databrickslabs/blueprint#python-native-pathlibpath-like-interfaces),
   [Managing Python App installations within Databricks Workspaces](https://github.com/databrickslabs/blueprint#application-and-installation-state),
   [Application Migrations](https://github.com/databrickslabs/blueprint#application-state-migrations), and
@@ -130,18 +140,18 @@ See [this video](https://www.youtube.com/watch?v=CNypO79IATc) for a quick overvi
 
 ## PyTest Fixtures
 
-[PyTest Fixtures](https://docs.pytest.org/en/latest/explanation/fixtures.html) are a powerful way to manage test setup and teardown in Python. This library provides 
+[PyTest Fixtures](https://docs.pytest.org/en/latest/explanation/fixtures.html) are a powerful way to manage test setup and teardown in Python. This library provides
 a set of fixtures to help you write integration tests for Databricks. These fixtures were incubated
-within the [Unity Catalog Automated Migrations project](https://github.com/databrickslabs/ucx/blame/df7f1d7647251fb8f0f23c56a548b99092484a7c/src/databricks/labs/ucx/mixins/fixtures.py) 
+within the [Unity Catalog Automated Migrations project](https://github.com/databrickslabs/ucx/blame/df7f1d7647251fb8f0f23c56a548b99092484a7c/src/databricks/labs/ucx/mixins/fixtures.py)
 for more than a year and are now available for other projects to simplify integration testing with Databricks.
 
 [[back to top](#python-testing-for-databricks)]
 
 ### Logging
 
-This library is built on years of debugging integration tests for Databricks and its ecosystem. 
+This library is built on years of debugging integration tests for Databricks and its ecosystem.
 
-That's why it comes with a built-in logger that traces creation and deletion of dummy entities through links in 
+That's why it comes with a built-in logger that traces creation and deletion of dummy entities through links in
 the Databricks Workspace UI. If you run the following code:
 
 ```python
@@ -255,7 +265,7 @@ def test_something(env_or_skip):
     assert token is not None
 ```
 
-See also [`acc`](#acc-fixture), [`make_udf`](#make_udf-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`is_in_debug`](#is_in_debug-fixture).
+See also [`acc`](#acc-fixture), [`make_run_as`](#make_run_as-fixture), [`make_udf`](#make_udf-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`is_in_debug`](#is_in_debug-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -278,7 +288,59 @@ def test_workspace_operations(ws):
     assert len(clusters) >= 0
 ```
 
-See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table`](#make_feature_table-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query`](#make_query-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_storage_credential`](#make_storage_credential-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_volume`](#make_volume-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file`](#make_workspace_file-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`spark`](#spark-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
+See also [`log_workspace_link`](#log_workspace_link-fixture), [`make_alert_permissions`](#make_alert_permissions-fixture), [`make_authorization_permissions`](#make_authorization_permissions-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_permissions`](#make_cluster_permissions-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_cluster_policy_permissions`](#make_cluster_policy_permissions-fixture), [`make_dashboard_permissions`](#make_dashboard_permissions-fixture), [`make_directory`](#make_directory-fixture), [`make_directory_permissions`](#make_directory_permissions-fixture), [`make_experiment`](#make_experiment-fixture), [`make_experiment_permissions`](#make_experiment_permissions-fixture), [`make_feature_table`](#make_feature_table-fixture), [`make_feature_table_permissions`](#make_feature_table_permissions-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_instance_pool_permissions`](#make_instance_pool_permissions-fixture), [`make_job`](#make_job-fixture), [`make_job_permissions`](#make_job_permissions-fixture), [`make_lakeview_dashboard_permissions`](#make_lakeview_dashboard_permissions-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_notebook_permissions`](#make_notebook_permissions-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_pipeline_permissions`](#make_pipeline_permissions-fixture), [`make_query`](#make_query-fixture), [`make_query_permissions`](#make_query_permissions-fixture), [`make_registered_model_permissions`](#make_registered_model_permissions-fixture), [`make_repo`](#make_repo-fixture), [`make_repo_permissions`](#make_repo_permissions-fixture), [`make_run_as`](#make_run_as-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_secret_scope_acl`](#make_secret_scope_acl-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_serving_endpoint_permissions`](#make_serving_endpoint_permissions-fixture), [`make_storage_credential`](#make_storage_credential-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_volume`](#make_volume-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_warehouse_permissions`](#make_warehouse_permissions-fixture), [`make_workspace_file`](#make_workspace_file-fixture), [`make_workspace_file_path_permissions`](#make_workspace_file_path_permissions-fixture), [`make_workspace_file_permissions`](#make_workspace_file_permissions-fixture), [`spark`](#spark-fixture), [`sql_backend`](#sql_backend-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
+### `make_run_as` fixture
+This fixture provides a function to create an account service principal via [`acc` fixture](#acc-fixture) and
+assign it to a workspace. The service principal is removed after the test is complete. The service principal is
+created with a random display name and assigned to the workspace with the default permissions.
+
+Use the `account_groups` argument to assign the service principal to account groups, which have the required
+permissions to perform a specific action.
+
+Example:
+
+```python
+def test_run_as_lower_privilege_user(make_run_as, ws):
+    run_as = make_run_as(account_groups=['account.group.name'])
+    through_query = next(run_as.sql_fetch_all("SELECT CURRENT_USER() AS my_name"))
+    me = ws.current_user.me()
+    assert me.user_name != through_query.my_name
+```
+
+Returned object has the following properties:
+* `ws`: Workspace client that is authenticated as the ephemeral service principal.
+* `sql_backend`: SQL backend that is authenticated as the ephemeral service principal.
+* `sql_exec`: Function to execute a SQL statement on behalf of the ephemeral service principal.
+* `sql_fetch_all`: Function to fetch all rows from a SQL statement on behalf of the ephemeral service principal.
+* `display_name`: Display name of the ephemeral service principal.
+* `application_id`: Application ID of the ephemeral service principal.
+* if you want to have other fixtures available in the context of the ephemeral service principal, you can override
+  the [`ws` fixture](#ws-fixture) on the file level, which would make all workspace fixtures provided by this
+  plugin to run as lower privilege ephemeral service principal. You cannot combine it with the account-admin-level
+  principal you're using to create the ephemeral principal.
+
+Example:
+
+```python
+from pytest import fixture
+
+@fixture
+def ws(make_run_as):
+    run_as = make_run_as(account_groups=['account.group.used.for.all.tests.in.this.file'])
+    return run_as.ws
+
+def test_creating_notebook_on_behalf_of_ephemeral_principal(make_notebook):
+    notebook = make_notebook()
+    assert notebook.exists()
+```
+
+This fixture currently doesn't work with Databricks Metadata Service authentication on Azure Databricks.
+
+See also [`acc`](#acc-fixture), [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`env_or_skip`](#env_or_skip-fixture), [`log_account_link`](#log_account_link-fixture), [`is_in_debug`](#is_in_debug-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -305,7 +367,7 @@ def test_listing_workspaces(acc):
     assert len(workspaces) >= 1
 ```
 
-See also [`make_acc_group`](#make_acc_group-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture), [`env_or_skip`](#env_or_skip-fixture).
+See also [`log_account_link`](#log_account_link-fixture), [`make_acc_group`](#make_acc_group-fixture), [`make_run_as`](#make_run_as-fixture), [`debug_env`](#debug_env-fixture), [`product_info`](#product_info-fixture), [`env_or_skip`](#env_or_skip-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -372,7 +434,7 @@ random_string = make_random(k=8)
 assert len(random_string) == 8
 ```
 
-See also [`make_acc_group`](#make_acc_group-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_feature_table`](#make_feature_table-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_volume`](#make_volume-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_workspace_file`](#make_workspace_file-fixture).
+See also [`make_acc_group`](#make_acc_group-fixture), [`make_catalog`](#make_catalog-fixture), [`make_cluster`](#make_cluster-fixture), [`make_cluster_policy`](#make_cluster_policy-fixture), [`make_directory`](#make_directory-fixture), [`make_experiment`](#make_experiment-fixture), [`make_feature_table`](#make_feature_table-fixture), [`make_group`](#make_group-fixture), [`make_instance_pool`](#make_instance_pool-fixture), [`make_job`](#make_job-fixture), [`make_model`](#make_model-fixture), [`make_notebook`](#make_notebook-fixture), [`make_pipeline`](#make_pipeline-fixture), [`make_query`](#make_query-fixture), [`make_repo`](#make_repo-fixture), [`make_run_as`](#make_run_as-fixture), [`make_schema`](#make_schema-fixture), [`make_secret_scope`](#make_secret_scope-fixture), [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`make_table`](#make_table-fixture), [`make_udf`](#make_udf-fixture), [`make_user`](#make_user-fixture), [`make_volume`](#make_volume-fixture), [`make_warehouse`](#make_warehouse-fixture), [`make_workspace_file`](#make_workspace_file-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1061,6 +1123,14 @@ See also [`ws`](#ws-fixture).
 
 [[back to top](#python-testing-for-databricks)]
 
+### `log_account_link` fixture
+rns a function to log an account link.
+
+See also [`make_run_as`](#make_run_as-fixture), [`acc`](#acc-fixture).
+
+
+[[back to top](#python-testing-for-databricks)]
+
 ### `make_dashboard_permissions` fixture
 _No description yet._
 
@@ -1191,7 +1261,7 @@ Returns true if the test is running from a debugger in IDE, otherwise false.
 The following IDE are supported: IntelliJ IDEA (including Community Edition),
 PyCharm (including Community Edition), and Visual Studio Code.
 
-See also [`debug_env`](#debug_env-fixture), [`env_or_skip`](#env_or_skip-fixture).
+See also [`debug_env`](#debug_env-fixture), [`env_or_skip`](#env_or_skip-fixture), [`make_run_as`](#make_run_as-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1200,11 +1270,11 @@ See also [`debug_env`](#debug_env-fixture), [`env_or_skip`](#env_or_skip-fixture
 
 # Project Support
 
-Please note that this project is provided for your exploration only and is not 
-formally supported by Databricks with Service Level Agreements (SLAs). They are 
-provided AS-IS, and we do not make any guarantees of any kind. Please do not 
+Please note that this project is provided for your exploration only and is not
+formally supported by Databricks with Service Level Agreements (SLAs). They are
+provided AS-IS, and we do not make any guarantees of any kind. Please do not
 submit a support ticket relating to any issues arising from the use of this project.
 
-Any issues discovered through the use of this project should be filed as GitHub 
-[Issues on this repository](https://github.com/databrickslabs/pytester/issues). 
+Any issues discovered through the use of this project should be filed as GitHub
+[Issues on this repository](https://github.com/databrickslabs/pytester/issues).
 They will be reviewed as time permits, but no formal SLAs for support exist.

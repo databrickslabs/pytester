@@ -56,14 +56,18 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
             default_content = "SELECT 1"
         else:
             raise ValueError(f"Unsupported language: {language}")
-        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
+        current_user = ws.current_user.me()
+        path = path or f"/Users/{current_user.user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
+        workspace_path = WorkspacePath(ws, path)
+        if '@' not in current_user.user_name:
+            # If current user is a service principal added with `make_run_as`, there might be no home folder
+            workspace_path.parent.mkdir(exist_ok=True)
         content = content or default_content
         if isinstance(content, str):
             content = io.BytesIO(content.encode(encoding))
         if isinstance(ws, Mock):  # For testing
             ws.workspace.download.return_value = content if isinstance(content, io.BytesIO) else io.BytesIO(content)
         ws.workspace.upload(path, content, language=language, format=format, overwrite=overwrite)
-        workspace_path = WorkspacePath(ws, path)
         logger.info(f"Created notebook: {workspace_path.as_uri()}")
         return workspace_path
 
@@ -110,10 +114,14 @@ def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Cal
             suffix = ".sql"
         else:
             raise ValueError(f"Unsupported language: {language}")
-        path = path or f"/Users/{ws.current_user.me().user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
+        current_user = ws.current_user.me()
+        path = path or f"/Users/{current_user.user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
         content = content or default_content
         encoding = encoding or _DEFAULT_ENCODING
         workspace_path = WorkspacePath(ws, path)
+        if '@' not in current_user.user_name:
+            # If current user is a service principal added with `make_run_as`, there might be no home folder
+            workspace_path.parent.mkdir(exist_ok=True)
         if isinstance(content, bytes):
             workspace_path.write_bytes(content)
         else:
