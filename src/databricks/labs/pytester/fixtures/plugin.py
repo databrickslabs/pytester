@@ -61,6 +61,7 @@ __all__ = [
     'debug_env',
     'env_or_skip',
     'ws',
+    'make_run_as',
     'acc',
     'spark',
     'sql_backend',

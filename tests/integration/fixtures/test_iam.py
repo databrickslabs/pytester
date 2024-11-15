@@ -19,3 +19,10 @@ def test_new_account_group(make_acc_group, acc):
     group = make_acc_group()
     loaded = acc.groups.get(group.id)
     assert group.display_name == loaded.display_name
+
+
+def test_run_as_lower_privilege_user(make_run_as, ws):
+    run_as = make_run_as(account_groups=['role.labs.lsql.write'])
+    through_query = next(run_as.sql_fetch_all("SELECT CURRENT_USER() AS my_name"))
+    current_user = ws.current_user.me()
+    assert current_user.user_name != through_query.my_name

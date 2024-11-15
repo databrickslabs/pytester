@@ -1,19 +1,26 @@
 import logging
 import warnings
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Generator, Iterable
 from datetime import timedelta
 
-from _pytest.fixtures import SubRequest, FixtureDef, fixture
-from _pytest.scope import Scope
-
 from pytest import fixture
+from databricks.labs.lsql import Row
+from databricks.labs.lsql.backends import StatementExecutionBackend, SqlBackend
 from databricks.sdk import AccountGroupsAPI, GroupsAPI, WorkspaceClient, AccountClient
 from databricks.sdk.config import Config
 from databricks.sdk.errors import ResourceConflict, NotFound
 from databricks.sdk.retries import retried
 from databricks.sdk.service import iam
-from databricks.sdk.service.iam import User, Group, ServicePrincipal, Patch, PatchOp, ComplexValue, PatchSchema, \
-    WorkspacePermission
+from databricks.sdk.service.iam import (
+    User,
+    Group,
+    ServicePrincipal,
+    Patch,
+    PatchOp,
+    ComplexValue,
+    PatchSchema,
+    WorkspacePermission,
+)
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
@@ -190,24 +197,28 @@ def _make_group(
 
 
 class RunAs:
-    def __init__(self, service_principal: ServicePrincipal, workspace_client: WorkspaceClient, request: SubRequest):
-        self._request = SubRequest(
-            request,
-            Scope.Function,
-            None,
-            request.param_index,
-            FixtureDef(
-                config=request.config,
-                baseid='ws',
-                argname='ws',
-                func=lambda: workspace_client,
-                scope=None,
-                params=None,
-            ),
-        )
-        self._request._arg2fixturedefs = {}
-        self._request._fixture_defs = {}
+    def __init__(self, service_principal: ServicePrincipal, workspace_client: WorkspaceClient, env_or_skip):
         self._service_principal = service_principal
+        self._workspace_client = workspace_client
+        self._env_or_skip = env_or_skip
+
+    @property
+    def ws(self):
+        return self._workspace_client
+
+    @property
+    def sql_backend(self) -> SqlBackend:
+        # TODO: Switch to `__getattr__` + `SubRequest` to get a generic way of initializing all workspace fixtures.
+        # This will allow us to remove the `sql_backend` fixture and make the `RunAs` class more generic.
+        # It turns out to be more complicated than it first appears, because we don't get these at pytest.collect phase.
+        warehouse_id = self._env_or_skip("DATABRICKS_WAREHOUSE_ID")
+        return StatementExecutionBackend(self._workspace_client, warehouse_id)
+
+    def sql_exec(self, statement: str) -> None:
+        return self.sql_backend.execute(statement)
+
+    def sql_fetch_all(self, statement: str) -> Iterable[Row]:
+        return self.sql_backend.fetch(statement)
 
     def __getattr__(self, item: str):
         if item in self.__dict__:
@@ -217,10 +228,12 @@ class RunAs:
 
     @property
     def display_name(self) -> str:
+        assert self._service_principal.display_name is not None
         return self._service_principal.display_name
 
     @property
     def application_id(self) -> str:
+        assert self._service_principal.application_id is not None
         return self._service_principal.application_id
 
     def __repr__(self):
@@ -228,22 +241,47 @@ class RunAs:
 
 
 @fixture
-def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_skip, request, log_account_link):
+def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_skip, log_account_link):
     """
-    This fixture provides a function to create a service principal and assign it to a workspace. The service principal
-    is removed after the test is complete. The fixture returns an instance of `RunAs` that proxies the calls to
-    the other fixtures supported by the plugin, for example, `sql_fetch_all`.
+    This fixture provides a function to create an account service principal via [`acc` fixture](#acc-fixture) and
+    assign it to a workspace. The service principal is removed after the test is complete. The service principal is
+    created with a random display name and assigned to the workspace with the default permissions.
 
-    The service principal is created with a random display name and assigned to the workspace with
+    Use the `account_groups` argument to assign the service principal to account groups, which have the required
+    permissions to perform a specific action.
+
+    Returned object has the following properties:
+    * `ws`: Workspace client that is authenticated as the ephemeral service principal.
+    * `sql_backend`: SQL backend that is authenticated as the ephemeral service principal.
+    * `sql_exec`: Function to execute a SQL statement on behalf of the ephemeral service principal.
+    * `sql_fetch_all`: Function to fetch all rows from a SQL statement on behalf of the ephemeral service principal.
+    * `display_name`: Display name of the ephemeral service principal.
+    * `application_id`: Application ID of the ephemeral service principal.
+    * ... other fixtures are not currently available through the returned object yet, as it's quite complex to
+      implement, but there's a possibility to add generic support for them in the future.
+
+    Example:
+
+    ```python
+    def test_run_as_lower_privilege_user(make_run_as, ws):
+        run_as = make_run_as(account_groups=['account.group.name'])
+        through_query = next(run_as.sql_fetch_all("SELECT CURRENT_USER() AS my_name"))
+        me = ws.current_user.me()
+        assert me.user_name != through_query.my_name
+    ```
     """
 
-    def create(*, account_groups: list[str] = None):
+    def create(*, account_groups: list[str] | None = None):
         workspace_id = ws.get_workspace_id()
         service_principal = acc.service_principals.create(display_name=f'spn-{make_random()}')
-        created_secret = acc.service_principal_secrets.create(service_principal.id)
+        assert service_principal.id is not None
+        service_principal_id = int(service_principal.id)
+        created_secret = acc.service_principal_secrets.create(service_principal_id)
         if account_groups:
             group_mapping = {}
             for group in acc.groups.list(attributes='id,displayName'):
+                if group.id is None:
+                    continue
                 group_mapping[group.display_name] = group.id
             for group_name in account_groups:
                 if group_name not in group_mapping:
@@ -251,22 +289,26 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
                 group_id = group_mapping[group_name]
                 acc.groups.patch(
                     group_id,
-                    operations=[Patch(PatchOp.ADD, 'members', [ComplexValue(value=service_principal.id).as_dict()])],
+                    operations=[
+                        Patch(PatchOp.ADD, 'members', [ComplexValue(value=str(service_principal_id)).as_dict()]),
+                    ],
                     schemas=[PatchSchema.URN_IETF_PARAMS_SCIM_API_MESSAGES_2_0_PATCH_OP],
                 )
         permissions = [WorkspacePermission.USER]
-        acc.workspace_assignment.update(workspace_id, service_principal.id, permissions=permissions)
+        acc.workspace_assignment.update(workspace_id, service_principal_id, permissions=permissions)
         ws_as_spn = WorkspaceClient(
             host=ws.config.host,
             client_id=service_principal.application_id,
             client_secret=created_secret.secret,
         )
 
-        log_account_link('account service principal', f'users/serviceprincipals/{service_principal.id}')
+        log_account_link('account service principal', f'users/serviceprincipals/{service_principal_id}')
 
-        return RunAs(service_principal, ws_as_spn, request)
+        return RunAs(service_principal, ws_as_spn, env_or_skip)
 
     def remove(run_as: RunAs):
-        acc.service_principals.delete(run_as._service_principal.id)
+        service_principal_id = run_as._service_principal.id  # pylint: disable=protected-access
+        assert service_principal_id is not None
+        acc.service_principals.delete(service_principal_id)
 
     yield from factory("service principal", create, remove)
