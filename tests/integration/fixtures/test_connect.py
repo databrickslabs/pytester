@@ -33,17 +33,13 @@ def spark_serverless_cluster_id(ws):
 def test_databricks_connect(debug_env_bugfix, ws, spark):
     rows = spark.sql("SELECT 1").collect()
     assert rows[0][0] == 1
-
-    creator = get_cluster_creator(spark, ws)
-    assert creator  # non-serverless clusters must have assigned creator
+    assert not is_serverless_cluster(spark, ws)
 
 
 def test_databricks_connect_serverless(serverless_env, ws, spark):
     rows = spark.sql("SELECT 1").collect()
     assert rows[0][0] == 1
-
-    creator = get_cluster_creator(spark, ws)
-    assert not creator  # serverless clusters don't have assigned creator
+    assert is_serverless_cluster(spark, ws)
 
 
 def test_databricks_connect_serverless_set_cluster_id(ws, spark_serverless_cluster_id, spark):
@@ -52,15 +48,13 @@ def test_databricks_connect_serverless_set_cluster_id(ws, spark_serverless_clust
 
     cluster_id = spark.conf.get("spark.databricks.clusterUsageTags.clusterId")
     assert spark_serverless_cluster_id == cluster_id
-
-    creator = get_cluster_creator(spark, ws)
-    assert not creator  # serverless clusters don't have assigned creator
+    assert is_serverless_cluster(spark, ws)
 
 
-def get_cluster_creator(spark: SparkSession, ws: WorkspaceClient) -> str | None:
+def is_serverless_cluster(spark: SparkSession, ws: WorkspaceClient) -> bool:
     """
-    Get the creator of the cluster that the Spark session is connected to.
+    Check if the current cluster used is serverless.
     """
     cluster_id = spark.conf.get("spark.databricks.clusterUsageTags.clusterId")
     creator = ws.clusters.get(cluster_id).creator_user_name
-    return creator
+    return not creator  # serverless clusters don't have assigned creator
