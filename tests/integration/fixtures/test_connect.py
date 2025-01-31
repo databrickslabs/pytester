@@ -12,14 +12,6 @@ def serverless_env():
     os.environ.pop('DATABRICKS_SERVERLESS_COMPUTE_ID')
 
 
-# @fixture
-# def debug_env_bugfix(monkeypatch, debug_env):
-#     # This is a workaround to set shared cluster
-#     debug_env
-#     # TODO: Update secret vault for acceptance testing and remove the bugfix
-#     monkeypatch.setitem(debug_env, "DATABRICKS_CLUSTER_ID", "1114-152544-29g1w07e")
-
-
 @fixture
 def spark_serverless_cluster_id(ws):
     # get new spark session with serverless cluster outside the actual spark fixture under test
@@ -31,7 +23,7 @@ def spark_serverless_cluster_id(ws):
     spark_serverless.stop()
 
 
-def test_databricks_connect(debug_env_bugfix, ws, spark):
+def test_databricks_connect(ws, spark):
     rows = spark.sql("SELECT 1").collect()
     assert rows[0][0] == 1
     assert not is_serverless_cluster(spark, ws)
