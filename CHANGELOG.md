@@ -1,5 +1,9 @@
 # Version changelog
 
+## 0.6.0
+
+*  Added serverless support to spark fixture ([#91](https://github.com/databrickslabs/pytester/issues/90). This release introduces serverless support to the `spark` fixture, enabling the creation of a Databricks Connect Spark session with serverless capabilities by leveraging `DATABRICKS_SERVERLESS_COMPUTE_ID` environment variable, which when set to `auto` enables the Spark session to run on serverless compute.
+
 ## 0.5.0
 
 * Added `make_run_as` fixture ([#82](https://github.com/databrickslabs/pytester/issues/82)). A new pytest fixture, `make_run_as`, has been added to create an account service principal via the `acc` fixture and assign it to a workspace with default permissions, which is removed after the test is complete. The fixture creates a service principal with a random display name and assigns it to the workspace. Users can optionally assign the service principal to account groups for specific actions using the `account_groups` argument. The returned object contains properties for the workspace client, SQL backend, and SQL execution functions, as well as the display name and application ID of the ephemeral service principal. If desired, the `ws` fixture can be overridden to make all workspace fixtures provided by the plugin run as the ephemeral service principal, allowing for testing with lower privilege ephemeral service principals and improving security and isolation. This feature is not currently supported with Databricks Metadata Service authentication on Azure Databricks.
