@@ -48,7 +48,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "databricks-sdk>=0.30",
+    "databricks-sdk>=0.40,<0.42",
     "databricks-labs-lsql>=0.10",
     "pytest>=8.3",
 ]
@@ -77,6 +77,7 @@ dependencies = [
     "pytest-timeout~=2.3.1",
     "pytest-xdist~=3.5.0",
     "ruff~=0.3.4",
+    "databricks-connect~=15.4.3",
 ]
 
 # store virtual env as the child of this folder. Helps VSCode (and PyCharm) to run better

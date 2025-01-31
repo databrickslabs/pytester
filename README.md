@@ -375,6 +375,12 @@ See also [`log_account_link`](#log_account_link-fixture), [`make_acc_group`](#ma
 ### `spark` fixture
 Get Databricks Connect Spark session. Requires `databricks-connect` package to be installed.
 
+To enable serverless set the local environment variable `DATABRICKS_SERVERLESS_COMPUTE_ID` to `"auto"`.
+If this environment variable is set, Databricks Connect ignores the cluster_id.
+If `DATABRICKS_SERVERLESS_COMPUTE_ID` is set to a specific serverless cluster ID, that cluster will be used instead.
+However, this is not recommended, as serverless clusters are ephemeral by design.
+See more details [here](https://docs.databricks.com/en/dev-tools/databricks-connect/cluster-config.html#configure-a-connection-to-serverless-compute).
+
 Usage:
 ```python
 def test_databricks_connect(spark):
