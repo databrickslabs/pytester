@@ -128,7 +128,7 @@ def make_serving_endpoint(ws, make_random, make_model, watchdog_remove_after):
         model = make_model()
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
-            EndpointCoreConfigInput(
+            config=EndpointCoreConfigInput(
                 served_models=[
                     ServedModelInput(
                         model_name=model.name,
