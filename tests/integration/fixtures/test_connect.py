@@ -56,5 +56,7 @@ def is_serverless_cluster(spark: SparkSession, ws: WorkspaceClient) -> bool:
     Check if the current cluster used is serverless.
     """
     cluster_id = spark.conf.get("spark.databricks.clusterUsageTags.clusterId")
+    if not cluster_id:
+        raise ValueError("clusterId usage tag does not exist")
     creator = ws.clusters.get(cluster_id).creator_user_name
     return not creator  # serverless clusters don't have assigned creator
