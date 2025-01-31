@@ -12,11 +12,12 @@ def serverless_env():
     os.environ.pop('DATABRICKS_SERVERLESS_COMPUTE_ID')
 
 
-@fixture
-def debug_env_bugfix(monkeypatch, debug_env):
-    # This is a workaround to set shared cluster
-    # TODO: Update secret vault for acceptance testing and remove the bugfix
-    monkeypatch.setitem(debug_env, "DATABRICKS_CLUSTER_ID", "1114-152544-29g1w07e")
+# @fixture
+# def debug_env_bugfix(monkeypatch, debug_env):
+#     # This is a workaround to set shared cluster
+#     debug_env
+#     # TODO: Update secret vault for acceptance testing and remove the bugfix
+#     monkeypatch.setitem(debug_env, "DATABRICKS_CLUSTER_ID", "1114-152544-29g1w07e")
 
 
 @fixture
