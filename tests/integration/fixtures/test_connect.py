@@ -1,6 +1,8 @@
 import os
 from pytest import fixture
+from pyspark.sql.session import SparkSession
 from databricks.connect import DatabricksSession
+from databricks.sdk import WorkspaceClient
 
 
 @fixture
@@ -55,7 +57,7 @@ def test_databricks_connect_serverless_set_cluster_id(ws, spark_serverless_clust
     assert not creator  # serverless clusters don't have assigned creator
 
 
-def get_cluster_creator(spark, ws):
+def get_cluster_creator(spark: SparkSession, ws: WorkspaceClient) -> str:
     """
     Get the creator of the cluster that the Spark session is connected to.
     """
