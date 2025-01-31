@@ -57,7 +57,7 @@ def test_databricks_connect_serverless_set_cluster_id(ws, spark_serverless_clust
     assert not creator  # serverless clusters don't have assigned creator
 
 
-def get_cluster_creator(spark: SparkSession, ws: WorkspaceClient) -> str:
+def get_cluster_creator(spark: SparkSession, ws: WorkspaceClient) -> str | None:
     """
     Get the creator of the cluster that the Spark session is connected to.
     """
