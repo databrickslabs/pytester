@@ -14,7 +14,10 @@ def serverless_env():
 
 @fixture
 def set_shared_cluster(monkeypatch, debug_env, env_or_skip):
+    default_cluster_id = debug_env.get("DATABRICKS_CLUSTER_ID")
     monkeypatch.setitem(debug_env, "DATABRICKS_CLUSTER_ID", env_or_skip("TEST_USER_ISOLATION_CLUSTER_ID"))
+    yield
+    monkeypatch.setitem(debug_env, "DATABRICKS_CLUSTER_ID", default_cluster_id)
 
 
 @fixture
