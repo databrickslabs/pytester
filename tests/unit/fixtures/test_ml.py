@@ -14,7 +14,7 @@ def test_make_model_no_args():
     assert model is not None
 
 
-def test_make_serving_endpoint_no_args():
+def test_make_serving_endpoint_no_args() -> None:
     ctx, serving_endpoint = call_stateful(make_serving_endpoint)
     assert ctx is not None
     assert serving_endpoint is not None
