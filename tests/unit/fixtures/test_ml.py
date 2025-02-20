@@ -1,6 +1,7 @@
 import pytest
 
 from databricks.sdk.errors import InvalidParameterValue
+from databricks.sdk.service.ml import ModelVersion
 
 from databricks.labs.pytester.fixtures.ml import make_experiment, make_model, make_serving_endpoint
 from databricks.labs.pytester.fixtures.unwrap import CallContext, call_stateful
@@ -50,3 +51,22 @@ def test_make_serving_endpoint_sets_default_model_version_to_one(model_name: str
         make_serving_endpoint, model_name=model_name, call_context_setup=_setup_model_registry_api
     )
     assert serving_endpoint.pending_config.served_models[0].model_version == "1"
+
+
+@pytest.mark.parametrize("model_name", [None, "test"])
+def test_make_serving_endpoint_sets_model_version(model_name: str | None) -> None:
+    """The model version should be the value passed into the fixture.
+
+    Independent of the model name, also if the latest version can be retrieved.
+    """
+
+    def _setup_model_registry_api(call_context: CallContext) -> CallContext:
+        """Set up the model registry api for unit testing."""
+        model_version = ModelVersion(version="3")  # Latest version is higher than the expected version
+        call_context["ws"].model_registry.get_latest_versions.return_value = model_version
+        return call_context
+
+    _, serving_endpoint = call_stateful(
+        make_serving_endpoint, model_name=model_name, model_version="2", call_context_setup=_setup_model_registry_api
+    )
+    assert serving_endpoint.pending_config.served_models[0].model_version == "2"
