@@ -155,18 +155,15 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
                 )
         model_version = model_version or "1"
         tags = [EndpointTag(key="RemoveAfter", value=watchdog_remove_after)]
+        served_model_input = ServedModelInput(
+            model_name=model_name,
+            model_version=model_version,
+            scale_to_zero_enabled=True,
+            workload_size=ServedModelInputWorkloadSize.SMALL,
+        )
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
-            config=EndpointCoreConfigInput(
-                served_models=[
-                    ServedModelInput(
-                        model_name=model_name,
-                        model_version=model_version,
-                        scale_to_zero_enabled=True,
-                        workload_size=ServedModelInputWorkloadSize.SMALL,
-                    )
-                ]
-            ),
+            EndpointCoreConfigInput(served_models=[served_model_input]),
             tags=tags,
         )
         if isinstance(endpoint, Mock):  # For testing
