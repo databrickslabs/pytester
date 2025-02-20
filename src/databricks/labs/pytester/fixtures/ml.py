@@ -103,7 +103,7 @@ def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[...
 
 
 @fixture
-def make_serving_endpoint(ws, make_random, make_model, watchdog_remove_after):
+def make_serving_endpoint(ws, make_random, watchdog_remove_after):
     """
     Returns a function to create Databricks Serving Endpoints and clean them up after the test.
     The function returns a `databricks.sdk.service.serving.ServingEndpointDetailed` object.
@@ -125,13 +125,12 @@ def make_serving_endpoint(ws, make_random, make_model, watchdog_remove_after):
 
     def create() -> Wait[ServingEndpointDetailed]:
         endpoint_name = make_random(4)
-        model = make_model()
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
             config=EndpointCoreConfigInput(
                 served_models=[
                     ServedModelInput(
-                        model_name=model.name,
+                        model_name="system.ai.llama_v3_2_1b_instruct",
                         model_version="1",
                         scale_to_zero_enabled=True,
                         workload_size=ServedModelInputWorkloadSize.SMALL,
