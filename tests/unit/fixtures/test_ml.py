@@ -30,6 +30,12 @@ def test_make_serving_endpoint_sets_endpoint_name() -> None:
     assert serving_endpoint.name == "test"
 
 
+def test_make_serving_endpoint_sets_default_model_name() -> None:
+    """The default model name should be 'system.ai.llama_v3_2_1b_instruct'."""
+    _, serving_endpoint = call_stateful(make_serving_endpoint)
+    assert serving_endpoint.pending_config.served_models[0].model_name == "system.ai.llama_v3_2_1b_instruct"
+
+
 def test_make_serving_endpoint_sets_model_name() -> None:
     _, serving_endpoint = call_stateful(make_serving_endpoint, model_name="test")
     assert serving_endpoint.pending_config.served_models[0].model_name == "test"
