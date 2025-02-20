@@ -1065,7 +1065,7 @@ def test_models(make_group, make_model, make_registered_model_permissions):
     )
 ```
 
-See also [`make_serving_endpoint`](#make_serving_endpoint-fixture), [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
+See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]
@@ -1204,6 +1204,13 @@ The function returns a [`ServingEndpointDetailed`](https://databricks-sdk-py.rea
 
 Under the covers, this fixture also creates a model to serve on a small workload size.
 
+Keyword arguments:
+* `endpoint_name` (str, optional): The name of the endpoint. Defaults to `dummy-*`.
+* `model_name` (str, optional): The name of the model to serve on the endpoint.
+    Defaults to system model `system.ai.llama_v3_2_1b_instruct`.
+* `model_version` (str, optional): The model version to serve. If None, tries to get the latest version for
+    workspace local models. Otherwise, defaults to version `1`.
+
 Usage:
 ```python
 def test_endpoints(make_group, make_serving_endpoint, make_serving_endpoint_permissions):
@@ -1216,7 +1223,7 @@ def test_endpoints(make_group, make_serving_endpoint, make_serving_endpoint_perm
     )
 ```
 
-See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_model`](#make_model-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
+See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
 
 [[back to top](#python-testing-for-databricks)]

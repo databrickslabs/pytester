@@ -1,17 +1,25 @@
+import logging
 from collections.abc import Callable, Generator
+from unittest.mock import Mock
 
 from pytest import fixture
+from databricks.sdk.errors import BadRequest
 from databricks.sdk.service._internal import Wait
 from databricks.sdk.service.serving import (
-    ServingEndpointDetailed,
     EndpointCoreConfigInput,
+    EndpointPendingConfig,
+    EndpointTag,
     ServedModelInput,
     ServedModelInputWorkloadSize,
-    EndpointTag,
+    ServedModelOutput,
+    ServingEndpointDetailed,
 )
 from databricks.sdk.service.ml import CreateExperimentResponse, ModelDatabricks, ModelTag
 
 from databricks.labs.pytester.fixtures.baseline import factory
+
+
+logger = logging.getLogger(__name__)
 
 
 @fixture
@@ -103,12 +111,19 @@ def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[...
 
 
 @fixture
-def make_serving_endpoint(ws, make_random, make_model, watchdog_remove_after):
+def make_serving_endpoint(ws, make_random, watchdog_remove_after):
     """
     Returns a function to create Databricks Serving Endpoints and clean them up after the test.
     The function returns a `databricks.sdk.service.serving.ServingEndpointDetailed` object.
 
     Under the covers, this fixture also creates a model to serve on a small workload size.
+
+    Keyword arguments:
+    * `endpoint_name` (str, optional): The name of the endpoint. Defaults to `dummy-*`.
+    * `model_name` (str, optional): The name of the model to serve on the endpoint.
+        Defaults to system model `system.ai.llama_v3_2_1b_instruct`.
+    * `model_version` (str, optional): The model version to serve. If None, tries to get the latest version for
+        workspace local models. Otherwise, defaults to version `1`.
 
     Usage:
     ```python
@@ -123,27 +138,51 @@ def make_serving_endpoint(ws, make_random, make_model, watchdog_remove_after):
     ```
     """
 
-    def create() -> Wait[ServingEndpointDetailed]:
-        endpoint_name = make_random(4)
-        model = make_model()
+    def create(
+        *,
+        endpoint_name: str | None = None,
+        model_name: str | None = None,
+        model_version: str | None = None,
+    ) -> Wait[ServingEndpointDetailed]:
+        endpoint_name = endpoint_name or make_random(4)
+        model_name = model_name or "system.ai.llama_v3_2_1b_instruct"
+        if not model_version and "." not in model_name:  # The period in the name signals it is NOT workspace local
+            try:
+                model_version = ws.model_registry.get_latest_versions(model_name).version
+            except BadRequest as e:
+                logger.warning(
+                    f"Cannot get latest version for model: {model_name}. Fallback to version '1'.", exc_info=e
+                )
+        model_version = model_version or "1"
+        tags = [EndpointTag(key="RemoveAfter", value=watchdog_remove_after)]
+        served_model_input = ServedModelInput(
+            model_name=model_name,
+            model_version=model_version,
+            scale_to_zero_enabled=True,
+            workload_size=ServedModelInputWorkloadSize.SMALL,
+        )
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
-            config=EndpointCoreConfigInput(
-                served_models=[
-                    ServedModelInput(
-                        model_name=model.name,
-                        model_version="1",
-                        scale_to_zero_enabled=True,
-                        workload_size=ServedModelInputWorkloadSize.SMALL,
-                    )
-                ]
-            ),
-            tags=[EndpointTag(key="RemoveAfter", value=watchdog_remove_after)],
+            EndpointCoreConfigInput(served_models=[served_model_input]),
+            tags=tags,
         )
+        if isinstance(endpoint, Mock):  # For testing
+            served_model_output = ServedModelOutput(
+                model_name=model_name,
+                model_version=model_version,
+                scale_to_zero_enabled=True,
+                workload_size=ServedModelInputWorkloadSize.SMALL.value,
+            )
+            endpoint = ServingEndpointDetailed(
+                name=endpoint_name,
+                pending_config=EndpointPendingConfig(served_models=[served_model_output]),
+                tags=tags,
+            )
         return endpoint
 
-    def remove(endpoint_name: str):
-        ws.serving_endpoints.delete(endpoint_name)
+    def remove(endpoint: ServingEndpointDetailed) -> None:
+        if endpoint.name:
+            ws.serving_endpoints.delete(endpoint.name)
 
     yield from factory("Serving endpoint", create, remove)
 
