@@ -112,6 +112,8 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
 
     Keyword arguments:
     * `endpoint_name` (str, optional): The name of the endpoint. Defaults to `dummy-*`.
+    * `model_name` (str, optional): The name of the model to serve on the endpoint.
+        Defaults to system model `system.ai.llama_v3_2_1b_instruct`.
 
     Usage:
     ```python
@@ -126,14 +128,15 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
     ```
     """
 
-    def create(*, endpoint_name: str | None = None) -> Wait[ServingEndpointDetailed]:
+    def create(*, endpoint_name: str | None = None, model_name: str | None = None) -> Wait[ServingEndpointDetailed]:
         endpoint_name = endpoint_name or make_random(4)
+        model_name = model_name or "system.ai.llama_v3_2_1b_instruct"
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
             config=EndpointCoreConfigInput(
                 served_models=[
                     ServedModelInput(
-                        model_name="system.ai.llama_v3_2_1b_instruct",
+                        model_name=model_name,
                         model_version="1",
                         scale_to_zero_enabled=True,
                         workload_size=ServedModelInputWorkloadSize.SMALL,
