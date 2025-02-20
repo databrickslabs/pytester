@@ -25,6 +25,12 @@ def test_make_serving_endpoint_no_args() -> None:
     assert serving_endpoint is not None
 
 
+def test_make_serving_endpoint_sets_default_endpoint_name() -> None:
+    """Default endpoint name should be random."""
+    _, serving_endpoint = call_stateful(make_serving_endpoint)
+    assert serving_endpoint.name == "RANDOM"  # Mocked value in unit tests
+
+
 def test_make_serving_endpoint_sets_endpoint_name() -> None:
     _, serving_endpoint = call_stateful(make_serving_endpoint, endpoint_name="test")
     assert serving_endpoint.name == "test"
