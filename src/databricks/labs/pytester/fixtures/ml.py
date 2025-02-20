@@ -144,8 +144,9 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
         )
         return endpoint
 
-    def remove(endpoint_name: str):
-        ws.serving_endpoints.delete(endpoint_name)
+    def remove(endpoint: ServingEndpointDetailed) -> None:
+        if endpoint.name:
+            ws.serving_endpoints.delete(endpoint.name)
 
     yield from factory("Serving endpoint", create, remove)
 
