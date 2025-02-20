@@ -110,6 +110,9 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
 
     Under the covers, this fixture also creates a model to serve on a small workload size.
 
+    Keyword arguments:
+    * `endpoint_name` (str, optional): The name of the endpoint. Defaults to `dummy-*`.
+
     Usage:
     ```python
     def test_endpoints(make_group, make_serving_endpoint, make_serving_endpoint_permissions):
@@ -123,8 +126,8 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
     ```
     """
 
-    def create() -> Wait[ServingEndpointDetailed]:
-        endpoint_name = make_random(4)
+    def create(*, endpoint_name: str | None = None) -> Wait[ServingEndpointDetailed]:
+        endpoint_name = endpoint_name or make_random(4)
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
             config=EndpointCoreConfigInput(
