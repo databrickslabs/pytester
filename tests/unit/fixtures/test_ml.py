@@ -18,3 +18,8 @@ def test_make_serving_endpoint_no_args() -> None:
     ctx, serving_endpoint = call_stateful(make_serving_endpoint)
     assert ctx is not None
     assert serving_endpoint is not None
+
+
+def test_make_serving_endpoint_sets_endpoint_name() -> None:
+    _, serving_endpoint = call_stateful(make_serving_endpoint, endpoint_name="test")
+    assert serving_endpoint.name == "test"

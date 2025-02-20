@@ -1,15 +1,18 @@
 import logging
 from collections.abc import Callable, Generator
+from unittest.mock import Mock
 
 from pytest import fixture
 from databricks.sdk.errors import BadRequest
 from databricks.sdk.service._internal import Wait
 from databricks.sdk.service.serving import (
-    ServingEndpointDetailed,
     EndpointCoreConfigInput,
+    EndpointPendingConfig,
+    EndpointTag,
     ServedModelInput,
     ServedModelInputWorkloadSize,
-    EndpointTag,
+    ServedModelOutput,
+    ServingEndpointDetailed,
 )
 from databricks.sdk.service.ml import CreateExperimentResponse, ModelDatabricks, ModelTag
 
@@ -150,20 +153,34 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
                 logger.warning(
                     f"Cannot get latest version for model: {model_name}. Fallback to version '1'.", exc_info=e
                 )
+        model_version = model_version or "1"
+        tags = [EndpointTag(key="RemoveAfter", value=watchdog_remove_after)]
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
             config=EndpointCoreConfigInput(
                 served_models=[
                     ServedModelInput(
                         model_name=model_name,
-                        model_version=model_version or "1",
+                        model_version=model_version,
                         scale_to_zero_enabled=True,
                         workload_size=ServedModelInputWorkloadSize.SMALL,
                     )
                 ]
             ),
-            tags=[EndpointTag(key="RemoveAfter", value=watchdog_remove_after)],
+            tags=tags,
         )
+        if isinstance(endpoint, Mock):  # For testing
+            served_model_output = ServedModelOutput(
+                model_name=model_name,
+                model_version=model_version,
+                scale_to_zero_enabled=True,
+                workload_size=ServedModelInputWorkloadSize.SMALL.value,
+            )
+            endpoint = ServingEndpointDetailed(
+                name=endpoint_name,
+                pending_config=EndpointPendingConfig(served_models=[served_model_output]),
+                tags=tags,
+            )
         return endpoint
 
     def remove(endpoint: ServingEndpointDetailed) -> None:
