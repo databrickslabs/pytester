@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.7.0
+
+* Let `make_serving_endpoint` reference a valid model version ([#106](https://github.com/databrickslabs/pytester/issues/106)). The `make_serving_endpoint` fixture in the `ml.py` file has been updated to resolve an issue where it stopped working due to the removal of the default model version from models created by the `make_model` fixture. The updated fixture now fallbacks to using a UC model version and allows users to input parameters for choosing another model version or name. The fixture now accepts optional keyword arguments `endpoint_name`, `model_name`, and `model_version`. The `create` function of the fixture has also been updated to include a `RemoveAfter` tag and to accept a `ServingEndpointDetailed` object in the `remove` function instead of just an endpoint name. Unit tests have been added to ensure the functionality works as expected and cover various scenarios such as default endpoint name, setting endpoint name, default model name, setting model name, and setting model version. The `call_stateful` function has also been updated to include `CallContext` in its signature.
+
+
 ## 0.6.0
 
 *  Added serverless support to spark fixture ([#91](https://github.com/databrickslabs/pytester/issues/90). This release introduces serverless support to the `spark` fixture, enabling the creation of a Databricks Connect Spark session with serverless capabilities by leveraging `DATABRICKS_SERVERLESS_COMPUTE_ID` environment variable, which when set to `auto` enables the Spark session to run on serverless compute.
