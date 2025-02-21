@@ -163,7 +163,7 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
         )
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
-            EndpointCoreConfigInput(served_models=[served_model_input]),
+            config=EndpointCoreConfigInput(served_models=[served_model_input]),
             tags=tags,
         )
         if isinstance(endpoint, Mock):  # For testing
