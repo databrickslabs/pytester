@@ -76,7 +76,7 @@
 * [Project Support](#project-support)
 <!-- TOC -->
 
-## Installation
+## Installation process
 
 Add a `databricks-labs-pytester` dependency to your `pyproject.toml` file (or legacy `requirements.txt` file). You can
 also install it directly from the command line:
