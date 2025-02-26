@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.7.0
+
+* Let `make_serving_endpoint` reference a valid model version ([#106](https://github.com/databrickslabs/pytester/issues/106)). In this release, the `make_serving_endpoint` fixture has been updated to enhance its functionality and flexibility. The fixture now accepts optional keyword arguments for specifying the endpoint name, model name, and model version, with the model version defaulting to `1` and the latest version automatically retrieved for workspace local models. The served model input is created with the specified model name, model version, and workload size, and a mock endpoint object is returned if obtaining the served model fails. The `remove` method has been updated to accept a `ServingEndpointDetailed` object for deletion, and the fixture now maintains a logger instance for warning messages during model version retrieval. Unit tests have been added to ensure the changes work as expected, although integration tests have not been fixed yet. These updates address issues arising from changes in the `make_model` fixture and improve the robustness and flexibility of the `make_serving_endpoint` fixture.
+
+
 ## 0.6.0
 
 *  Added serverless support to spark fixture ([#91](https://github.com/databrickslabs/pytester/issues/90). This release introduces serverless support to the `spark` fixture, enabling the creation of a Databricks Connect Spark session with serverless capabilities by leveraging `DATABRICKS_SERVERLESS_COMPUTE_ID` environment variable, which when set to `auto` enables the Spark session to run on serverless compute.
