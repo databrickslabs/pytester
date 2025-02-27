@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.7.1
+
+* Set upper SDK limit to v1 ([#109](https://github.com/databrickslabs/pytester/issues/109)). In this change, the upper SDK limit is set to version 1.0 in the pyproject.toml file of a library project, allowing projects using this library to set their own appropriate SDK limits. The databricks-sdk dependency is updated from "<0.42" to "<1.0" as a result of this commit. Additionally, the `create` function in the `ml.py` file of the pytester library has been modified. Previously, the `EndpointCoreConfigInput` object was passed as an argument to the `serving_endpoints.create` method using the keyword argument `served_models`. Now, `EndpointCoreConfigInput` is passed as a keyword argument `config`, which contains the `served_models` parameter, aligning with the new SDK version 1.0 and ensuring consistent endpoint creation. These changes are intended to ensure compatibility with a variety of SDK versions and improve the library's usability for software engineers.
+
+
 ## 0.7.0
 
 * Let `make_serving_endpoint` reference a valid model version ([#106](https://github.com/databrickslabs/pytester/issues/106)). In this release, the `make_serving_endpoint` fixture has been updated to enhance its functionality and flexibility. The fixture now accepts optional keyword arguments for specifying the endpoint name, model name, and model version, with the model version defaulting to `1` and the latest version automatically retrieved for workspace local models. The served model input is created with the specified model name, model version, and workload size, and a mock endpoint object is returned if obtaining the served model fails. The `remove` method has been updated to accept a `ServingEndpointDetailed` object for deletion, and the fixture now maintains a logger instance for warning messages during model version retrieval. Unit tests have been added to ensure the changes work as expected, although integration tests have not been fixed yet. These updates address issues arising from changes in the `make_model` fixture and improve the robustness and flexibility of the `make_serving_endpoint` fixture.
