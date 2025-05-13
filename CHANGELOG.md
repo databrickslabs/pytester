@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.7.2
+
+* Compatibility fix for Databricks SDK 0.51 ([#158](https://github.com/databrickslabs/pytester/issues/158)). The minimum required version of the Databricks SDK has been updated to 0.51.0 to accommodate breaking changes introduced in this version, including the removal of certain enumeration values. Notably, the `ServedModelInputWorkloadSize` enumeration has been replaced with well-known string constants, prompting an update to the `create` function to use the string constant `Small` instead of the removed `ServedModelInputWorkloadSize.SMALL` value. This change affects the creation of serving endpoints, which now specify workload size using a string value, and resolves issues reported in related projects, including test failures in downstream projects, by ensuring compatibility with the updated SDK version.
+
+
 ## 0.7.1
 
 * Set upper SDK limit to v1 ([#109](https://github.com/databrickslabs/pytester/issues/109)). In this change, the upper SDK limit is set to version 1.0 in the pyproject.toml file of a library project, allowing projects using this library to set their own appropriate SDK limits. The databricks-sdk dependency is updated from "<0.42" to "<1.0" as a result of this commit. Additionally, the `create` function in the `ml.py` file of the pytester library has been modified. Previously, the `EndpointCoreConfigInput` object was passed as an argument to the `serving_endpoints.create` method using the keyword argument `served_models`. Now, `EndpointCoreConfigInput` is passed as a keyword argument `config`, which contains the `served_models` parameter, aligning with the new SDK version 1.0 and ensuring consistent endpoint creation. These changes are intended to ensure compatibility with a variety of SDK versions and improve the library's usability for software engineers.
