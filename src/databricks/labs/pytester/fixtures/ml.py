@@ -10,7 +10,6 @@ from databricks.sdk.service.serving import (
     EndpointPendingConfig,
     EndpointTag,
     ServedModelInput,
-    ServedModelInputWorkloadSize,
     ServedModelOutput,
     ServingEndpointDetailed,
 )
@@ -159,7 +158,7 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
             model_name=model_name,
             model_version=model_version,
             scale_to_zero_enabled=True,
-            workload_size=ServedModelInputWorkloadSize.SMALL,
+            workload_size="Small",
         )
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
@@ -171,7 +170,7 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
                 model_name=model_name,
                 model_version=model_version,
                 scale_to_zero_enabled=True,
-                workload_size=ServedModelInputWorkloadSize.SMALL.value,
+                workload_size="Small",
             )
             endpoint = ServingEndpointDetailed(
                 name=endpoint_name,
