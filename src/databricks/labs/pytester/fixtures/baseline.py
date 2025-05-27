@@ -149,7 +149,7 @@ def ws(debug_env: dict[str, str], product_info: tuple[str, str]) -> WorkspaceCli
     """
     product_name, product_version = product_info
     return WorkspaceClient(
-        host=debug_env["DATABRICKS_HOST"],
+        host=debug_env.get["DATABRICKS_HOST"],
         auth_type=debug_env.get("DATABRICKS_AUTH_TYPE"),
         token=debug_env.get("DATABRICKS_TOKEN"),
         username=debug_env.get("DATABRICKS_USERNAME"),
