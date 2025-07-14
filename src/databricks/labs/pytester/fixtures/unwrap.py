@@ -5,6 +5,8 @@ from collections.abc import Callable, Generator
 from typing import TypeVar
 from unittest.mock import MagicMock, create_autospec
 
+import pytest
+
 from databricks.labs.lsql.backends import MockBackend
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service import iam
@@ -14,13 +16,25 @@ import databricks.labs.pytester.fixtures.plugin as P
 T = TypeVar('T')
 
 
-def call_fixture(fixture_fn: Callable[..., T], *args, **kwargs) -> T:
-    if not hasattr(fixture_fn, '__pytest_wrapped__'):
-        raise ValueError(f'{fixture_fn} is not a pytest fixture')
-    wrapped = getattr(fixture_fn, '__pytest_wrapped__')
-    if not hasattr(wrapped, 'obj'):
-        raise ValueError(f'{fixture_fn} is not a pytest fixture')
-    return wrapped.obj(*args, **kwargs)
+# Pytest fixtures are not supposed to be called directly, but historically we hack through the countermeasures.
+# TODO: Investigate and fix this if possible, to avoid breakage in future pytest versions.
+# Potential solution: use `pytest.FixtureRequest` & `request.getfixturevalue()` to access fixtures.
+if pytest.version_tuple >= (8, 4):
+    def call_fixture(fixture_fn: Callable[..., T], *args, **kwargs) -> T:
+        if  not hasattr(fixture_fn, "_get_wrapped_function"):
+            raise ValueError(f'{fixture_fn} is not a pytest fixture')
+        accessor = getattr(fixture_fn, "_get_wrapped_function")
+        wrapped = accessor()
+        return wrapped(*args, **kwargs)
+else:
+    # Older versions of pytest use a different mechanism to wrap fixtures.
+    def call_fixture(fixture_fn: Callable[..., T], *args, **kwargs) -> T:
+        if not hasattr(fixture_fn, '__pytest_wrapped__'):
+            raise ValueError(f'{fixture_fn} is not a pytest fixture')
+        wrapped = getattr(fixture_fn, '__pytest_wrapped__')
+        if not hasattr(wrapped, 'obj'):
+            raise ValueError(f'{fixture_fn} is not a pytest fixture')
+        return wrapped.obj(*args, **kwargs)
 
 
 class CallContext:
