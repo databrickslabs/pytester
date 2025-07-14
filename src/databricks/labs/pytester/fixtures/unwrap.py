@@ -20,12 +20,14 @@ T = TypeVar('T')
 # TODO: Investigate and fix this if possible, to avoid breakage in future pytest versions.
 # Potential solution: use `pytest.FixtureRequest` & `request.getfixturevalue()` to access fixtures.
 if pytest.version_tuple >= (8, 4):
+
     def call_fixture(fixture_fn: Callable[..., T], *args, **kwargs) -> T:
-        if  not hasattr(fixture_fn, "_get_wrapped_function"):
+        if not hasattr(fixture_fn, "_get_wrapped_function"):
             raise ValueError(f'{fixture_fn} is not a pytest fixture')
         accessor = getattr(fixture_fn, "_get_wrapped_function")
         wrapped = accessor()
         return wrapped(*args, **kwargs)
+
 else:
     # Older versions of pytest use a different mechanism to wrap fixtures.
     def call_fixture(fixture_fn: Callable[..., T], *args, **kwargs) -> T:
