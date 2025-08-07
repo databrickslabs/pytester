@@ -1,7 +1,6 @@
 from databricks.sdk.service.workspace import ObjectType
 
 
-
 def test_new_user(make_user, ws):
     new_user = make_user()
     home_dir = ws.workspace.get_status(f"/Users/{new_user.user_name}")
