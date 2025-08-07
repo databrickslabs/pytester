@@ -7,9 +7,10 @@ def test_new_user(make_user, ws):
     assert home_dir.object_type == ObjectType.DIRECTORY
 
 
-def test_new_group(make_group, make_user, ws):
+def test_new_group(make_group, make_user, make_run_as, ws):
     user = make_user()
-    group = make_group(members=[user.id])
+    service_principal = make_run_as()
+    group = make_group(members=[user.id, service_principal.id])
     loaded = ws.groups.get(group.id)
     assert group.display_name == loaded.display_name
     assert group.members == loaded.members

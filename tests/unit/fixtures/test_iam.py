@@ -5,7 +5,7 @@ from unittest.mock import call
 
 import pytest
 
-from databricks.labs.pytester.fixtures.iam import make_acc_group, make_group, make_user, Group
+from databricks.labs.pytester.fixtures.iam import make_acc_group, make_group, make_user, make_run_as, Group
 from databricks.labs.pytester.fixtures.unwrap import call_stateful, CallContext
 
 
@@ -15,6 +15,14 @@ def test_make_user_no_args() -> None:
     assert user is not None
     ctx['ws'].users.create.assert_called_once()
     ctx['ws'].users.delete.assert_called_once()
+
+
+def test_make_run_as_no_args() -> None:
+    ctx, run_as = call_stateful(make_run_as)
+    assert ctx is not None
+    assert run_as is not None
+    ctx['acc'].service_principals.create.assert_called_once()
+    ctx['acc'].service_principals.delete.assert_called_once()
 
 
 def _setup_groups_api(call_context: CallContext, *, client_fixture_name: str) -> CallContext:

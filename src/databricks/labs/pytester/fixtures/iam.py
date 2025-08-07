@@ -240,6 +240,11 @@ class RunAs:
         assert self._service_principal.application_id is not None
         return self._service_principal.application_id
 
+    @property
+    def id(self) -> str:
+        assert self._service_principal.id is not None
+        return self._service_principal.id
+
     def __repr__(self):
         return f'RunAs({self.display_name})'
 
@@ -339,8 +344,7 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
         workspace_id = ws.get_workspace_id()
         service_principal = acc.service_principals.create(display_name=f'spn-{make_random()}')
         assert service_principal.id is not None
-        service_principal_id = int(service_principal.id)
-        created_secret = acc.service_principal_secrets.create(service_principal_id)
+        created_secret = acc.service_principal_secrets.create(service_principal.id)
         if account_groups:
             group_mapping = {}
             for group in acc.groups.list(attributes='id,displayName'):
@@ -354,15 +358,15 @@ def make_run_as(acc: AccountClient, ws: WorkspaceClient, make_random, env_or_ski
                 acc.groups.patch(
                     group_id,
                     operations=[
-                        Patch(PatchOp.ADD, 'members', [ComplexValue(value=str(service_principal_id)).as_dict()]),
+                        Patch(PatchOp.ADD, 'members', [ComplexValue(value=str(service_principal.id)).as_dict()]),
                     ],
                     schemas=[PatchSchema.URN_IETF_PARAMS_SCIM_API_MESSAGES_2_0_PATCH_OP],
                 )
         permissions = [WorkspacePermission.USER]
-        acc.workspace_assignment.update(workspace_id, service_principal_id, permissions=permissions)
+        acc.workspace_assignment.update(workspace_id, int(service_principal.id), permissions=permissions)
         ws_as_spn = _make_workspace_client(ws, created_secret, service_principal)
 
-        log_account_link('account service principal', f'users/serviceprincipals/{service_principal_id}')
+        log_account_link('account service principal', f'users/serviceprincipals/{service_principal.id}')
 
         return RunAs(service_principal, ws_as_spn, env_or_skip)
 
