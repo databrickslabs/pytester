@@ -240,6 +240,11 @@ class RunAs:
         assert self._service_principal.application_id is not None
         return self._service_principal.application_id
 
+    @property
+    def id(self) -> str:
+        assert self._service_principal.id is not None
+        return self._service_principal.id
+
     def __repr__(self):
         return f'RunAs({self.display_name})'
 
