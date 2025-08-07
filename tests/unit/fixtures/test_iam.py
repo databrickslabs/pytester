@@ -16,6 +16,7 @@ def test_make_user_no_args() -> None:
     ctx['ws'].users.create.assert_called_once()
     ctx['ws'].users.delete.assert_called_once()
 
+
 def test_make_run_as_no_args() -> None:
     ctx, run_as = call_stateful(make_run_as)
     assert ctx is not None

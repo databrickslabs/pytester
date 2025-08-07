@@ -1,6 +1,5 @@
 from databricks.sdk.service.workspace import ObjectType
 
-from databricks.labs.pytester.fixtures.iam import make_run_as
 
 
 def test_new_user(make_user, ws):
