@@ -989,7 +989,7 @@ Keyword Arguments:
 Usage:
 ```python
 def test_storage_credential(env_or_skip, make_storage_credential, make_random):
-    random = make_random(6).lower()
+    random = make_random(8).lower()
     credential_name = f"dummy-{random}"
     make_storage_credential(
         credential_name=credential_name,
@@ -1021,7 +1021,7 @@ def test_volume_creation(make_catalog, make_schema, make_volume, make_random):
     schema = make_schema(catalog_name=catalog.name)
 
     # Generate a random name for the volume
-    volume_name = f"dummy_vol_{make_random(6).lower()}"
+    volume_name = f"dummy_vol_{make_random(8).lower()}"
 
     # Create the volume
     volume = make_volume(
