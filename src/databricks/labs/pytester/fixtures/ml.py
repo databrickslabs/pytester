@@ -61,7 +61,7 @@ def make_experiment(
         folder = make_directory(path=path)
         if experiment_name is None:
             # The purge suffix is needed here as well, just in case the path was supplied.
-            experiment_name = f"dummy-{make_random(4)}-{watchdog_purge_suffix}"
+            experiment_name = f"dummy-{make_random(8)}-{watchdog_purge_suffix}"
         experiment = ws.experiments.create_experiment(name=f"{folder}/{experiment_name}", **kwargs)
         log_workspace_link(f'{experiment_name} experiment', f'ml/experiments/{experiment.experiment_id}', anchor=False)
         return experiment
@@ -95,7 +95,7 @@ def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[...
 
     def create(*, model_name: str | None = None, **kwargs) -> ModelDatabricks:
         if model_name is None:
-            model_name = f"dummy-{make_random(4)}"
+            model_name = f"dummy-{make_random(8)}"
         remove_after_tag = ModelTag(key="RemoveAfter", value=watchdog_remove_after)
         if 'tags' not in kwargs:
             kwargs["tags"] = [remove_after_tag]
@@ -143,7 +143,7 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
         model_name: str | None = None,
         model_version: str | None = None,
     ) -> Wait[ServingEndpointDetailed]:
-        endpoint_name = endpoint_name or make_random(4)
+        endpoint_name = endpoint_name or make_random(8)
         model_name = model_name or "system.ai.llama_v3_2_1b_instruct"
         if not model_version and "." not in model_name:  # The period in the name signals it is NOT workspace local
             try:

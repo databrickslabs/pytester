@@ -51,7 +51,7 @@ def make_query(
             tags.append(remove_after_tag)
         else:
             tags = [remove_after_tag]
-        query_name = f"dummy_query_Q{make_random(4)}"
+        query_name = f"dummy_query_Q{make_random(8)}"
         query = ws.queries_legacy.create(
             name=query_name,
             description="Test query",

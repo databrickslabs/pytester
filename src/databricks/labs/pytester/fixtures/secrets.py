@@ -21,7 +21,7 @@ def make_secret_scope(ws: WorkspaceClient, make_random):
     """
 
     def create(**kwargs):
-        name = f"dummy-{make_random(4)}"
+        name = f"dummy-{make_random(8)}"
         ws.secrets.create_scope(name, **kwargs)
         return name
 

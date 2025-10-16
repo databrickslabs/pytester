@@ -57,7 +57,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
         else:
             raise ValueError(f"Unsupported language: {language}")
         current_user = ws.current_user.me()
-        path = path or f"/Users/{current_user.user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}"
+        path = path or f"/Users/{current_user.user_name}/dummy-{make_random(8)}-{watchdog_purge_suffix}"
         workspace_path = WorkspacePath(ws, path)
         if '@' not in current_user.user_name:
             # If current user is a service principal added with `make_run_as`, there might be no home folder
@@ -115,7 +115,7 @@ def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Cal
         else:
             raise ValueError(f"Unsupported language: {language}")
         current_user = ws.current_user.me()
-        path = path or f"/Users/{current_user.user_name}/dummy-{make_random(4)}-{watchdog_purge_suffix}{suffix}"
+        path = path or f"/Users/{current_user.user_name}/dummy-{make_random(8)}-{watchdog_purge_suffix}{suffix}"
         content = content or default_content
         encoding = encoding or _DEFAULT_ENCODING
         workspace_path = WorkspacePath(ws, path)
@@ -159,7 +159,7 @@ def make_directory(
 
     def create(*, path: str | Path | None = None) -> WorkspacePath:
         if path is None:
-            path = f"~/dummy-{make_random(4)}-{watchdog_purge_suffix}"
+            path = f"~/dummy-{make_random(8)}-{watchdog_purge_suffix}"
         workspace_path = WorkspacePath(ws, path).expanduser()
         workspace_path.mkdir(exist_ok=True)
         logger.info(f"Created folder: {workspace_path.as_uri()}")
@@ -188,7 +188,7 @@ def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[...,
 
     def create(*, url=None, provider=None, path=None, **kwargs) -> RepoInfo:
         if path is None:
-            path = f"/Repos/{ws.current_user.me().user_name}/sdk-{make_random(4)}-{watchdog_purge_suffix}"
+            path = f"/Repos/{ws.current_user.me().user_name}/sdk-{make_random(8)}-{watchdog_purge_suffix}"
         if url is None:
             url = "https://github.com/shreyas-goenka/empty-repo.git"
         if provider is None:

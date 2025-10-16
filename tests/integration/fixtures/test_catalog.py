@@ -21,7 +21,7 @@ def test_schema_fixture(make_schema):
 def test_managed_schema_fixture(make_schema, make_random, env_or_skip):
     schema_name = f"dummy_s{make_random(4)}".lower()
     schema_location = f"{env_or_skip('TEST_MOUNT_CONTAINER')}/a/{schema_name}"
-    logger.info(f"Created new schema: {make_schema(location = schema_location)}")
+    logger.info(f"Created new schema: {make_schema(location=schema_location)}")
 
 
 def test_new_managed_table_in_new_schema(make_table):
