@@ -49,7 +49,7 @@ def make_user(ws, make_random, log_workspace_link, watchdog_purge_suffix):
 
     @retried(on=[ResourceConflict], timeout=timedelta(seconds=30))
     def create(**kwargs) -> User:
-        user_name = f"dummy-{make_random(4)}-{watchdog_purge_suffix}@example.com".lower()
+        user_name = f"dummy-{make_random(8)}-{watchdog_purge_suffix}@example.com".lower()
         user = ws.users.create(user_name=user_name, **kwargs)
         log_workspace_link(user.user_name, f'settings/workspace/identity-and-access/users/{user.id}')
         return user
@@ -171,7 +171,7 @@ def _make_group(
         **kwargs,
     ):
         kwargs["display_name"] = (
-            f"sdk-{make_random(4)}-{watchdog_purge_suffix}" if display_name is None else display_name
+            f"sdk-{make_random(8)}-{watchdog_purge_suffix}" if display_name is None else display_name
         )
         if members is not None:
             kwargs["members"] = _scim_values(members)

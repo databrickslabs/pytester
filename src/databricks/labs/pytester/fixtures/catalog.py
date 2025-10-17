@@ -122,7 +122,7 @@ def make_table(
             schema = make_schema(catalog_name=catalog_name)
             catalog_name = schema.catalog_name
             schema_name = schema.name
-        name = name or f"dummy_t{make_random(4).lower()}"
+        name = name or f"dummy_t{make_random(8).lower()}"
         table_type: TableType | None = None
         data_source_format = None
         storage_location = None
@@ -267,7 +267,7 @@ def make_schema(
     def create(
         *, catalog_name: str = "hive_metastore", name: str | None = None, location: str | None = None
     ) -> SchemaInfo:
-        name = name or f"dummy_s{make_random(4)}".lower()
+        name = name or f"dummy_s{make_random(8)}".lower()
         full_name = f"{catalog_name}.{name}".lower()
         schema_ddl = f"CREATE SCHEMA {full_name}"
         if location:
@@ -307,7 +307,7 @@ def make_catalog(
     """
 
     def create(*, name: str | None = None) -> CatalogInfo:
-        name = name or f"dummy_c{make_random(4)}".lower()
+        name = name or f"dummy_c{make_random(8)}".lower()
         catalog_info = ws.catalogs.create(name=name, properties={"RemoveAfter": watchdog_remove_after})
         if isinstance(catalog_info, Mock):
             catalog_info.name = name
@@ -359,7 +359,7 @@ def make_udf(
             catalog_name = schema.catalog_name
             schema_name = schema.name
 
-        name = name or f"dummy_f{make_random(4)}".lower()
+        name = name or f"dummy_f{make_random(8)}".lower()
 
         # Note: the Watchdog does not explicitly scan for functions; they are purged along with their parent schema.
         # As such the function can't be marked (and doesn't need to be if the schema as marked) for purge protection.
@@ -409,7 +409,7 @@ def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[...
     Usage:
     ```python
     def test_storage_credential(env_or_skip, make_storage_credential, make_random):
-        random = make_random(6).lower()
+        random = make_random(8).lower()
         credential_name = f"dummy-{random}"
         make_storage_credential(
             credential_name=credential_name,
@@ -471,7 +471,7 @@ def make_volume(
         schema = make_schema(catalog_name=catalog.name)
 
         # Generate a random name for the volume
-        volume_name = f"dummy_vol_{make_random(6).lower()}"
+        volume_name = f"dummy_vol_{make_random(8).lower()}"
 
         # Create the volume
         volume = make_volume(
@@ -498,7 +498,7 @@ def make_volume(
             schema_name = schema.name
 
         if not name:
-            name = f"dummy_v{make_random(6).lower()}"
+            name = f"dummy_v{make_random(8).lower()}"
 
         volume_info = ws.volumes.create(
             catalog_name=catalog_name,

@@ -48,7 +48,7 @@ def make_cluster_policy(
 
     def create(*, name: str | None = None, **kwargs) -> CreatePolicyResponse:
         if name is None:
-            name = f"dummy-{make_random(4)}-{watchdog_purge_suffix}"
+            name = f"dummy-{make_random(8)}-{watchdog_purge_suffix}"
         if "definition" not in kwargs:
             kwargs["definition"] = json.dumps(
                 {
@@ -92,7 +92,7 @@ def make_cluster(
         **kwargs,
     ) -> Wait[ClusterDetails]:
         if cluster_name is None:
-            cluster_name = f"dummy-{make_random(4)}"
+            cluster_name = f"dummy-{make_random(8)}"
         if spark_version is None:
             spark_version = ws.clusters.select_spark_version(latest=True)
         if single_node:
@@ -148,7 +148,7 @@ def make_instance_pool(
 
     def create(*, instance_pool_name=None, node_type_id=None, **kwargs) -> CreateInstancePoolResponse:
         if instance_pool_name is None:
-            instance_pool_name = f"dummy-{make_random(4)}"
+            instance_pool_name = f"dummy-{make_random(8)}"
         if node_type_id is None:
             node_type_id = ws.clusters.select_node_type(local_disk=True, min_memory_gb=16)
         pool = ws.instance_pools.create(
@@ -223,7 +223,7 @@ def make_job(
             raise ValueError(
                 "The `tasks` parameter is exclusive with the `path`, `content` `spark_conf` and `libraries` parameters."
             )
-        name = name or f"dummy-j{make_random(4)}"
+        name = name or f"dummy-j{make_random(8)}"
         tags = tags or {}
         tags["RemoveAfter"] = tags.get("RemoveAfter", watchdog_remove_after)
         if not tasks:
@@ -231,8 +231,8 @@ def make_job(
             if instance_pool_id is None:
                 node_type_id = ws.clusters.select_node_type(local_disk=True, min_memory_gb=16)
             task = Task(
-                task_key=make_random(4),
-                description=make_random(4),
+                task_key=make_random(8),
+                description=make_random(8),
                 new_cluster=ClusterSpec(
                     num_workers=1,
                     node_type_id=node_type_id,
@@ -292,7 +292,7 @@ def make_pipeline(
 
     def create(**kwargs) -> CreatePipelineResponse:
         if "name" not in kwargs:
-            kwargs["name"] = f"sdk-{make_random(4)}-{watchdog_purge_suffix}"
+            kwargs["name"] = f"sdk-{make_random(8)}-{watchdog_purge_suffix}"
         if "libraries" not in kwargs:
             notebook_library = NotebookLibrary(path=make_notebook().as_posix())
             kwargs["libraries"] = [PipelineLibrary(notebook=notebook_library)]
@@ -342,7 +342,7 @@ def make_warehouse(
         **kwargs,
     ) -> Wait[GetWarehouseResponse]:
         if warehouse_name is None:
-            warehouse_name = f"dummy-{make_random(4)}"
+            warehouse_name = f"dummy-{make_random(8)}"
         if warehouse_type is None:
             warehouse_type = CreateWarehouseRequestWarehouseType.PRO
         if cluster_size is None:
