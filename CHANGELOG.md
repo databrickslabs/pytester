@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.7.4
+
+* Increased the number of random characters used when creating resources to minimize collisions ([#214](https://github.com/databrickslabs/pytester/issues/214)). The continuous integration workflow has been updated to install a newer version of the hatch tool, specifically version 1.15.0, replacing the previous version 1.9.4, to avoid compatibility issues with click. Additionally, the code has been modified to increase the number of random characters used when creating resources from 4 to 8, aiming to minimize collisions, particularly in larger projects that rely heavily on PyTester. This change affects various resource creation methods and is intended to reduce the likelihood of name collisions and improve the overall stability of the system. The changes are covered by regression testing and have been manually tested to ensure their correctness and effectiveness.
+
+
 ## 0.7.3
 
 * Added property `id` to get service principal id ([#170](https://github.com/databrickslabs/pytester/issues/170)). The service principal functionality has been enhanced with the introduction of a new `id` property, which returns the service principal ID as a string, simplifying its usage in tests. The `create` method has been updated to utilize this `id` property, ensuring consistency throughout the code. Additionally, the `id` property is now directly used when creating secrets, updating group memberships, and updating workspace assignments, with the exception of the `workspace_assignment.update` method. The logging of account links has also been updated to use the `id` property. Furthermore, test cases have been updated to include service principals in group members, and a new function `make_run_as` has been introduced to create service principals for testing purposes, along with a new test case `test_make_run_as_no_args` to verify its functionality, addressing issues related to no-cheat in linked pull requests and improving overall testing capabilities.
