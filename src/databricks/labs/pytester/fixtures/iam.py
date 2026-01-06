@@ -265,7 +265,7 @@ def _make_workspace_client(
         client_id=application_id,
         client_secret=secret_value,
         token_url=oidc.token_endpoint,
-        scopes=["all-apis"],
+        scopes="all-apis",
         use_header=True,
     )
 
