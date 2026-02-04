@@ -39,12 +39,12 @@ def test_make_serving_endpoint_sets_endpoint_name() -> None:
 def test_make_serving_endpoint_sets_default_model_name() -> None:
     """The default model name should be 'system.ai.llama_v3_2_1b_instruct'."""
     _, serving_endpoint = call_stateful(make_serving_endpoint)
-    assert serving_endpoint.pending_config.served_models[0].model_name == "system.ai.llama_v3_2_1b_instruct"
+    assert serving_endpoint.pending_config.served_entities[0].entity_name == "system.ai.llama_v3_2_1b_instruct"
 
 
 def test_make_serving_endpoint_sets_model_name() -> None:
     _, serving_endpoint = call_stateful(make_serving_endpoint, model_name="test")
-    assert serving_endpoint.pending_config.served_models[0].model_name == "test"
+    assert serving_endpoint.pending_config.served_entities[0].entity_name == "test"
 
 
 @pytest.mark.parametrize("model_name", [None, "test"])
@@ -62,7 +62,7 @@ def test_make_serving_endpoint_sets_default_model_version_to_one(model_name: str
     _, serving_endpoint = call_stateful(
         make_serving_endpoint, model_name=model_name, call_context_setup=_setup_model_registry_api
     )
-    assert serving_endpoint.pending_config.served_models[0].model_version == "1"
+    assert serving_endpoint.pending_config.served_entities[0].entity_version == "1"
 
 
 @pytest.mark.parametrize("model_name", [None, "test"])
@@ -81,4 +81,4 @@ def test_make_serving_endpoint_sets_model_version(model_name: str | None) -> Non
     _, serving_endpoint = call_stateful(
         make_serving_endpoint, model_name=model_name, model_version="2", call_context_setup=_setup_model_registry_api
     )
-    assert serving_endpoint.pending_config.served_models[0].model_version == "2"
+    assert serving_endpoint.pending_config.served_entities[0].entity_version == "2"

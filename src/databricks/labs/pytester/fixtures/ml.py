@@ -9,8 +9,9 @@ from databricks.sdk.service.serving import (
     EndpointCoreConfigInput,
     EndpointPendingConfig,
     EndpointTag,
-    ServedModelInput,
+    ServedEntityInput,
     ServedModelOutput,
+    ServedEntityOutput,
     ServingEndpointDetailed,
 )
 from databricks.sdk.service.ml import CreateExperimentResponse, ModelDatabricks, ModelTag
@@ -154,15 +155,15 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
                 )
         model_version = model_version or "1"
         tags = [EndpointTag(key="RemoveAfter", value=watchdog_remove_after)]
-        served_model_input = ServedModelInput(
-            model_name=model_name,
-            model_version=model_version,
+        served_entity_input = ServedEntityInput(
+            entity_name=model_name,
+            entity_version=model_version,
             scale_to_zero_enabled=True,
             workload_size="Small",
         )
         endpoint = ws.serving_endpoints.create(
             endpoint_name,
-            config=EndpointCoreConfigInput(served_models=[served_model_input]),
+            config=EndpointCoreConfigInput(name=endpoint_name, served_entities=[served_entity_input]),
             tags=tags,
         )
         if isinstance(endpoint, Mock):  # For testing
@@ -172,9 +173,17 @@ def make_serving_endpoint(ws, make_random, watchdog_remove_after):
                 scale_to_zero_enabled=True,
                 workload_size="Small",
             )
+            served_entity_output = ServedEntityOutput(
+                entity_name=model_name,
+                entity_version=model_version,
+                scale_to_zero_enabled=True,
+                workload_size="Small",
+            )
             endpoint = ServingEndpointDetailed(
                 name=endpoint_name,
-                pending_config=EndpointPendingConfig(served_models=[served_model_output]),
+                pending_config=EndpointPendingConfig(
+                    served_models=[served_model_output], served_entities=[served_entity_output]
+                ),
                 tags=tags,
             )
         return endpoint
