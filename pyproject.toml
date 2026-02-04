@@ -56,7 +56,6 @@ dependencies = [
 [project.entry-points.pytest11]
 databricks-labs-pytester = "databricks.labs.pytester.fixtures.plugin"
 
-
 [project.urls]
 Issues = "https://github.com/databrickslabs/pytester/issues"
 Source = "https://github.com/databrickslabs/pytester"
