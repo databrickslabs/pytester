@@ -490,6 +490,9 @@ Keyword Arguments:
 * `tasks` (list[Task], optional): A list of job tags. If not provided, a single task with a notebook task will be
    created, along with a disposable notebook. Latest Spark version and a single worker clusters will be used to run
    this ephemeral job.
+* `environments` (list[JobEnvironment], optional): A list of job environments to be used when running tasks on
+   serverless compute. Required for running Spark Python tasks using serverless. WHen running Databricks Notebook tasks
+   with serverless, the specified environments will override the notebook environment.
 
 Usage:
 ```python
