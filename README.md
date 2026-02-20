@@ -475,30 +475,30 @@ See also [`ws`](#ws-fixture).
 
 ### `make_job` fixture
 Create a Databricks job and clean it up after the test. Returns a function to create jobs, that returns
- a [`Job`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/jobs.html#databricks.sdk.service.jobs.Job) instance.
+a [`Job`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/jobs.html#databricks.sdk.service.jobs.Job) instance.
 
- Keyword Arguments:
- * `name` (str, optional): The name of the job. If not provided, a random name will be generated.
- * `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
- * [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
- * `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
- * `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `type[NotebookTask]` will be used.
- * `instance_pool_id` (str, optional): The instance pool id to add to the job cluster. If not provided, no instance pool will be used.
- * `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
- * `libraries` (list, optional): The list of libraries to install on the job.
- * `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
- * `tasks` (list[Task], optional): A list of job tags. If not provided, a single task with a notebook task will be
-    created, along with a disposable notebook. Latest Spark version and a single worker clusters will be used to run
-    this ephemeral job.
- * `environments` (list[JobEnvironment], optional): A list of job environments to be used when running tasks on
-    serverless compute. Required for running Spark Python tasks using serverless. WHen running Databricks Notebook tasks
-    with serverless, the specified environments will override the notebook environment.
+Keyword Arguments:
+* `name` (str, optional): The name of the job. If not provided, a random name will be generated.
+* `path` (str, optional): The path to the notebook or file used in the job. If not provided, a random notebook or file will be created
+* [DEPRECATED: Use `path` instead] `notebook_path` (str, optional): The path to the notebook. If not provided, a random notebook will be created.
+* `content` (str | bytes, optional): The content of the notebook or file used in the job. If not provided, default content of `make_notebook` will be used.
+* `task_type` (type[NotebookTask] | type[SparkPythonTask], optional): The type of task. If not provides, `type[NotebookTask]` will be used.
+* `instance_pool_id` (str, optional): The instance pool id to add to the job cluster. If not provided, no instance pool will be used.
+* `spark_conf` (dict, optional): The Spark configuration of the job. If not provided, Spark configuration is not explicitly set.
+* `libraries` (list, optional): The list of libraries to install on the job.
+* `tags` (list[str], optional): A list of job tags. If not provided, no additional tags will be set on the job.
+* `tasks` (list[Task], optional): A list of job tags. If not provided, a single task with a notebook task will be
+   created, along with a disposable notebook. Latest Spark version and a single worker clusters will be used to run
+   this ephemeral job.
+* `environments` (list[JobEnvironment], optional): A list of job environments to be used when running tasks on
+   serverless compute. Required for running Spark Python tasks using serverless. WHen running Databricks Notebook tasks
+   with serverless, the specified environments will override the notebook environment.
 
- Usage:
- ```python
- def test_job(make_job):
-     logger.info(f"created {make_job()}")
- ```
+Usage:
+```python
+def test_job(make_job):
+    logger.info(f"created {make_job()}")
+```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`make_notebook`](#make_notebook-fixture), [`make_workspace_file`](#make_workspace_file-fixture), [`watchdog_remove_after`](#watchdog_remove_after-fixture).
 
