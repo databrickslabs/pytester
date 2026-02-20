@@ -13,7 +13,7 @@ from databricks.sdk.service.compute import (
     CreateInstancePoolResponse,
     Library,
 )
-from databricks.sdk.service.jobs import Job, JobSettings, NotebookTask, SparkPythonTask, Task
+from databricks.sdk.service.jobs import Job, JobEnvironment, JobSettings, NotebookTask, SparkPythonTask, Task
 from databricks.sdk.service.pipelines import CreatePipelineResponse, PipelineLibrary, NotebookLibrary, PipelineCluster
 from databricks.sdk.service.sql import (
     CreateWarehouseRequestWarehouseType,
@@ -189,6 +189,9 @@ def make_job(
     * `tasks` (list[Task], optional): A list of job tags. If not provided, a single task with a notebook task will be
        created, along with a disposable notebook. Latest Spark version and a single worker clusters will be used to run
        this ephemeral job.
+    * `environments` (list[JobEnvironment], optional): A list of job environments to be used when running tasks on
+       serverless compute. Required for running Spark Python tasks using serverless. WHen running Databricks Notebook tasks
+       with serverless, the specified environments will override the notebook environment.
 
     Usage:
     ```python
@@ -209,6 +212,7 @@ def make_job(
         libraries: list[Library] | None = None,
         tags: dict[str, str] | None = None,
         tasks: list[Task] | None = None,
+        environments: list[JobEnvironment] | None = None,
     ) -> Job:
         if notebook_path is not None:
             warnings.warn(
@@ -250,11 +254,11 @@ def make_job(
                 path = path or make_notebook(content=content)
                 task.notebook_task = NotebookTask(notebook_path=str(path))
             tasks = [task]
-        response = ws.jobs.create(name=name, tasks=tasks, tags=tags)
+        response = ws.jobs.create(name=name, tasks=tasks, tags=tags, environments=environments)
         log_workspace_link(name, f"job/{response.job_id}", anchor=False)
         job = ws.jobs.get(response.job_id)
         if isinstance(response, Mock):  # For testing
-            job = Job(settings=JobSettings(name=name, tasks=tasks, tags=tags))
+            job = Job(settings=JobSettings(name=name, tasks=tasks, tags=tags, environments=environments))
         return job
 
     yield from factory("job", create, lambda item: ws.jobs.delete(item.job_id))

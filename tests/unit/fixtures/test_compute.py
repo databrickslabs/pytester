@@ -1,5 +1,6 @@
 from databricks.labs.blueprint.paths import WorkspacePath
-from databricks.sdk.service.jobs import SparkPythonTask
+from databricks.sdk.service.compute import Environment
+from databricks.sdk.service.jobs import JobEnvironment, SparkPythonTask
 
 from databricks.labs.pytester.fixtures.compute import (
     make_cluster_policy,
@@ -46,6 +47,8 @@ def test_make_job_no_args() -> None:
     assert tasks[0].new_cluster.spark_conf is None
     assert tasks[0].libraries is None
     assert tasks[0].timeout_seconds == 0
+    environments = job.settings.environments
+    assert environments is None
 
 
 def test_make_job_with_name() -> None:
@@ -114,6 +117,14 @@ def test_make_job_with_tasks() -> None:
     _, job = call_stateful(make_job, tasks=["CustomTasks"])
     assert job.settings is not None
     assert job.settings.tasks == ["CustomTasks"]
+
+
+def test_make_job_with_environment() -> None:
+    environment = Environment(environment_version="4")
+    job_environment = JobEnvironment(environment_key="job_environment", spec=environment)
+    _, job = call_stateful(make_job, environments=[job_environment])
+    assert job.settings.environments is not None
+    assert job.settings.environments[0] == job_environment
 
 
 def test_make_pipeline_no_args() -> None:
