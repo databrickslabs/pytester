@@ -24,7 +24,7 @@ env:
 
 jobs:
   integration:
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    if: github.event_name == 'pull_request'
     environment: account-admin
     runs-on: larger
     steps:
