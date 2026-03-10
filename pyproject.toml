@@ -68,7 +68,7 @@ path = "src/databricks/labs/pytester/__about__.py"
 dependencies = [
     "black~=24.3.0",
     "coverage[toml]~=7.4.4",
-    "mypy~=1.11.0",
+    "mypy~=1.19.1",
     "pylint~=3.2.2",
     "pylint-pytest==2.0.0a0",
     "databricks-labs-pylint~=0.4.0",
@@ -89,11 +89,11 @@ coverage    = "pytest -n auto --cov src tests/unit --timeout 30 --cov-report=htm
 integration = "pytest -n 10 --cov src tests/integration --durations 20"
 fmt         = ["black . --extend-exclude 'tests/unit/source_code/samples/'",
                "ruff check . --fix",
-               "mypy --disable-error-code 'annotation-unchecked' --disable-error-code import-untyped --enable-incomplete-feature=NewGenericSyntax --exclude 'tests/resources/*' --exclude dist .",
+               "mypy --disable-error-code 'annotation-unchecked' --disable-error-code import-untyped --exclude 'tests/resources/*' --exclude dist .",
                "pylint --output-format=colorized -j 0 src tests"]
 verify      = ["black --check . --extend-exclude 'tests/unit/source_code/samples/'",
                "ruff check .",
-               "mypy --exclude 'tests/resources/*' --exclude dist . --enable-incomplete-feature=NewGenericSyntax",
+               "mypy --exclude 'tests/resources/*' --exclude dist .",
                "pylint --output-format=colorized -j 0 src tests"]
 lint         = ["pylint --output-format=colorized -j 0 src tests"]
 
