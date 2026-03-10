@@ -84,6 +84,7 @@ dependencies = [
 path = ".venv"
 
 [tool.hatch.envs.default.env-vars]
+MYPY_CACHE_DIR = ".venv/mypy-cache"
 PYTEST_ADDOPTS = "-o cache_dir=.venv/pytest-cache"
 RUFF_CACHE_DIR = ".venv/ruff-cache"
 
