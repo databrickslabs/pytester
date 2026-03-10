@@ -36,6 +36,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Environment :: Console",
     "Framework :: Pytest",
@@ -115,6 +117,8 @@ matrix.python.path = [
     { value = ".venv-py3.10", if = ["3.10" ]},
     { value = ".venv-py3.11", if = ["3.11" ]},
     { value = ".venv-py3.12", if = ["3.12" ]},
+    { value = ".venv-py3.13", if = ["3.13" ]},
+    { value = ".venv-py3.14", if = ["3.14" ]}
 ]
 
 [[tool.hatch.envs.test.matrix]]
@@ -122,6 +126,8 @@ python = [
     "3.10",
     "3.11",
     "3.12",
+    "3.13",
+    "3.14",
 ]
 
 [tool.pytest.ini_options]
