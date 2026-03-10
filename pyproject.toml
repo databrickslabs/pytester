@@ -12,7 +12,7 @@ dynamic = ["version"]
 description = 'Python Testing for Databricks'
 readme = "README.md"
 license-files = { paths = ["LICENSE", "NOTICE"] }
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.15"
 keywords = ["Databricks", "pytest"]
 maintainers = [
     { name = "Serge Smertin", email = "serge.smertin@databricks.com" },
