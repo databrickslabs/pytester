@@ -44,6 +44,7 @@ jobs:
         with:
           cache: 'pip'
           cache-dependency-path: '**/pyproject.toml'
+          # Downstream currently just tests with system python rather than controlling the versions properly.
           python-version: '3.10'
 
       - name: Install toolchain
