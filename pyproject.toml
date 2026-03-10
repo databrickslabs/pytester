@@ -80,7 +80,9 @@ dependencies = [
     "databricks-connect~=15.4.3",
 ]
 
-# store virtual env as the child of this folder. Helps VSCode (and PyCharm) to run better
+python="3.10"
+
+# Fixed path expected by the `labs` tool to run acceptance tests.
 path = ".venv"
 
 [tool.hatch.envs.default.env-vars]
@@ -101,6 +103,26 @@ verify      = ["black --check . --extend-exclude 'tests/unit/source_code/samples
                "mypy --exclude 'tests/resources/*' --exclude dist .",
                "pylint --output-format=colorized -j 0 src tests"]
 lint         = ["pylint --output-format=colorized -j 0 src tests"]
+
+[tool.hatch.envs.test.env-vars]
+MYPY_CACHE_DIR = ".venv-py{matrix:python}/mypy-cache"
+PYTEST_ADDOPTS = "-o cache_dir=.venv-py{matrix:python}/pytest-cache"
+RUFF_CACHE_DIR = ".venv-py{matrix:python}/ruff-cache"
+
+[tool.hatch.envs.test.overrides]
+matrix.python.path = [
+    # Sadly no way to interpolate this.
+    { value = ".venv-py3.10", if = ["3.10" ]},
+    { value = ".venv-py3.11", if = ["3.11" ]},
+    { value = ".venv-py3.12", if = ["3.12" ]},
+]
+
+[[tool.hatch.envs.test.matrix]]
+python = [
+    "3.10",
+    "3.11",
+    "3.12",
+]
 
 [tool.pytest.ini_options]
 # TODO: remove `-p no:warnings`
