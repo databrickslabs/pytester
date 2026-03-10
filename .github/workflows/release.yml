@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+env:
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
+
 jobs:
   publish:
     runs-on:
@@ -27,7 +31,7 @@ jobs:
 
       - name: Build wheels
         run: |
-          pip install hatch==1.15.0
+          pip install "hatch==${HATCH_VERSION}"
           hatch build
 
       - name: Draft release

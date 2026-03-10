@@ -20,6 +20,10 @@ permissions:
   contents: read
   pull-requests: write
 
+env:
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
+
 jobs:
   compatibility:
     strategy:
@@ -44,7 +48,8 @@ jobs:
 
       - name: Install toolchain
         run: |
-          pip install hatch==1.15.0
+          pip install "hatch==${HATCH_VERSION}"
+
       - name: Downstreams
         uses: databrickslabs/sandbox/downstreams@acceptance/v0.4.2
         with:

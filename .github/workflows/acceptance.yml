@@ -18,6 +18,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
+
 jobs:
   integration:
     if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
@@ -37,7 +41,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install hatch
-        run: pip install hatch==1.15.0
+        run: pip install "hatch==${HATCH_VERSION}"
 
       - name: Fetch relevant branches
         run: |

@@ -15,7 +15,8 @@ on:
       - main
 
 env:
-  HATCH_VERSION: 1.15.0
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
 
 jobs:
   ci:
@@ -38,7 +39,7 @@ jobs:
           python-version: ${{ matrix.pyVersion }}
 
       - name: Install hatch
-        run: pip install hatch==$HATCH_VERSION
+        run: pip install "hatch==${HATCH_VERSION}"
 
       - name: Run unit tests
         run: hatch run test
@@ -64,7 +65,7 @@ jobs:
           python-version: 3.10.x
 
       - name: Install hatch
-        run: pip install hatch==$HATCH_VERSION
+        run: pip install "hatch==${HATCH_VERSION}"
 
       - name: Reformat code
         run: make fmt
