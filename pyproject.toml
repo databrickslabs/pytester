@@ -83,6 +83,10 @@ dependencies = [
 # store virtual env as the child of this folder. Helps VSCode (and PyCharm) to run better
 path = ".venv"
 
+[tool.hatch.envs.default.env-vars]
+PYTEST_ADDOPTS = "-o cache_dir=.venv/pytest-cache"
+RUFF_CACHE_DIR = ".venv/ruff-cache"
+
 [tool.hatch.envs.default.scripts]
 test        = "pytest -n 4 --cov src --cov-report=xml --timeout 30 tests/unit --durations 20"
 coverage    = "pytest -n auto --cov src tests/unit --timeout 30 --cov-report=html --durations 20"
@@ -100,7 +104,6 @@ lint         = ["pylint --output-format=colorized -j 0 src tests"]
 [tool.pytest.ini_options]
 # TODO: remove `-p no:warnings`
 addopts = "--no-header -p no:warnings"
-cache_dir = ".venv/pytest-cache"
 
 [tool.black]
 target-version = ["py310"]
@@ -108,7 +111,6 @@ line-length = 120
 skip-string-normalization = true
 
 [tool.ruff]
-cache-dir = ".venv/ruff-cache"
 target-version = "py310"
 line-length = 120
 
