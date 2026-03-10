@@ -52,7 +52,7 @@ def make_table(
     make_random,
     log_workspace_link,
     watchdog_remove_after,
-) -> Generator[Callable[..., TableInfo], None, None]:
+) -> Generator[Callable[..., TableInfo]]:
     """
     Create a table and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.TableInfo`.
 
@@ -245,7 +245,7 @@ def make_table(
 @fixture
 def make_schema(
     sql_backend, make_random, log_workspace_link, watchdog_remove_after
-) -> Generator[Callable[..., SchemaInfo], None, None]:
+) -> Generator[Callable[..., SchemaInfo]]:
     """
     Create a schema and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.SchemaInfo`.
 
@@ -286,9 +286,7 @@ def make_schema(
 
 
 @fixture
-def make_catalog(
-    ws, make_random, watchdog_remove_after, log_workspace_link
-) -> Generator[Callable[..., CatalogInfo], None, None]:
+def make_catalog(ws, make_random, watchdog_remove_after, log_workspace_link) -> Generator[Callable[..., CatalogInfo]]:
     """
     Create a catalog and return its info. Remove it after the test.
     Returns instance of `databricks.sdk.service.catalog.CatalogInfo`.
@@ -322,13 +320,7 @@ def make_catalog(
 
 
 @fixture
-def make_udf(
-    ws,
-    env_or_skip,
-    sql_backend,
-    make_schema,
-    make_random,
-) -> Generator[Callable[..., FunctionInfo], None, None]:
+def make_udf(ws, env_or_skip, sql_backend, make_schema, make_random) -> Generator[Callable[..., FunctionInfo]]:
     """
     Create a UDF and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.FunctionInfo`.
 
@@ -394,7 +386,7 @@ def make_udf(
 
 
 @fixture
-def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[..., StorageCredentialInfo], None, None]:
+def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[..., StorageCredentialInfo]]:
     """
     Create a storage credential and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.StorageCredentialInfo`.
 
@@ -449,9 +441,7 @@ def make_storage_credential(ws, watchdog_remove_after) -> Generator[Callable[...
 
 
 @fixture
-def make_volume(
-    ws, make_catalog, make_schema, make_random, log_workspace_link
-) -> Generator[Callable[..., VolumeInfo], None, None]:
+def make_volume(ws, make_catalog, make_schema, make_random, log_workspace_link) -> Generator[Callable[..., VolumeInfo]]:
     """
     Create a volume and return its info. Remove it after the test. Returns instance of `databricks.sdk.service.catalog.VolumeInfo`.
 

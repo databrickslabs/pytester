@@ -31,7 +31,7 @@ def make_cluster_policy(
     make_random,
     log_workspace_link,
     watchdog_purge_suffix,
-) -> Generator[Callable[..., CreatePolicyResponse], None, None]:
+) -> Generator[Callable[..., CreatePolicyResponse]]:
     """
     Create a Databricks cluster policy and clean it up after the test. Returns a function to create cluster policies,
     which returns `databricks.sdk.service.compute.CreatePolicyResponse` instance.
@@ -65,7 +65,7 @@ def make_cluster_policy(
 @fixture
 def make_cluster(
     ws, make_random, log_workspace_link, watchdog_remove_after
-) -> Generator[Callable[..., Wait[ClusterDetails]], None, None]:
+) -> Generator[Callable[..., Wait[ClusterDetails]]]:
     """
     Create a Databricks cluster, waits for it to start, and clean it up after the test.
     Returns a function to create clusters. You can get `cluster_id` attribute from the returned object.
@@ -129,7 +129,7 @@ def make_instance_pool(
     make_random,
     log_workspace_link,
     watchdog_remove_after,
-) -> Generator[Callable[..., CreateInstancePoolResponse], None, None]:
+) -> Generator[Callable[..., CreateInstancePoolResponse]]:
     """
     Create a Databricks instance pool and clean it up after the test. Returns a function to create instance pools.
     Use `instance_pool_id` attribute from the returned object to get an ID of the pool.
@@ -171,7 +171,7 @@ def make_job(
     make_workspace_file,
     log_workspace_link,
     watchdog_remove_after,
-) -> Generator[Callable[..., Job], None, None]:
+) -> Generator[Callable[..., Job]]:
     """
     Create a Databricks job and clean it up after the test. Returns a function to create jobs, that returns
     a `databricks.sdk.service.jobs.Job` instance.
@@ -271,7 +271,7 @@ def make_pipeline(
     make_notebook,
     watchdog_remove_after,
     watchdog_purge_suffix,
-) -> Generator[Callable[..., CreatePipelineResponse], None, None]:
+) -> Generator[Callable[..., CreatePipelineResponse]]:
     """
     Create Delta Live Table Pipeline and clean it up after the test. Returns a function to create pipelines.
     Results in a `databricks.sdk.service.pipelines.CreatePipelineResponse` instance.
@@ -315,9 +315,7 @@ def make_pipeline(
 
 
 @fixture
-def make_warehouse(
-    ws, make_random, watchdog_remove_after
-) -> Generator[Callable[..., Wait[GetWarehouseResponse]], None, None]:
+def make_warehouse(ws, make_random, watchdog_remove_after) -> Generator[Callable[..., Wait[GetWarehouseResponse]]]:
     """
     Create a Databricks warehouse and clean it up after the test. Returns a function to create warehouses.
 
