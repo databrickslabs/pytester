@@ -69,8 +69,8 @@ dependencies = [
     "black~=24.3.0",
     "coverage[toml]~=7.4.4",
     "mypy~=1.19.1",
-    "pylint~=3.2.2",
-    "pylint-pytest==2.0.0a0",
+    "pylint~=4.0.5",
+    "pylint-pytest==2.0.0a1",
     "databricks-labs-pylint~=0.4.0",
     "pytest-cov~=4.1.0",
     "pytest-mock~=3.14.0",
@@ -267,10 +267,6 @@ py-version = "3.10"
 # source root.
 # source-roots =
 
-# When enabled, pylint would attempt to guess common misconfiguration and emit
-# user-friendly hints instead of false-positive error messages.
-suggestion-mode = true
-
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
 # unsafe-load-any-extension =
@@ -443,6 +439,7 @@ bad-functions = ["map", "input"]
 
 # Maximum number of arguments for function / method.
 max-args = 9
+max-positional-arguments = 9
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes = 11
