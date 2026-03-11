@@ -38,7 +38,10 @@ jobs:
         with:
           cache: 'pip'
           cache-dependency-path: '**/pyproject.toml'
-          python-version: '3.14'
+          # The version under test, as well as Python 3.14 for Hatch.
+          python-version: |
+            ${{ matrix.python }}
+            ${{ matrix.python != '3.14' && '3.14' || '' }}
 
       - name: Install hatch
         run: pip install "hatch==${HATCH_VERSION}"
