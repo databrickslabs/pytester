@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 import pytest
 from databricks.sdk.errors import InvalidParameterValue
 from databricks.sdk.service import iam
@@ -8,6 +10,16 @@ from databricks.sdk.service.sql import PermissionLevel as RedashPermissionLevel
 from databricks.labs.pytester.fixtures.baseline import factory
 
 # pylint: disable=too-complex
+
+
+T = TypeVar("T")
+
+
+# TODO: Move this somewhere more useful.
+def _not_none(value: T | None, *, msg: str = "missing value") -> T:
+    if value is None:
+        raise ValueError(msg)
+    return value
 
 
 class _PermissionsChange:
@@ -24,8 +36,10 @@ class _PermissionsChange:
             return f"group_name {acr.group_name}"
         return f"service_principal_name {acr.service_principal_name}"
 
-    def _list(self, acl: list[iam.AccessControlRequest]):
-        return ", ".join(f"{self._principal(_)} {_.permission_level.value}" for _ in acl)
+    def _list(self, acl: list[iam.AccessControlRequest]) -> str:
+        return ", ".join(
+            f"{self._principal(_)} {_not_none(_.permission_level, msg='missing permission level').value}" for _ in acl
+        )
 
     def __repr__(self):
         return f"{self.object_id} [{self._list(self.before)}] -> [{self._list(self.after)}]"
@@ -44,7 +58,9 @@ class _RedashPermissionsChange:
         return f"group_name {acr.group_name}"
 
     def _list(self, acl: list[AccessControl]):
-        return ", ".join(f"{self._principal(_)} {_.permission_level.value}" for _ in acl)
+        return ", ".join(
+            f"{self._principal(_)} {_not_none(_.permission_level, msg='missing permission level').value}" for _ in acl
+        )
 
     def __repr__(self):
         return f"{self.object_id} [{self._list(self.before)}] -> [{self._list(self.after)}]"

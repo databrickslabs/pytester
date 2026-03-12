@@ -20,6 +20,10 @@ permissions:
   contents: read
   pull-requests: write
 
+env:
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
+
 jobs:
   compatibility:
     strategy:
@@ -31,20 +35,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           cache: 'pip'
           cache-dependency-path: '**/pyproject.toml'
+          # Downstream currently just tests with system python rather than controlling the versions properly.
           python-version: '3.10'
 
       - name: Install toolchain
         run: |
-          pip install hatch==1.15.0
+          pip install "hatch==${HATCH_VERSION}"
+
       - name: Downstreams
         uses: databrickslabs/sandbox/downstreams@acceptance/v0.4.2
         with:

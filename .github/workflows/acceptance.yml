@@ -2,7 +2,7 @@ name: acceptance
 
 on:
   pull_request:
-    types: [ opened, synchronize, ready_for_review ]
+    types: [ opened, synchronize ]
   merge_group:
     types: [ checks_requested ]
   push:
@@ -18,26 +18,30 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
+
 jobs:
   integration:
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    if: github.event_name == 'pull_request'
     environment: account-admin
     runs-on: larger
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           cache: 'pip'
           cache-dependency-path: '**/pyproject.toml'
-          python-version: '3.10'
+          python-version: '3.14'
 
       - name: Install hatch
-        run: pip install hatch==1.15.0
+        run: pip install "hatch==${HATCH_VERSION}"
 
       - name: Fetch relevant branches
         run: |

@@ -15,7 +15,8 @@ on:
       - main
 
 env:
-  HATCH_VERSION: 1.15.0
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
 
 jobs:
   ci:
@@ -23,25 +24,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pyVersion: [ '3.10', '3.11', '3.12' ]
+        python: [ '3.10', '3.11', '3.12', '3.13', '3.14' ]
+    env:
+      HATCH_ENV: "test.py${{ matrix.python }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           cache: 'pip'
           cache-dependency-path: '**/pyproject.toml'
-          python-version: ${{ matrix.pyVersion }}
+          # The version under test, as well as Python 3.14 for Hatch.
+          python-version: |
+            ${{ matrix.python }}
+            ${{ matrix.python != '3.14' && '3.14' || '' }}
 
       - name: Install hatch
-        run: pip install hatch==$HATCH_VERSION
+        run: pip install "hatch==${HATCH_VERSION}"
 
       - name: Run unit tests
-        run: hatch run test
+        run: make test
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v5
@@ -52,19 +58,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           cache: 'pip'
           cache-dependency-path: '**/pyproject.toml'
-          python-version: 3.10.x
+          python-version: '3.14'
 
       - name: Install hatch
-        run: pip install hatch==$HATCH_VERSION
+        run: pip install "hatch==${HATCH_VERSION}"
 
       - name: Reformat code
         run: make fmt

@@ -18,7 +18,7 @@ _DEFAULT_ENCODING = sys.getdefaultencoding()
 
 
 @fixture
-def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
+def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath]]:
     """
     Returns a function to create Databricks Notebooks and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -75,7 +75,7 @@ def make_notebook(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[
 
 
 @fixture
-def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath], None, None]:
+def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath]]:
     """
     Returns a function to create Databricks workspace file and clean up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -136,9 +136,7 @@ def make_workspace_file(ws, make_random, watchdog_purge_suffix) -> Generator[Cal
 
 
 @fixture
-def make_directory(
-    ws: WorkspaceClient, make_random, watchdog_purge_suffix
-) -> Generator[Callable[..., WorkspacePath], None, None]:
+def make_directory(ws: WorkspaceClient, make_random, watchdog_purge_suffix) -> Generator[Callable[..., WorkspacePath]]:
     """
     Returns a function to create Databricks Workspace Folders and clean them up after the test.
     The function returns [`os.PathLike` object](https://github.com/databrickslabs/blueprint?tab=readme-ov-file#python-native-pathlibpath-like-interfaces).
@@ -169,7 +167,7 @@ def make_directory(
 
 
 @fixture
-def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., RepoInfo], None, None]:
+def make_repo(ws, make_random, watchdog_purge_suffix) -> Generator[Callable[..., RepoInfo]]:
     """
     Returns a function to create Databricks Repos and clean them up after the test.
     The function returns a `databricks.sdk.service.workspace.RepoInfo` object.

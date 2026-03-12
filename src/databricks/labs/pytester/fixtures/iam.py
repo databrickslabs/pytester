@@ -157,7 +157,7 @@ def _wait_group_provisioned(interface: AccountGroupsAPI | GroupsAPI, group: Grou
 
 def _make_group(
     name: str, cfg: Config, interface, make_random, watchdog_purge_suffix
-) -> Generator[Callable[..., Group], None, None]:
+) -> Generator[Callable[..., Group]]:
     _not_specified = object()
 
     @retried(on=[ResourceConflict], timeout=timedelta(seconds=30))

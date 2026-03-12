@@ -1,5 +1,6 @@
 .idea/
 .venv/
+.venv-*/
 *.iml
 *.pyc
 .pytest_cache

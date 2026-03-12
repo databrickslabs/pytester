@@ -29,7 +29,7 @@ def make_experiment(
     make_directory,
     log_workspace_link,
     watchdog_purge_suffix,
-) -> Generator[Callable[..., CreateExperimentResponse], None, None]:
+) -> Generator[Callable[..., CreateExperimentResponse]]:
     """
     Returns a function to create Databricks Experiments and clean them up after the test.
     The function returns a `databricks.sdk.service.ml.CreateExperimentResponse` object.
@@ -71,7 +71,7 @@ def make_experiment(
 
 
 @fixture
-def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[..., ModelDatabricks], None, None]:
+def make_model(ws, make_random, watchdog_remove_after) -> Generator[Callable[..., ModelDatabricks]]:
     """
     Returns a function to create Databricks Models and clean them up after the test.
     The function returns a `databricks.sdk.service.ml.GetModelResponse` object.

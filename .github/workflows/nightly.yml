@@ -14,25 +14,29 @@ permissions:
 concurrency:
   group: single-acceptance-job-per-repo
 
+env:
+  HATCH_VERBOSE: "2"
+  HATCH_VERSION: "1.16.5"
+
 jobs:
   integration:
     environment: account-admin
     runs-on: larger
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           cache: 'pip'
           cache-dependency-path: '**/pyproject.toml'
-          python-version: '3.10'
+          python-version: '3.14'
 
       - name: Install hatch
-        run: pip install hatch==1.15.0
+        run: pip install "hatch==${HATCH_VERSION}"
 
       - name: Run nightly tests
         uses: databrickslabs/sandbox/acceptance@acceptance/v0.4.2

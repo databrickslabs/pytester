@@ -12,7 +12,7 @@ dynamic = ["version"]
 description = 'Python Testing for Databricks'
 readme = "README.md"
 license-files = { paths = ["LICENSE", "NOTICE"] }
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.15"
 keywords = ["Databricks", "pytest"]
 maintainers = [
     { name = "Serge Smertin", email = "serge.smertin@databricks.com" },
@@ -36,6 +36,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Environment :: Console",
     "Framework :: Pytest",
@@ -50,7 +52,7 @@ classifiers = [
 dependencies = [
     "databricks-sdk>=0.51.0,<1.0",
     "databricks-labs-lsql>=0.10",
-    "pytest>=8.3",
+    "pytest>=9.0",
 ]
 
 [project.entry-points.pytest11]
@@ -67,21 +69,28 @@ path = "src/databricks/labs/pytester/__about__.py"
 [tool.hatch.envs.default]
 dependencies = [
     "black~=24.3.0",
-    "coverage[toml]~=7.4.4",
-    "mypy~=1.11.0",
-    "pylint~=3.2.2",
-    "pylint-pytest==2.0.0a0",
+    "coverage[toml]~=7.13.4",
+    "mypy~=1.19.1",
+    "pylint~=4.0.5",
+    "pylint-pytest==2.0.0a1",
     "databricks-labs-pylint~=0.4.0",
-    "pytest-cov~=4.1.0",
-    "pytest-mock~=3.14.0",
-    "pytest-timeout~=2.3.1",
-    "pytest-xdist~=3.5.0",
+    "pytest-cov~=7.0.0",
+    "pytest-mock~=3.15.1",
+    "pytest-timeout~=2.4.0",
+    "pytest-xdist~=3.8.0",
     "ruff~=0.3.4",
     "databricks-connect~=15.4.3",
 ]
 
-# store virtual env as the child of this folder. Helps VSCode (and PyCharm) to run better
+python="3.10"
+
+# Fixed path expected by the `labs` tool to run acceptance tests.
 path = ".venv"
+
+[tool.hatch.envs.default.env-vars]
+MYPY_CACHE_DIR = ".venv/mypy-cache"
+PYTEST_ADDOPTS = "-o cache_dir=.venv/pytest-cache"
+RUFF_CACHE_DIR = ".venv/ruff-cache"
 
 [tool.hatch.envs.default.scripts]
 test        = "pytest -n 4 --cov src --cov-report=xml --timeout 30 tests/unit --durations 20"
@@ -89,18 +98,41 @@ coverage    = "pytest -n auto --cov src tests/unit --timeout 30 --cov-report=htm
 integration = "pytest -n 10 --cov src tests/integration --durations 20"
 fmt         = ["black . --extend-exclude 'tests/unit/source_code/samples/'",
                "ruff check . --fix",
-               "mypy --disable-error-code 'annotation-unchecked' --disable-error-code import-untyped --enable-incomplete-feature=NewGenericSyntax --exclude 'tests/resources/*' --exclude dist .",
+               "mypy --disable-error-code 'annotation-unchecked' --disable-error-code import-untyped --exclude 'tests/resources/*' --exclude dist .",
                "pylint --output-format=colorized -j 0 src tests"]
 verify      = ["black --check . --extend-exclude 'tests/unit/source_code/samples/'",
                "ruff check .",
-               "mypy --exclude 'tests/resources/*' --exclude dist . --enable-incomplete-feature=NewGenericSyntax",
+               "mypy --exclude 'tests/resources/*' --exclude dist .",
                "pylint --output-format=colorized -j 0 src tests"]
 lint         = ["pylint --output-format=colorized -j 0 src tests"]
+
+[tool.hatch.envs.test.env-vars]
+MYPY_CACHE_DIR = ".venv-py{matrix:python}/mypy-cache"
+PYTEST_ADDOPTS = "-o cache_dir=.venv-py{matrix:python}/pytest-cache"
+RUFF_CACHE_DIR = ".venv-py{matrix:python}/ruff-cache"
+
+[tool.hatch.envs.test.overrides]
+matrix.python.path = [
+    # Sadly no way to interpolate this.
+    { value = ".venv-py3.10", if = ["3.10" ]},
+    { value = ".venv-py3.11", if = ["3.11" ]},
+    { value = ".venv-py3.12", if = ["3.12" ]},
+    { value = ".venv-py3.13", if = ["3.13" ]},
+    { value = ".venv-py3.14", if = ["3.14" ]}
+]
+
+[[tool.hatch.envs.test.matrix]]
+python = [
+    "3.10",
+    "3.11",
+    "3.12",
+    "3.13",
+    "3.14",
+]
 
 [tool.pytest.ini_options]
 # TODO: remove `-p no:warnings`
 addopts = "--no-header -p no:warnings"
-cache_dir = ".venv/pytest-cache"
 
 [tool.black]
 target-version = ["py310"]
@@ -108,7 +140,6 @@ line-length = 120
 skip-string-normalization = true
 
 [tool.ruff]
-cache-dir = ".venv/ruff-cache"
 target-version = "py310"
 line-length = 120
 
@@ -266,10 +297,6 @@ py-version = "3.10"
 # directory used to determine a package namespace for modules located under the
 # source root.
 # source-roots =
-
-# When enabled, pylint would attempt to guess common misconfiguration and emit
-# user-friendly hints instead of false-positive error messages.
-suggestion-mode = true
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
@@ -443,6 +470,7 @@ bad-functions = ["map", "input"]
 
 # Maximum number of arguments for function / method.
 max-args = 9
+max-positional-arguments = 9
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes = 11

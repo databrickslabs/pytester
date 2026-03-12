@@ -60,11 +60,7 @@ def make_random():
 T = TypeVar("T")
 
 
-def factory(
-    name: str,
-    create: Callable[..., T],
-    remove: Callable[[T], None],
-) -> Generator[Callable[..., T], None, None]:
+def factory(name: str, create: Callable[..., T], remove: Callable[[T], None]) -> Generator[Callable[..., T]]:
     """
     Factory function for creating fixtures.
 

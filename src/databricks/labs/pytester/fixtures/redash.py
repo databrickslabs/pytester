@@ -14,7 +14,7 @@ def make_query(
     make_random,
     log_workspace_link,
     watchdog_remove_after,
-) -> Generator[Callable[..., LegacyQuery], None, None]:
+) -> Generator[Callable[..., LegacyQuery]]:
     """
     Create a query and remove it after the test is done. Returns the `databricks.sdk.service.sql.LegacyQuery` object.
 
