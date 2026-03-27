@@ -52,7 +52,7 @@ jobs:
           pip install "hatch==${HATCH_VERSION}"
 
       - name: Downstreams
-        uses: databrickslabs/sandbox/downstreams@acceptance/v0.4.2
+        uses: databrickslabs/sandbox/downstreams@4424e7ec0f355a58778fdd67bc6435bc5291f52c  # downstreams/v0.0.1
         with:
           repo: ${{ matrix.downstream.name }}
           org: databrickslabs
