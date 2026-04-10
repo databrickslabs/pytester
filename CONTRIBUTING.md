@@ -17,7 +17,6 @@
   * [Local Setup](#local-setup)
   * [First contribution](#first-contribution)
   * [Troubleshooting](#troubleshooting)
-    * [Environment Issues](#environment-issues)
 <!-- TOC -->
 
 ## First Principles
@@ -225,35 +224,32 @@ def test_something(ws):
 
 This section provides a step-by-step guide to set up and start working on the project. These steps will help you set up your project environment and dependencies for efficient development.
 
-To begin, install [Hatch](https://github.com/pypa/hatch), which is our build tool.
+To begin, install [uv](https://docs.astral.sh/uv/), which is our project and package manager.
 
-On MacOSX, this is achieved using the following:
+On MacOS, this is achieved using the following:
 ```shell
-brew install hatch
+brew install uv
 ```
 
-The clone the github repo, and `cd` into it.
+Then clone the github repo, and `cd` into it.
 
-To begin, run `make dev` to create the default environment and install development dependencies.
+Run `make dev` to create the default environment and install development dependencies.
 
 ```shell
 make dev
 ```
 
-To use different python version, specify it in `HATCH_PYTHON` variable:
+To use a different python version, specify it in the `UV_PYTHON` variable:
 ```shell
-HATCH_PYTHON=$(which python3.10) make clean dev test
+UV_PYTHON=3.12 make clean dev test
 ```
 
-Configure your IDE to use `.venv/bin/python` from the virtual environment when developing the project:
-![IDE Setup](docs/hatch-intellij.gif)
-
+Configure your IDE to use `.venv/bin/python` from the virtual environment when developing the project.
 
 Verify installation with
 ```shell
 make test
 ```
-
 
 Before every commit, apply the consistent styleguide and formatting of the code, as we want our codebase to look consistent. Consult the [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html) if you have any doubts. Make sure to run the tests.
 ```shell
@@ -284,81 +280,4 @@ Here are the example steps to submit your first contribution:
 
 ## Troubleshooting
 
-If you encounter any package dependency errors after `git pull`, run `make clean`
-
-### Environment Issues
-
-Sometimes, when dependencies are updated via `dependabot` for example, the environment may report the following error:
-
-```sh
-...
-ERROR: Cannot install databricks-labs-ucx[test]==0.0.3 and databricks-sdk~=0.8.0 because these package versions have conflicting dependencies.
-ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/en/latest/topics/dependency-resolution/#dealing-with-dependency-conflicts
-```
-
-The easiest fix is to remove the environment and have the re-run recreate it:
-
-```sh
-$ hatch env show
-                                 Standalone
-┏━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
-┃ Name        ┃ Type    ┃ Dependencies                   ┃ Scripts         ┃
-┡━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│ default     │ virtual │                                │                 │
-├─────────────┼─────────┼────────────────────────────────┼─────────────────┤
-│ unit        │ virtual │ databricks-labs-ucx[test]      │ test            │
-│             │         │ delta-spark<3.0.0,>=2.4.0      │ test-cov-report │
-│             │         │ pyspark<=3.5.0,>=3.4.0         │                 │
-├─────────────┼─────────┼────────────────────────────────┼─────────────────┤
-│ integration │ virtual │ databricks-labs-ucx[dbconnect] │ test            │
-│             │         │ databricks-labs-ucx[test]      │                 │
-│             │         │ delta-spark<3.0.0,>=2.4.0      │                 │
-├─────────────┼─────────┼────────────────────────────────┼─────────────────┤
-│ lint        │ virtual │ black>=23.1.0                  │ fmt             │
-│             │         │ isort>=2.5.0                   │ verify          │
-│             │         │ ruff>=0.0.243                  │                 │
-└─────────────┴─────────┴────────────────────────────────┴─────────────────┘
-
-$ make clean dev test
-========================================================================================== test session starts ===========================================================================================
-platform darwin -- Python 3.11.4, pytest-7.4.1, pluggy-1.3.0 -- /Users/lars.george/Library/Application Support/hatch/env/virtual/databricks-labs-ucx/H6b8Oom-/unit/bin/python
-cachedir: .pytest_cache
-rootdir: /Users/lars.george/projects/work/databricks/ucx
-configfile: pyproject.toml
-plugins: cov-4.1.0, mock-3.11.1
-collected 103 items
-
-tests/unit/test_config.py::test_initialization PASSED
-tests/unit/test_config.py::test_reader PASSED
-...
-tests/unit/test_tables.py::test_uc_sql[table1-CREATE VIEW IF NOT EXISTS new_catalog.db.view AS SELECT * FROM table;] PASSED
-tests/unit/test_tables.py::test_uc_sql[table2-CREATE TABLE IF NOT EXISTS new_catalog.db.external_table LIKE catalog.db.external_table COPY LOCATION;ALTER TABLE catalog.db.external_table SET TBLPROPERTIES ('upgraded_to' = 'new_catalog.db.external_table');] PASSED
-
----------- coverage: platform darwin, python 3.11.4-final-0 ----------
-Coverage HTML written to dir htmlcov
-
-========================================================================================== 103 passed in 12.61s ==========================================================================================
-$
-```
-
-Sometimes, when multiple Python versions are installed in the workstation used for UCX development, one might encounter the following:
-
-```sh
-$ make dev
-ERROR: Environment `default` is incompatible: cannot locate Python: 3.10
-```
-
-The easiest fix is to reinstall Python 3.10. If required remove the installed hatch package manager and reinstall it:
-
-```sh
-$ deactivate
-$ brew install python@3.10
-$ rm -rf venv
-$ pip3 uninstall hatch
-$ python3.10 -m pip install hatch
-$ make dev
-$ make test
-```
-Note: Before performing a clean installation, deactivate the virtual environment and follow the commands given above.
-
-Note: The initial `hatch env show` is just to list the environments managed by Hatch and is not needed.
+If you encounter any package dependency errors after `git pull`, run `make clean dev` to recreate the environment from scratch.

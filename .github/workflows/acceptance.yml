@@ -10,38 +10,38 @@ on:
       - main
 
 permissions:
-  id-token: write
   contents: read
-  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  HATCH_VERBOSE: "2"
-  HATCH_VERSION: "1.16.5"
-
 jobs:
   integration:
     if: github.event_name == 'pull_request'
     environment: account-admin
-    runs-on: larger
+    permissions:
+      # Access to the integration testing infrastructure.
+      id-token: write
+      # Write test results to the PR.
+      pull-requests: write
+    runs-on:
+      group: larger-runners
+      labels: larger
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0
 
-      - name: Install Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - name: Setup uv
+        uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098  # v7.3.1
         with:
-          cache: 'pip'
-          cache-dependency-path: '**/pyproject.toml'
-          python-version: '3.14'
+          version: "0.11.2"
+          checksum: "7ac2ca0449c8d68dae9b99e635cd3bc9b22a4cb1de64b7c43716398447d42981"
 
-      - name: Install hatch
-        run: pip install "hatch==${HATCH_VERSION}"
+      - name: Setup for JFrog
+        uses: ./.github/actions/jfrog-auth
 
       - name: Fetch relevant branches
         run: |
