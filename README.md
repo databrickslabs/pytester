@@ -85,9 +85,7 @@ also install it directly from the command line:
 pip install databricks-labs-pytester
 ```
 
-If you use `hatch` as a build system, make sure to add `databricks-labs-pytester` as
-a test-time dependency and not as a compile-time dependency, otherwise your wheels will
-transitively depend on `pytest`, which is not usually something you need.
+Make sure to add `databricks-labs-pytester` as a test-time dependency and not as a compile-time dependency, otherwise your wheels will transitively depend on `pytest`, which is not usually something you need.
 
 ```toml
 [project]
@@ -98,25 +96,13 @@ dependencies = [
   # ... dependencies required for your code to execute
 ]
 
-[tool.hatch.envs.default]
-dependencies = [
-  # ... dependencies required to test/validate/format your code:
-    "black~=24.3.0",
-    "coverage[toml]~=7.4.4",
-    "mypy~=1.9.0",
-    "pylint~=3.2.2",
-    "pylint-pytest==2.0.0a0",
-    "databricks-labs-pylint~=0.4.0",
-    "databricks-labs-pytester~=0.2", # <= this library
-    "pytest~=8.3.3",
-    "pytest-cov~=4.1.0",
-    "pytest-mock~=3.14.0",
-    "pytest-timeout~=2.3.1",
-    "pytest-xdist~=3.5.0",
-    "python-lsp-server>=1.9.0",
-    "ruff~=0.3.4",
-    "types-PyYAML~=6.0.12",
-    "types-requests~=2.31.0",
+[dependency-groups]
+test = [
+    "databricks-labs-pytester~=0.7", # <= this library
+    "pytest-cov~=7.0.0",
+    "pytest-mock~=3.15.1",
+    "pytest-timeout~=2.4.0",
+    "pytest-xdist~=3.8.0",
 ]
 ```
 

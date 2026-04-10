@@ -51,8 +51,8 @@ classifiers = [
 
 dependencies = [
     "databricks-sdk>=0.51.0,<1.0",
-    "databricks-labs-lsql>=0.10",
-    "pytest>=9.0",
+    "databricks-labs-lsql>=0.17.0",
+    "pytest~=9.0.2",
 ]
 
 [project.entry-points.pytest11]
@@ -66,69 +66,33 @@ Source = "https://github.com/databrickslabs/pytester"
 [tool.hatch.version]
 path = "src/databricks/labs/pytester/__about__.py"
 
-[tool.hatch.envs.default]
-dependencies = [
+[dependency-groups]
+dev = [
+    { include-group = "lint" },
+    { include-group = "test" },
+    "databricks-connect~=15.4.3",
+]
+lint = [
     "black~=24.3.0",
-    "coverage[toml]~=7.13.4",
     "mypy~=1.19.1",
     "pylint~=4.0.5",
     "pylint-pytest==2.0.0a1",
     "databricks-labs-pylint~=0.4.0",
+    "ruff~=0.3.4",
+]
+test = [
+    "coverage[toml]~=7.13.4",
     "pytest-cov~=7.0.0",
     "pytest-mock~=3.15.1",
     "pytest-timeout~=2.4.0",
     "pytest-xdist~=3.8.0",
-    "ruff~=0.3.4",
-    "databricks-connect~=15.4.3",
+]
+yq = [
+    "yq~=3.4.3",
 ]
 
-python="3.10"
-
-# Fixed path expected by the `labs` tool to run acceptance tests.
-path = ".venv"
-
-[tool.hatch.envs.default.env-vars]
-MYPY_CACHE_DIR = ".venv/mypy-cache"
-PYTEST_ADDOPTS = "-o cache_dir=.venv/pytest-cache"
-RUFF_CACHE_DIR = ".venv/ruff-cache"
-
-[tool.hatch.envs.default.scripts]
-test        = "pytest -n 4 --cov src --cov-report=xml --timeout 30 tests/unit --durations 20"
-coverage    = "pytest -n auto --cov src tests/unit --timeout 30 --cov-report=html --durations 20"
-integration = "pytest -n 10 --cov src tests/integration --durations 20"
-fmt         = ["black . --extend-exclude 'tests/unit/source_code/samples/'",
-               "ruff check . --fix",
-               "mypy --disable-error-code 'annotation-unchecked' --disable-error-code import-untyped --exclude 'tests/resources/*' --exclude dist .",
-               "pylint --output-format=colorized -j 0 src tests"]
-verify      = ["black --check . --extend-exclude 'tests/unit/source_code/samples/'",
-               "ruff check .",
-               "mypy --exclude 'tests/resources/*' --exclude dist .",
-               "pylint --output-format=colorized -j 0 src tests"]
-lint         = ["pylint --output-format=colorized -j 0 src tests"]
-
-[tool.hatch.envs.test.env-vars]
-MYPY_CACHE_DIR = ".venv-py{matrix:python}/mypy-cache"
-PYTEST_ADDOPTS = "-o cache_dir=.venv-py{matrix:python}/pytest-cache"
-RUFF_CACHE_DIR = ".venv-py{matrix:python}/ruff-cache"
-
-[tool.hatch.envs.test.overrides]
-matrix.python.path = [
-    # Sadly no way to interpolate this.
-    { value = ".venv-py3.10", if = ["3.10" ]},
-    { value = ".venv-py3.11", if = ["3.11" ]},
-    { value = ".venv-py3.12", if = ["3.12" ]},
-    { value = ".venv-py3.13", if = ["3.13" ]},
-    { value = ".venv-py3.14", if = ["3.14" ]}
-]
-
-[[tool.hatch.envs.test.matrix]]
-python = [
-    "3.10",
-    "3.11",
-    "3.12",
-    "3.13",
-    "3.14",
-]
+[tool.uv]
+required-version = "~= 0.11.0"
 
 [tool.pytest.ini_options]
 # TODO: remove `-p no:warnings`

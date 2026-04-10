@@ -16,45 +16,44 @@ on:
       - main
 
 permissions:
-  id-token: write
   contents: read
-  pull-requests: write
-
-env:
-  HATCH_VERBOSE: "2"
-  HATCH_VERSION: "1.16.5"
 
 jobs:
   compatibility:
+    permissions:
+      # Access to the integration testing infrastructure.
+      id-token: write
+      # Write test results to the PR.
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
         downstream:
           - name: ucx
           - name: remorph
-    runs-on: ubuntu-latest
+    runs-on:
+      group: databrickslabs-protected-runner-group
+      labels: linux-ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0
 
-      - name: Install Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - name: Setup uv
+        uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098  # v7.3.1
         with:
-          cache: 'pip'
-          cache-dependency-path: '**/pyproject.toml'
-          # Downstream currently just tests with system python rather than controlling the versions properly.
-          python-version: '3.10'
+          version: "0.11.2"
+          checksum: "7ac2ca0449c8d68dae9b99e635cd3bc9b22a4cb1de64b7c43716398447d42981"
 
-      - name: Install toolchain
-        run: |
-          pip install "hatch==${HATCH_VERSION}"
+      - name: Setup for JFrog
+        uses: ./.github/actions/jfrog-auth
 
       - name: Downstreams
-        uses: databrickslabs/sandbox/downstreams@3313d06ce86227537b3f37f5974f7eecb2a8e59a  # acceptance/v0.4.4  # downstreams/v0.0.1
-        with:
-          repo: ${{ matrix.downstream.name }}
-          org: databrickslabs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '::error::%s\n' "Downstream tests disabled pending repository lockdown."
+        #uses: databrickslabs/sandbox/downstreams@3313d06ce86227537b3f37f5974f7eecb2a8e59a  # acceptance/v0.4.4  # downstreams/v0.0.1
+        #with:
+        #  repo: ${{ matrix.downstream.name }}
+        #  org: databrickslabs
+        #env:
+        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
