@@ -600,7 +600,7 @@ test = [
     { name = "pytest-timeout", specifier = "~=2.4.0" },
     { name = "pytest-xdist", specifier = "~=3.8.0" },
 ]
-yq = [{ name = "yq" }]
+yq = [{ name = "yq", specifier = "~=3.4.3" }]
 
 [[package]]
 name = "databricks-sdk"
