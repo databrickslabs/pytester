@@ -18,6 +18,17 @@ def test_cluster(make_cluster, env_or_skip):
     logger.info(f"created {make_cluster(single_node=True, instance_pool_id=env_or_skip('TEST_INSTANCE_POOL_ID'))}")
 
 
+def test_cluster_custom_tags(make_cluster, env_or_skip):
+    cluster = make_cluster(
+        single_node=True,
+        instance_pool_id=env_or_skip('TEST_INSTANCE_POOL_ID'),
+        tags=[EndpointTagPair(key='my-custom-tag', value='my-custom-tag-value')],
+    )
+    cluster_tags = cluster.tags.as_dict()
+    assert isinstance(cluster_tags, dict)
+    assert cluster_tags["custom_tags"][1]["key"] == "my-custom-tag"
+
+
 def test_instance_pool(make_instance_pool):
     logger.info(f"created {make_instance_pool()}")
 
