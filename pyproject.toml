@@ -1,11 +1,3 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build]
-sources = ["src"]
-include = ["src"]
-
 [project]
 name = "databricks-labs-pytester"
 dynamic = ["version"]
@@ -58,13 +50,13 @@ dependencies = [
 [project.entry-points.pytest11]
 databricks-labs-pytester = "databricks.labs.pytester.fixtures.plugin"
 
-
 [project.urls]
 Issues = "https://github.com/databrickslabs/pytester/issues"
 Source = "https://github.com/databrickslabs/pytester"
 
-[tool.hatch.version]
-path = "src/databricks/labs/pytester/__about__.py"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
@@ -90,6 +82,24 @@ test = [
 yq = [
     "yq~=3.4.3",
 ]
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "/.build-constraints.txt",
+    "/README.*",
+    "/LICEN[CS]E",
+    "/NOTICE",
+    "/pyproject.toml",
+    "/src/",
+    "/tests/",
+    "/uv.lock",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/databricks"]
+
+[tool.hatch.version]
+path = "src/databricks/labs/pytester/__about__.py"
 
 [tool.uv]
 required-version = "~= 0.11.0"
