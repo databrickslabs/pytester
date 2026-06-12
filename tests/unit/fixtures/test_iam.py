@@ -17,7 +17,7 @@ def test_make_user_no_args() -> None:
     ctx['ws'].users.delete.assert_called_once()
 
 
-def test_make_run_as_no_args(suspend_config_host_metadata_lookup: None) -> None:
+def test_make_run_as_no_args(no_config_host_metadata_lookup: None) -> None:
     ctx, run_as = call_stateful(make_run_as)
     assert ctx is not None
     assert run_as is not None
