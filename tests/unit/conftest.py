@@ -14,7 +14,4 @@ def no_config_host_metadata_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
     patches over that lookup to ensure it doesn't get in the way of our tests.
     """
 
-    def _fake_resolve_host_metadata(_self) -> None:
-        return
-
-    monkeypatch.setattr(Config, "_resolve_host_metadata", _fake_resolve_host_metadata)
+    monkeypatch.setattr(Config, "_resolve_host_metadata", lambda _: None)
