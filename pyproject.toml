@@ -55,7 +55,9 @@ Issues = "https://github.com/databrickslabs/pytester/issues"
 Source = "https://github.com/databrickslabs/pytester"
 
 [build-system]
-requires = ["hatchling"]
+requires = [
+    "hatchling~=1.30.1"
+]
 build-backend = "hatchling.build"
 
 [dependency-groups]
