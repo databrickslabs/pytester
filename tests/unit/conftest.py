@@ -6,7 +6,7 @@ pytest_plugins = ['pytester']
 
 
 @pytest.fixture
-def no_config_host_metadata_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
+def db_config_no_side_effect(monkeypatch: pytest.MonkeyPatch) -> None:
     """Suspend host metadata lookups from the SDKs Config class.
 
     As of version 0.102.0 of the Databricks SDK, the `Config` class during __init__() makes a network call with a
