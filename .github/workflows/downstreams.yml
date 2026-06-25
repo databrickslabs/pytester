@@ -56,3 +56,5 @@ jobs:
           org: databrickslabs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Ensure that downstream uv leaves this dev dependency in place instead of reverting to the pinned release.
+          UV_NO_SYNC: "1"
