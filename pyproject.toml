@@ -70,7 +70,9 @@ path = "src/databricks/labs/pytester/__about__.py"
 dev = [
     { include-group = "lint" },
     { include-group = "test" },
-    "databricks-connect~=15.4.3",
+    # The DBR we test against must be higher than the databricks-connect version.
+    "databricks-connect~=16.1.7; python_version < '3.12'",
+    "databricks-connect~=17.3.11; python_version >= '3.12'",
 ]
 lint = [
     "black~=24.3.0",
