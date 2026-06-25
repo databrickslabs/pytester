@@ -19,7 +19,13 @@ concurrency:
 jobs:
   integration:
     if: github.event_name == 'pull_request'
-    environment: account-admin
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ '3.10', '3.11', '3.12', '3.13', '3.14' ]
+    environment:
+      name: account-admin
+      deployment: false
     permissions:
       # Access to the integration testing infrastructure.
       id-token: write
