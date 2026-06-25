@@ -504,7 +504,7 @@ wheels = [
 
 [[package]]
 name = "databricks-labs-pylint"
-version = "0.4.0"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astroid" },
@@ -512,9 +512,9 @@ dependencies = [
     { name = "eradicate" },
     { name = "pylint" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e0/78/d0ac1d424b3c3a9f3b8533afe2ac651d287efed9366a1d78a7f1b743e223/databricks_labs_pylint-0.4.0.tar.gz", hash = "sha256:ef2ba7f31a6102e9bf59a010f64c07da9f6fcc573fa8f8a69afac525e3861fa2", size = 29718, upload-time = "2024-04-26T12:02:08.358Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b4/be/2bff3b16e8e2918af28420180ecdd053c22aabd5d0e04c4151e24f6992a1/databricks_labs_pylint-0.5.0.tar.gz", hash = "sha256:7a4add66ee95a567b8af6830ad6c645d1b699cd626360272708bcedb43686a67", size = 30287, upload-time = "2024-10-03T16:32:56.074Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/7f/e98b6d0b8ed7ff25bb1c8756e2d48c989a93c69dbde0de40075982c7b1c5/databricks_labs_pylint-0.4.0-py3-none-any.whl", hash = "sha256:b9973f41d49a7cb1b6f1ec64f8a91c7804e47ad2c445939e0bb901c429a22a22", size = 21677, upload-time = "2024-04-26T12:02:06.701Z" },
+    { url = "https://files.pythonhosted.org/packages/51/9e/ad559ac4e20877fd55da09412bedf1884e207030d6279aa60f8fd6250b63/databricks_labs_pylint-0.5.0-py3-none-any.whl", hash = "sha256:38df1187eabe52f725cd3bab786df499b1cea9856fad255a198d14a877c35481", size = 22567, upload-time = "2024-10-03T16:32:54.232Z" },
 ]
 
 [[package]]
@@ -572,7 +572,7 @@ dev = [
     { name = "black", specifier = "~=24.3.0" },
     { name = "coverage", extras = ["toml"], specifier = "~=7.13.4" },
     { name = "databricks-connect", specifier = "~=15.4.3" },
-    { name = "databricks-labs-pylint", specifier = "~=0.4.0" },
+    { name = "databricks-labs-pylint", specifier = "~=0.5.0" },
     { name = "mypy", specifier = "~=1.19.1" },
     { name = "pylint", specifier = "~=4.0.5" },
     { name = "pylint-pytest", specifier = "==2.0.0a1" },
@@ -584,7 +584,7 @@ dev = [
 ]
 lint = [
     { name = "black", specifier = "~=24.3.0" },
-    { name = "databricks-labs-pylint", specifier = "~=0.4.0" },
+    { name = "databricks-labs-pylint", specifier = "~=0.5.0" },
     { name = "mypy", specifier = "~=1.19.1" },
     { name = "pylint", specifier = "~=4.0.5" },
     { name = "pylint-pytest", specifier = "==2.0.0a1" },
