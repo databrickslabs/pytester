@@ -9,7 +9,7 @@ from databricks.labs.pytester.fixtures.baseline import ws, log_workspace_link
 from databricks.labs.pytester.fixtures.sql import sql_backend
 
 
-def test_ws() -> None:
+def test_ws(db_config_no_side_effect: None) -> None:
     debug_env = {'DATABRICKS_HOST': 'abc', 'DATABRICKS_TOKEN': '...'}
     product_info = 'a', '0.1.2'
     workspace_client = call_fixture(ws, debug_env, product_info)
