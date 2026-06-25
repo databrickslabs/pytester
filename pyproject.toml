@@ -70,7 +70,7 @@ path = "src/databricks/labs/pytester/__about__.py"
 dev = [
     { include-group = "lint" },
     { include-group = "test" },
-    "databricks-connect~=15.4.3",
+    "databricks-connect>=15.4.3,<16.2.0",
 ]
 lint = [
     "black~=24.3.0",

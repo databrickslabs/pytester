@@ -452,7 +452,7 @@ wheels = [
 
 [[package]]
 name = "databricks-connect"
-version = "15.4.25"
+version = "16.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "databricks-sdk" },
@@ -468,7 +468,7 @@ dependencies = [
     { name = "six" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/99/16/79529776fdadf2a716c54e06916d4c93487fdf216b5d2ea38b4782b1c230/databricks_connect-15.4.25-py2.py3-none-any.whl", hash = "sha256:7af743556ac698197d85ded7b82205fe25cbb3d9b78500c3e39b4323ef7cfc01", size = 2318128, upload-time = "2026-06-23T14:21:02.659Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/5d/ae8c59de242ca6ef1631e66fdf7fc413bc0d51d2521c4e1cb90104dd62d9/databricks_connect-16.1.7-py2.py3-none-any.whl", hash = "sha256:ddc7ddb8bcfb7910db67e8c4ef5ab2f938c55cf1a1b2e066ff56d2db68b13cb5", size = 2393078, upload-time = "2025-10-28T14:25:02.265Z" },
 ]
 
 [[package]]
@@ -571,7 +571,7 @@ requires-dist = [
 dev = [
     { name = "black", specifier = "~=24.3.0" },
     { name = "coverage", extras = ["toml"], specifier = "~=7.13.4" },
-    { name = "databricks-connect", specifier = "~=15.4.3" },
+    { name = "databricks-connect", specifier = ">=15.4.3,<16.2.0" },
     { name = "databricks-labs-pylint", specifier = "~=0.5.0" },
     { name = "mypy", specifier = "~=1.19.1" },
     { name = "pylint", specifier = "~=4.0.5" },
