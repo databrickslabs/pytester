@@ -76,7 +76,7 @@ dev = [
 ]
 lint = [
     "black~=24.3.0",
-    "mypy~=1.19.1",
+    "mypy>=1.19.1,<2.2.0",
     "pylint~=4.0.5",
     "pylint-pytest==2.0.0a1",
     "databricks-labs-pylint~=0.5.0",
