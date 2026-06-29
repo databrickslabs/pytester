@@ -75,7 +75,7 @@ dev = [
     "databricks-connect~=17.3.11; python_version >= '3.12'",
 ]
 lint = [
-    "black~=24.3.0",
+    "black>=24.3,<26.6",
     "mypy~=1.19.1",
     "pylint~=4.0.5",
     "pylint-pytest==2.0.0a1",
