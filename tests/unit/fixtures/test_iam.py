@@ -76,7 +76,7 @@ def test_make_group_deprecated_arg(make_group_fixture, client_fixture_name) -> N
         )
 
         # Check that the expected warning was emitted and attributed to the caller.
-        (the_warning, *other_warnings) = w
+        the_warning, *other_warnings = w
         assert not other_warnings
         assert issubclass(the_warning.category, DeprecationWarning)
         assert "wait_for_provisioning when making a group is deprecated" in str(the_warning.message)
