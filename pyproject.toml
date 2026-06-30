@@ -75,15 +75,15 @@ dev = [
     "databricks-connect~=17.3.11; python_version >= '3.12'",
 ]
 lint = [
-    "black~=24.3.0",
-    "mypy~=1.19.1",
+    "black~=26.5.1",
+    "mypy~=2.1.0",
     "pylint~=4.0.5",
     "pylint-pytest==2.0.0a1",
     "databricks-labs-pylint~=0.5.0",
     "ruff~=0.15.17",
 ]
 test = [
-    "coverage[toml]~=7.13.4",
+    "coverage[toml]~=7.14.1",
     "pytest-cov~=7.1.0",
     "pytest-mock~=3.15.1",
     "pytest-timeout~=2.4.0",
