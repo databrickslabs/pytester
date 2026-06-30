@@ -600,7 +600,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "black", specifier = "~=24.3.0" },
-    { name = "coverage", extras = ["toml"], specifier = ">=7.13.4,<7.15.0" },
+    { name = "coverage", extras = ["toml"], specifier = "~=7.14.1" },
     { name = "databricks-connect", marker = "python_full_version < '3.12'", specifier = "~=16.1.7" },
     { name = "databricks-connect", marker = "python_full_version >= '3.12'", specifier = "~=17.3.11" },
     { name = "databricks-labs-pylint", specifier = "~=0.5.0" },
@@ -622,7 +622,7 @@ lint = [
     { name = "ruff", specifier = "~=0.15.17" },
 ]
 test = [
-    { name = "coverage", extras = ["toml"], specifier = ">=7.13.4,<7.15.0" },
+    { name = "coverage", extras = ["toml"], specifier = "~=7.14.1" },
     { name = "pytest-cov", specifier = "~=7.1.0" },
     { name = "pytest-mock", specifier = "~=3.15.1" },
     { name = "pytest-timeout", specifier = "~=2.4.0" },
