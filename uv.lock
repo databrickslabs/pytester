@@ -613,7 +613,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "black", specifier = ">=24.3,<26.6" },
+    { name = "black", specifier = "~=26.5.1" },
     { name = "coverage", extras = ["toml"], specifier = "~=7.13.4" },
     { name = "databricks-connect", marker = "python_full_version < '3.12'", specifier = "~=16.1.7" },
     { name = "databricks-connect", marker = "python_full_version >= '3.12'", specifier = "~=17.3.11" },
@@ -628,7 +628,7 @@ dev = [
     { name = "ruff", specifier = "~=0.15.17" },
 ]
 lint = [
-    { name = "black", specifier = ">=24.3,<26.6" },
+    { name = "black", specifier = "~=26.5.1" },
     { name = "databricks-labs-pylint", specifier = "~=0.5.0" },
     { name = "mypy", specifier = "~=1.19.1" },
     { name = "pylint", specifier = "~=4.0.5" },
