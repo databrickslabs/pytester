@@ -12,7 +12,6 @@ from databricks.sdk import WorkspaceClient
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
-
 logger = logging.getLogger(__name__)
 _DEFAULT_ENCODING = sys.getdefaultencoding()
 
