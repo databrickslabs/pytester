@@ -18,7 +18,6 @@ from databricks.sdk.service.ml import CreateExperimentResponse, ModelDatabricks,
 
 from databricks.labs.pytester.fixtures.baseline import factory
 
-
 logger = logging.getLogger(__name__)
 
 
