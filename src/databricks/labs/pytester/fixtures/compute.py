@@ -341,6 +341,7 @@ def make_warehouse(ws, make_random, watchdog_remove_after) -> Generator[Callable
         cluster_size: str | None = None,
         max_num_clusters: int = 1,
         enable_serverless_compute: bool = False,
+        tags: list[EndpointTagPair] = [],
         **kwargs,
     ) -> Wait[GetWarehouseResponse]:
         if warehouse_name is None:
@@ -350,7 +351,9 @@ def make_warehouse(ws, make_random, watchdog_remove_after) -> Generator[Callable
         if cluster_size is None:
             cluster_size = "2X-Small"
 
-        remove_after_tags = EndpointTags(custom_tags=[EndpointTagPair(key="RemoveAfter", value=watchdog_remove_after)])
+        remove_after_tags = EndpointTags(
+            custom_tags=[EndpointTagPair(key="RemoveAfter", value=watchdog_remove_after)] + tags
+        )
         return ws.warehouses.create(
             name=warehouse_name,
             cluster_size=cluster_size,
