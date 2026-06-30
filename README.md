@@ -98,7 +98,7 @@ dependencies = [
 
 [dependency-groups]
 test = [
-    "databricks-labs-pytester~=0.7", # <= this library
+    "databricks-labs-pytester~=0.7.5",  # <= this library
     "pytest-cov~=7.0.0",
     "pytest-mock~=3.15.1",
     "pytest-timeout~=2.4.0",
