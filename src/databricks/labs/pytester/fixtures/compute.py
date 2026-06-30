@@ -104,7 +104,7 @@ def make_cluster(
                 }
             else:
                 kwargs["spark_conf"] = {"spark.databricks.cluster.profile": "singleNode", "spark.master": "local[*]"}
-            kwargs["custom_tags"] = {"ResourceClass": "SingleNode"}
+            kwargs["custom_tags"] = kwargs.get("custom_tags", {}) | {"ResourceClass": "SingleNode"}
         if "instance_pool_id" not in kwargs:
             kwargs["node_type_id"] = ws.clusters.select_node_type(local_disk=True, min_memory_gb=16)
         if "custom_tags" not in kwargs:
