@@ -84,7 +84,7 @@ test = [
     "pytest-xdist~=3.8.0",
 ]
 yq = [
-    "yq~=3.4.3",
+    "yq>=3.4.3,<4.2.0",
 ]
 
 [tool.hatch.build.targets.sdist]
