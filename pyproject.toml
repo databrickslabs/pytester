@@ -42,10 +42,11 @@ classifiers = [
 ]
 
 dependencies = [
-    "certifi>=2026.10.19",  # Transitive via requests; earlier bundles still trust "emSign ECC Root CA - G3".
     "databricks-sdk>=0.51.0,<1.0",
-    "databricks-labs-lsql>=0.17.0",
+    "databricks-labs-lsql~=0.18.0",
     "pytest>=9.0.2,<9.2.0",
+    # Transitive dependencies, to constrain downstream installations.
+    "certifi>=2026.10.19",  # Earlier bundles still trust "emSign ECC Root CA - G3".
 ]
 
 [project.entry-points.pytest11]
