@@ -659,8 +659,6 @@ of [`User`](https://databricks-sdk-py.readthedocs.io/en/latest/dbdataclasses/iam
 ```python
 def test_new_user(make_user, ws):
     new_user = make_user()
-    home_dir = ws.workspace.get_status(f"/Users/{new_user.user_name}")
-    assert home_dir.object_type == ObjectType.DIRECTORY
 ```
 
 See also [`ws`](#ws-fixture), [`make_random`](#make_random-fixture), [`watchdog_purge_suffix`](#watchdog_purge_suffix-fixture).

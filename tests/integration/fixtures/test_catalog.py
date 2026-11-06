@@ -1,5 +1,6 @@
 import logging
 import pytest
+from databricks.sdk.errors import BadRequest
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,10 @@ def test_new_managed_table_in_default_schema(make_table):
     logger.info(f'Created new managed table in default schema: {make_table(schema_name="default")}')
 
 
+@pytest.mark.xfail(
+    raises=BadRequest,
+    reason="Public Delta Sharing server is down: https://github.com/delta-io/delta-sharing/issues/1029",
+)
 def test_external_delta_table_in_new_schema(make_table):
     logger.info(f"Created new external table in new schema: {make_table(external=True)}")
 

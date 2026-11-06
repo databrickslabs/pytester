@@ -1,10 +1,7 @@
-from databricks.sdk.service.workspace import ObjectType
-
-
 def test_new_user(make_user, ws):
     new_user = make_user()
-    home_dir = ws.workspace.get_status(f"/Users/{new_user.user_name}")
-    assert home_dir.object_type == ObjectType.DIRECTORY
+    loaded = ws.users.get(new_user.id)
+    assert new_user.user_name == loaded.user_name
 
 
 def test_new_group(make_group, make_user, make_run_as, ws):
