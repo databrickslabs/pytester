@@ -108,7 +108,7 @@ packages = ["src/databricks"]
 path = "src/databricks/labs/pytester/__about__.py"
 
 [tool.uv]
-required-version = "~= 0.11.0"
+required-version = "~=0.13.7"
 
 [tool.pytest.ini_options]
 # TODO: remove `-p no:warnings`
