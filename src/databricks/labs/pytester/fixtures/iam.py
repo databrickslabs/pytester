@@ -42,8 +42,6 @@ def make_user(ws, make_random, log_workspace_link, watchdog_purge_suffix):
     ```python
     def test_new_user(make_user, ws):
         new_user = make_user()
-        home_dir = ws.workspace.get_status(f"/Users/{new_user.user_name}")
-        assert home_dir.object_type == ObjectType.DIRECTORY
     ```
     """
 
